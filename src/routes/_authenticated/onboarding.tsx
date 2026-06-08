@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -135,7 +135,7 @@ function Onboarding() {
     },
     onSuccess: () => {
       toast.success("Welcome! You're all set.");
-      navigate({ to: "/dashboard", reloadDocument: true });
+      window.location.href = "/dashboard";
     },
     onError: (e: Error) => toast.error(e.message),
   });
