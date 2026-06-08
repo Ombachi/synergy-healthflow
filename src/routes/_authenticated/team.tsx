@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/team")({
   component: Team,
 });
 
-const ALL_ROLES: AppRole[] = ["admin", "doctor", "coach"];
+const ALL_ROLES: AppRole[] = ["admin", "doctor", "nurse", "coach", "patient", "athlete"];
 
 interface MyRoleRow {
   user_id: string;

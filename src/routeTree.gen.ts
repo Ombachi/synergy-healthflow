@@ -12,11 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -32,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
+  id: '/visits',
+  path: '/visits',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -40,6 +48,11 @@ const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
 const AuthenticatedSportsRoute = AuthenticatedSportsRouteImport.update({
   id: '/sports',
   path: '/sports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMedicalRoute = AuthenticatedMedicalRouteImport.update({
@@ -57,6 +70,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVisitsVisitIdRoute =
+  AuthenticatedVisitsVisitIdRouteImport.update({
+    id: '/$visitId',
+    path: '/$visitId',
+    getParentRoute: () => AuthenticatedVisitsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -64,8 +83,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/medical': typeof AuthenticatedMedicalRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -73,8 +95,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/medical': typeof AuthenticatedMedicalRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,8 +109,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,8 +123,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inventory'
     | '/medical'
+    | '/onboarding'
     | '/sports'
     | '/team'
+    | '/visits'
+    | '/visits/$visitId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -104,8 +135,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inventory'
     | '/medical'
+    | '/onboarding'
     | '/sports'
     | '/team'
+    | '/visits'
+    | '/visits/$visitId'
   id:
     | '__root__'
     | '/'
@@ -114,8 +148,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/inventory'
     | '/_authenticated/medical'
+    | '/_authenticated/onboarding'
     | '/_authenticated/sports'
     | '/_authenticated/team'
+    | '/_authenticated/visits'
+    | '/_authenticated/visits/$visitId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -147,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/visits': {
+      id: '/_authenticated/visits'
+      path: '/visits'
+      fullPath: '/visits'
+      preLoaderRoute: typeof AuthenticatedVisitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/team': {
       id: '/_authenticated/team'
       path: '/team'
@@ -159,6 +203,13 @@ declare module '@tanstack/react-router' {
       path: '/sports'
       fullPath: '/sports'
       preLoaderRoute: typeof AuthenticatedSportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/medical': {
@@ -182,23 +233,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/visits/$visitId': {
+      id: '/_authenticated/visits/$visitId'
+      path: '/$visitId'
+      fullPath: '/visits/$visitId'
+      preLoaderRoute: typeof AuthenticatedVisitsVisitIdRouteImport
+      parentRoute: typeof AuthenticatedVisitsRoute
+    }
   }
 }
+
+interface AuthenticatedVisitsRouteChildren {
+  AuthenticatedVisitsVisitIdRoute: typeof AuthenticatedVisitsVisitIdRoute
+}
+
+const AuthenticatedVisitsRouteChildren: AuthenticatedVisitsRouteChildren = {
+  AuthenticatedVisitsVisitIdRoute: AuthenticatedVisitsVisitIdRoute,
+}
+
+const AuthenticatedVisitsRouteWithChildren =
+  AuthenticatedVisitsRoute._addFileChildren(AuthenticatedVisitsRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

@@ -2,12 +2,30 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "doctor" | "coach";
+export type AppRole = "admin" | "doctor" | "coach" | "nurse" | "patient" | "athlete";
+
+export const ALL_ROLES: AppRole[] = [
+  "admin",
+  "doctor",
+  "nurse",
+  "coach",
+  "patient",
+  "athlete",
+];
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  onboarded: boolean;
+  onboarded_as: AppRole | null;
+}
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,17 +33,23 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // defer to avoid deadlock per supabase guidance
-        setTimeout(() => fetchRoles(s.user.id), 0);
+        setTimeout(() => {
+          fetchRoles(s.user.id);
+          fetchProfile(s.user.id);
+        }, 0);
       } else {
         setRoles([]);
+        setProfile(null);
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      if (data.session?.user) fetchRoles(data.session.user.id);
+      if (data.session?.user) {
+        fetchRoles(data.session.user.id);
+        fetchProfile(data.session.user.id);
+      }
       setLoading(false);
     });
 
@@ -37,11 +61,20 @@ export function useAuth() {
       setRoles(((data as { role: AppRole }[] | null) ?? []).map((r) => r.role));
     }
 
+    async function fetchProfile(userId: string) {
+      const { data } = await supabase
+        .from("profiles" as never)
+        .select("id, full_name, phone, onboarded, onboarded_as")
+        .eq("id", userId)
+        .maybeSingle();
+      setProfile((data as unknown as Profile | null) ?? null);
+    }
+
     return () => sub.subscription.unsubscribe();
   }, []);
 
   const hasRole = (r: AppRole) => roles.includes(r);
   const hasAnyRole = (rs: AppRole[]) => rs.some((r) => roles.includes(r));
 
-  return { session, user, roles, loading, hasRole, hasAnyRole };
+  return { session, user, roles, profile, loading, hasRole, hasAnyRole };
 }
