@@ -103,6 +103,14 @@ function AuthedLayout() {
           <header className="flex h-12 items-center border-b px-2">
             <SidebarTrigger />
           </header>
+          {user && !roles.length && pathname !== "/onboarding" && pathname !== "/team" && (
+            <div className="border-b bg-primary/5 px-4 py-2 text-sm">
+              Finish setting up your account.{" "}
+              <Link to="/onboarding" className="font-medium text-primary underline">
+                Complete onboarding →
+              </Link>
+            </div>
+          )}
           <main className="flex-1 p-6">
             <Outlet />
           </main>
