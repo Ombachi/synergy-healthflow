@@ -18,38 +18,131 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          date_of_birth: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           full_name: string
+          height_cm: number | null
           id: string
+          phone: string | null
           position: string | null
           resting_heart_rate: number | null
           sport: string | null
           status: string
           team: string | null
           updated_at: string
+          user_id: string | null
+          weight_kg: number | null
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name: string
+          height_cm?: number | null
           id?: string
+          phone?: string | null
           position?: string | null
           resting_heart_rate?: number | null
           sport?: string | null
           status?: string
           team?: string | null
           updated_at?: string
+          user_id?: string | null
+          weight_kg?: number | null
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name?: string
+          height_cm?: number | null
           id?: string
+          phone?: string | null
           position?: string | null
           resting_heart_rate?: number | null
           sport?: string | null
           status?: string
           team?: string | null
           updated_at?: string
+          user_id?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      coach_profiles: {
+        Row: {
+          bio: string | null
+          certification: string | null
+          created_at: string
+          id: string
+          sport: string | null
+          team: string | null
+          updated_at: string
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          certification?: string | null
+          created_at?: string
+          id?: string
+          sport?: string | null
+          team?: string | null
+          updated_at?: string
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          certification?: string | null
+          created_at?: string
+          id?: string
+          sport?: string | null
+          team?: string | null
+          updated_at?: string
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      doctor_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          id: string
+          license_number: string | null
+          specialty: string | null
+          updated_at: string
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          license_number?: string | null
+          specialty?: string | null
+          updated_at?: string
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          license_number?: string | null
+          specialty?: string | null
+          updated_at?: string
+          user_id?: string
+          years_experience?: number | null
         }
         Relationships: []
       }
@@ -94,37 +187,73 @@ export type Database = {
       }
       patients: {
         Row: {
+          address: string | null
+          allergies: string | null
+          blood_type: string | null
+          chronic_conditions: string | null
           created_at: string
           created_by: string | null
           date_of_birth: string | null
           diagnosis: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           full_name: string
+          gender: string | null
           id: string
+          insurance_number: string | null
+          insurance_provider: string | null
           medical_record_number: string | null
           notes: string | null
+          phone: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
+          address?: string | null
+          allergies?: string | null
+          blood_type?: string | null
+          chronic_conditions?: string | null
           created_at?: string
           created_by?: string | null
           date_of_birth?: string | null
           diagnosis?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name: string
+          gender?: string | null
           id?: string
+          insurance_number?: string | null
+          insurance_provider?: string | null
           medical_record_number?: string | null
           notes?: string | null
+          phone?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          address?: string | null
+          allergies?: string | null
+          blood_type?: string | null
+          chronic_conditions?: string | null
           created_at?: string
           created_by?: string | null
           date_of_birth?: string | null
           diagnosis?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name?: string
+          gender?: string | null
           id?: string
+          insurance_number?: string | null
+          insurance_provider?: string | null
           medical_record_number?: string | null
           notes?: string | null
+          phone?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -133,18 +262,27 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          onboarded: boolean
+          onboarded_as: Database["public"]["Enums"]["app_role"] | null
+          phone: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id: string
+          onboarded?: boolean
+          onboarded_as?: Database["public"]["Enums"]["app_role"] | null
+          phone?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
+          onboarded?: boolean
+          onboarded_as?: Database["public"]["Enums"]["app_role"] | null
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -169,6 +307,137 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visits: {
+        Row: {
+          chief_complaint: string | null
+          closed_at: string | null
+          created_at: string
+          doctor_id: string | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opened_by: string | null
+          patient_id: string
+          reason: string | null
+          status: string
+          triage_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          chief_complaint?: string | null
+          closed_at?: string | null
+          created_at?: string
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          patient_id: string
+          reason?: string | null
+          status?: string
+          triage_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chief_complaint?: string | null
+          closed_at?: string | null
+          created_at?: string
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          patient_id?: string
+          reason?: string | null
+          status?: string
+          triage_level?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vitals: {
+        Row: {
+          captured_at: string
+          captured_by: string | null
+          created_at: string
+          diastolic_bp: number | null
+          glucose_mg_dl: number | null
+          heart_rate: number | null
+          height_cm: number | null
+          id: string
+          notes: string | null
+          oxygen_saturation: number | null
+          pain_level: number | null
+          patient_id: string
+          respiratory_rate: number | null
+          systolic_bp: number | null
+          temperature_c: number | null
+          visit_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          captured_at?: string
+          captured_by?: string | null
+          created_at?: string
+          diastolic_bp?: number | null
+          glucose_mg_dl?: number | null
+          heart_rate?: number | null
+          height_cm?: number | null
+          id?: string
+          notes?: string | null
+          oxygen_saturation?: number | null
+          pain_level?: number | null
+          patient_id: string
+          respiratory_rate?: number | null
+          systolic_bp?: number | null
+          temperature_c?: number | null
+          visit_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          captured_at?: string
+          captured_by?: string | null
+          created_at?: string
+          diastolic_bp?: number | null
+          glucose_mg_dl?: number | null
+          heart_rate?: number | null
+          height_cm?: number | null
+          id?: string
+          notes?: string | null
+          oxygen_saturation?: number | null
+          pain_level?: number | null
+          patient_id?: string
+          respiratory_rate?: number | null
+          systolic_bp?: number | null
+          temperature_c?: number | null
+          visit_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vitals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vitals_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
