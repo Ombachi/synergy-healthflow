@@ -39,7 +39,6 @@ const CARDS: RoleCard[] = [
 
 function Onboarding() {
   const { user, profile, roles } = useAuth();
-  const navigate = useNavigate();
   const [step, setStep] = useState<"role" | "form">(
     profile?.onboarded_as ? "form" : "role",
   );
