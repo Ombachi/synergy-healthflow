@@ -471,12 +471,3 @@ function NotesEditor({ initial, onSave, disabled }: { initial: string; onSave: (
     </div>
   );
 }
-
-// hydrate discharge form once when query loads
-function useMemoSetDischarge(d: Discharge | null | undefined, setDs: (s: { summary: string; treatment_plan: string; follow_up: string }) => void) {
-  const [hydrated, setHydrated] = useState(false);
-  if (d && !hydrated) {
-    setHydrated(true);
-    setDs({ summary: d.summary ?? "", treatment_plan: d.treatment_plan ?? "", follow_up: d.follow_up ?? "" });
-  }
-}
