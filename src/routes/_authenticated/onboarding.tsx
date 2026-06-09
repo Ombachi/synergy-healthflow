@@ -37,6 +37,12 @@ const CARDS: RoleCard[] = [
   { role: "admin", title: "Admin", blurb: "Manage staff, roles, and inventory.", icon: Users },
 ];
 
+const CONSENTS = [
+  { type: "treatment", label: "Consent to treatment", body: "I consent to medical examination, diagnostic procedures, and treatment by clinical staff." },
+  { type: "privacy", label: "Privacy notice (HIPAA-style)", body: "I acknowledge how my health data is collected, stored, and shared with my care team." },
+  { type: "data_sharing", label: "Data sharing with care team", body: "I allow my vitals, visits, notes, and prescriptions to be visible to my assigned doctor, nurse, and admin." },
+];
+
 function Onboarding() {
   const { user, profile, roles } = useAuth();
   const [step, setStep] = useState<"role" | "form">(
@@ -47,6 +53,8 @@ function Onboarding() {
     full_name: profile?.full_name ?? "",
     phone: profile?.phone ?? "",
   });
+  const [consentChecks, setConsentChecks] = useState<Record<string, boolean>>({});
+  const [intake, setIntake] = useState<Record<string, string>>({});
 
   const setField = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
   const num = (v: string) => (v === "" ? null : Number(v));
@@ -98,7 +106,10 @@ function Onboarding() {
           bio: form.bio || null,
         } as never, { onConflict: "user_id" } as never);
       } else if (role === "patient") {
-        await supabase.from("patients" as never).insert({
+        if (CONSENTS.some((c) => !consentChecks[c.type])) {
+          throw new Error("Please accept all required consents before continuing.");
+        }
+        const { data: pat, error: patErr } = await supabase.from("patients" as never).insert({
           user_id: user.id,
           full_name: form.full_name,
           date_of_birth: form.date_of_birth || null,
@@ -113,8 +124,34 @@ function Onboarding() {
           emergency_contact_phone: form.emergency_contact_phone || null,
           insurance_provider: form.insurance_provider || null,
           insurance_number: form.insurance_number || null,
-        } as never);
-      } else if (role === "athlete") {
+        } as never).select("id").single();
+        if (patErr) throw patErr;
+        const patientId = (pat as { id: string }).id;
+
+        // Consents
+        await supabase.from("consents" as never).insert(
+          CONSENTS.map((c) => ({
+            patient_id: patientId,
+            consent_type: c.type,
+            accepted: true,
+            accepted_at: new Date().toISOString(),
+            signed_by: user.id,
+          })) as never,
+        );
+
+        // Pre-visit intake form
+        if (intake.allergies || intake.conditions || intake.current_medications || intake.reason_for_visit || intake.emergency_contact_name) {
+          await supabase.from("intake_forms" as never).insert({
+            patient_id: patientId,
+            allergies: intake.allergies || null,
+            conditions: intake.conditions || null,
+            current_medications: intake.current_medications || null,
+            reason_for_visit: intake.reason_for_visit || null,
+            emergency_contact_name: intake.emergency_contact_name || form.emergency_contact_name || null,
+            emergency_contact_phone: intake.emergency_contact_phone || form.emergency_contact_phone || null,
+            submitted_by: user.id,
+          } as never);
+        }
         await supabase.from("athletes" as never).insert({
           user_id: user.id,
           full_name: form.full_name,
@@ -260,6 +297,52 @@ function Onboarding() {
               <div>
                 <Label>Insurance number</Label>
                 <Input value={form.insurance_number ?? ""} onChange={(e) => setField("insurance_number", e.target.value)} />
+              </div>
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-4">
+              <h3 className="text-sm font-medium">Pre-visit intake (optional)</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Share details now so your care team is prepared.</p>
+              <div className="mt-3 grid gap-3">
+                <div>
+                  <Label>Reason you're seeking care</Label>
+                  <Input value={intake.reason_for_visit ?? ""} onChange={(e) => setIntake({ ...intake, reason_for_visit: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Current medications</Label>
+                  <Textarea rows={2} value={intake.current_medications ?? ""} onChange={(e) => setIntake({ ...intake, current_medications: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Allergies</Label>
+                    <Input value={intake.allergies ?? ""} onChange={(e) => setIntake({ ...intake, allergies: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label>Other conditions</Label>
+                    <Input value={intake.conditions ?? ""} onChange={(e) => setIntake({ ...intake, conditions: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-4">
+              <h3 className="text-sm font-medium">Consents (required)</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Read and accept to receive care through Vitalis.</p>
+              <div className="mt-3 space-y-3">
+                {CONSENTS.map((c) => (
+                  <label key={c.type} className="flex items-start gap-3 rounded border bg-background p-3 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={!!consentChecks[c.type]}
+                      onChange={(e) => setConsentChecks({ ...consentChecks, [c.type]: e.target.checked })}
+                    />
+                    <div>
+                      <div className="font-medium">{c.label}</div>
+                      <div className="text-xs text-muted-foreground">{c.body}</div>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
           </>
