@@ -37,6 +37,12 @@ const CARDS: RoleCard[] = [
   { role: "admin", title: "Admin", blurb: "Manage staff, roles, and inventory.", icon: Users },
 ];
 
+const CONSENTS = [
+  { type: "treatment", label: "Consent to treatment", body: "I consent to medical examination, diagnostic procedures, and treatment by clinical staff." },
+  { type: "privacy", label: "Privacy notice (HIPAA-style)", body: "I acknowledge how my health data is collected, stored, and shared with my care team." },
+  { type: "data_sharing", label: "Data sharing with care team", body: "I allow my vitals, visits, notes, and prescriptions to be visible to my assigned doctor, nurse, and admin." },
+];
+
 function Onboarding() {
   const { user, profile, roles } = useAuth();
   const [step, setStep] = useState<"role" | "form">(
@@ -47,6 +53,8 @@ function Onboarding() {
     full_name: profile?.full_name ?? "",
     phone: profile?.phone ?? "",
   });
+  const [consentChecks, setConsentChecks] = useState<Record<string, boolean>>({});
+  const [intake, setIntake] = useState<Record<string, string>>({});
 
   const setField = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
   const num = (v: string) => (v === "" ? null : Number(v));
