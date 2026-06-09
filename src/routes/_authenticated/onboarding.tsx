@@ -106,7 +106,10 @@ function Onboarding() {
           bio: form.bio || null,
         } as never, { onConflict: "user_id" } as never);
       } else if (role === "patient") {
-        await supabase.from("patients" as never).insert({
+        if (CONSENTS.some((c) => !consentChecks[c.type])) {
+          throw new Error("Please accept all required consents before continuing.");
+        }
+        const { data: pat, error: patErr } = await supabase.from("patients" as never).insert({
           user_id: user.id,
           full_name: form.full_name,
           date_of_birth: form.date_of_birth || null,
@@ -121,8 +124,34 @@ function Onboarding() {
           emergency_contact_phone: form.emergency_contact_phone || null,
           insurance_provider: form.insurance_provider || null,
           insurance_number: form.insurance_number || null,
-        } as never);
-      } else if (role === "athlete") {
+        } as never).select("id").single();
+        if (patErr) throw patErr;
+        const patientId = (pat as { id: string }).id;
+
+        // Consents
+        await supabase.from("consents" as never).insert(
+          CONSENTS.map((c) => ({
+            patient_id: patientId,
+            consent_type: c.type,
+            accepted: true,
+            accepted_at: new Date().toISOString(),
+            signed_by: user.id,
+          })) as never,
+        );
+
+        // Pre-visit intake form
+        if (intake.allergies || intake.conditions || intake.current_medications || intake.reason_for_visit || intake.emergency_contact_name) {
+          await supabase.from("intake_forms" as never).insert({
+            patient_id: patientId,
+            allergies: intake.allergies || null,
+            conditions: intake.conditions || null,
+            current_medications: intake.current_medications || null,
+            reason_for_visit: intake.reason_for_visit || null,
+            emergency_contact_name: intake.emergency_contact_name || form.emergency_contact_name || null,
+            emergency_contact_phone: intake.emergency_contact_phone || form.emergency_contact_phone || null,
+            submitted_by: user.id,
+          } as never);
+        }
         await supabase.from("athletes" as never).insert({
           user_id: user.id,
           full_name: form.full_name,
