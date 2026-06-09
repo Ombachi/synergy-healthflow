@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, ClipboardList, Heart, LayoutDashboard, LogOut, Package, UserPlus, Users } from "lucide-react";
+import { Activity, ClipboardList, Heart, LayoutDashboard, LogOut, MessageSquare, Package, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
@@ -32,9 +32,12 @@ const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Onboarding", url: "/onboarding", icon: UserPlus },
   { title: "Visits", url: "/visits", icon: ClipboardList },
+  { title: "My health", url: "/me", icon: Stethoscope },
+  { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Medical / EHR", url: "/medical", icon: Heart },
   { title: "Sports & Athletes", url: "/sports", icon: Activity },
   { title: "Inventory", url: "/inventory", icon: Package },
+  { title: "Audit log", url: "/audit", icon: Shield },
   { title: "Team & Roles", url: "/team", icon: Users },
 ] as const;
 
