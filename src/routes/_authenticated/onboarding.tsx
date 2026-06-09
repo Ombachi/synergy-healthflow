@@ -299,6 +299,52 @@ function Onboarding() {
                 <Input value={form.insurance_number ?? ""} onChange={(e) => setField("insurance_number", e.target.value)} />
               </div>
             </div>
+
+            <div className="rounded-md border bg-muted/30 p-4">
+              <h3 className="text-sm font-medium">Pre-visit intake (optional)</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Share details now so your care team is prepared.</p>
+              <div className="mt-3 grid gap-3">
+                <div>
+                  <Label>Reason you're seeking care</Label>
+                  <Input value={intake.reason_for_visit ?? ""} onChange={(e) => setIntake({ ...intake, reason_for_visit: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Current medications</Label>
+                  <Textarea rows={2} value={intake.current_medications ?? ""} onChange={(e) => setIntake({ ...intake, current_medications: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Allergies</Label>
+                    <Input value={intake.allergies ?? ""} onChange={(e) => setIntake({ ...intake, allergies: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label>Other conditions</Label>
+                    <Input value={intake.conditions ?? ""} onChange={(e) => setIntake({ ...intake, conditions: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-4">
+              <h3 className="text-sm font-medium">Consents (required)</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Read and accept to receive care through Vitalis.</p>
+              <div className="mt-3 space-y-3">
+                {CONSENTS.map((c) => (
+                  <label key={c.type} className="flex items-start gap-3 rounded border bg-background p-3 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={!!consentChecks[c.type]}
+                      onChange={(e) => setConsentChecks({ ...consentChecks, [c.type]: e.target.checked })}
+                    />
+                    <div>
+                      <div className="font-medium">{c.label}</div>
+                      <div className="text-xs text-muted-foreground">{c.body}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
           </>
         )}
 
