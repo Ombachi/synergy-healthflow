@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, CheckCircle2, HeartPulse, Pill, Stethoscope, Trash2 } from "lucide-react";
@@ -195,7 +195,12 @@ function VisitDetail() {
 
   // ===== Discharge =====
   const [ds, setDs] = useState<{ summary: string; treatment_plan: string; follow_up: string }>({ summary: "", treatment_plan: "", follow_up: "" });
-  useMemoSetDischarge(discharge.data, setDs);
+  const dischargeLoaded = discharge.data;
+  useEffect(() => {
+    if (dischargeLoaded) {
+      setDs({ summary: dischargeLoaded.summary ?? "", treatment_plan: dischargeLoaded.treatment_plan ?? "", follow_up: dischargeLoaded.follow_up ?? "" });
+    }
+  }, [dischargeLoaded]);
 
   const saveDischarge = useMutation({
     mutationFn: async (finalize: boolean) => {
