@@ -307,7 +307,7 @@ function VisitDetail() {
           )}
 
           {/* Diagnoses */}
-          {(canClose || diagnoses.data?.length) && (
+          {(canClose || (diagnoses.data?.length ?? 0) > 0) && (
             <div className="rounded-lg border bg-card p-5">
               <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Diagnoses</h2>
               <ul className="mt-3 space-y-2 text-sm">
@@ -336,7 +336,7 @@ function VisitDetail() {
           )}
 
           {/* Prescriptions */}
-          {(canClose || prescriptions.data?.length) && (
+          {(canClose || (prescriptions.data?.length ?? 0) > 0) && (
             <div className="rounded-lg border bg-card p-5">
               <h2 className="flex items-center gap-2 font-medium"><Pill className="h-4 w-4 text-primary" /> Prescriptions</h2>
               <ul className="mt-3 space-y-2 text-sm">
