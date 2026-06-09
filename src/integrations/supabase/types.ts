@@ -77,6 +77,42 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          changes: Json | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          patient_id: string | null
+          visit_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          changes?: Json | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          patient_id?: string | null
+          visit_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          changes?: Json | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          patient_id?: string | null
+          visit_id?: string | null
+        }
+        Relationships: []
+      }
       coach_profiles: {
         Row: {
           bio: string | null
@@ -113,6 +149,100 @@ export type Database = {
         }
         Relationships: []
       }
+      consents: {
+        Row: {
+          accepted: boolean
+          accepted_at: string | null
+          consent_type: string
+          created_at: string
+          document_version: string
+          id: string
+          patient_id: string
+          signed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          accepted?: boolean
+          accepted_at?: string | null
+          consent_type: string
+          created_at?: string
+          document_version?: string
+          id?: string
+          patient_id: string
+          signed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accepted?: boolean
+          accepted_at?: string | null
+          consent_type?: string
+          created_at?: string
+          document_version?: string
+          id?: string
+          patient_id?: string
+          signed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consents_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discharge_summaries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          finalized: boolean
+          finalized_at: string | null
+          finalized_by: string | null
+          follow_up: string | null
+          id: string
+          summary: string
+          treatment_plan: string | null
+          updated_at: string
+          visit_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          finalized?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
+          follow_up?: string | null
+          id?: string
+          summary: string
+          treatment_plan?: string | null
+          updated_at?: string
+          visit_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          finalized?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
+          follow_up?: string | null
+          id?: string
+          summary?: string
+          treatment_plan?: string | null
+          updated_at?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discharge_summaries_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: true
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctor_profiles: {
         Row: {
           bio: string | null
@@ -145,6 +275,69 @@ export type Database = {
           years_experience?: number | null
         }
         Relationships: []
+      }
+      intake_forms: {
+        Row: {
+          allergies: string | null
+          conditions: string | null
+          created_at: string
+          current_medications: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          id: string
+          patient_id: string
+          reason_for_visit: string | null
+          submitted_at: string
+          submitted_by: string | null
+          updated_at: string
+          visit_id: string | null
+        }
+        Insert: {
+          allergies?: string | null
+          conditions?: string | null
+          created_at?: string
+          current_medications?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          id?: string
+          patient_id: string
+          reason_for_visit?: string | null
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Update: {
+          allergies?: string | null
+          conditions?: string | null
+          created_at?: string
+          current_medications?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          id?: string
+          patient_id?: string
+          reason_for_visit?: string | null
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_forms_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intake_forms_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inventory_items: {
         Row: {
@@ -184,6 +377,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      message_threads: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {
@@ -257,6 +506,53 @@ export type Database = {
         }
         Relationships: []
       }
+      prescriptions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dose: string | null
+          duration: string | null
+          frequency: string | null
+          id: string
+          instructions: string | null
+          medication: string
+          updated_at: string
+          visit_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dose?: string | null
+          duration?: string | null
+          frequency?: string | null
+          id?: string
+          instructions?: string | null
+          medication: string
+          updated_at?: string
+          visit_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dose?: string | null
+          duration?: string | null
+          frequency?: string | null
+          id?: string
+          instructions?: string | null
+          medication?: string
+          updated_at?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -287,6 +583,32 @@ export type Database = {
         }
         Relationships: []
       }
+      thread_participants: {
+        Row: {
+          last_read_at: string | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          last_read_at?: string | null
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          last_read_at?: string | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thread_participants_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -307,6 +629,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visit_diagnoses: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          diagnosis: string
+          icd_code: string | null
+          id: string
+          is_primary: boolean
+          notes: string | null
+          updated_at: string
+          visit_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          diagnosis: string
+          icd_code?: string | null
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          updated_at?: string
+          visit_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          diagnosis?: string
+          icd_code?: string | null
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          updated_at?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_diagnoses_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       visits: {
         Row: {
@@ -450,6 +816,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      is_thread_participant: {
+        Args: { _thread: string; _user: string }
+        Returns: boolean
+      }
+      list_messageable_users: {
+        Args: never
+        Returns: {
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
       }
     }
     Enums: {
