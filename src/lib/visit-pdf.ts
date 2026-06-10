@@ -1,0 +1,147 @@
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+interface VisitData {
+  visit: {
+    id: string; opened_at: string; closed_at: string | null; status: string;
+    reason: string | null; chief_complaint: string | null; triage_level: string | null;
+    notes: string | null;
+  };
+  patient: { full_name: string; medical_record_number: string | null; date_of_birth: string | null; blood_type: string | null; allergies: string | null };
+  vitals: Array<{ captured_at: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null; respiratory_rate: number | null }>;
+  diagnoses: Array<{ diagnosis: string; icd_code: string | null; is_primary: boolean }>;
+  prescriptions: Array<{ medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null }>;
+  labs?: Array<{ test: string; result: string | null; units: string | null; flag: string | null; performed_at: string | null }>;
+  imaging?: Array<{ modality: string; body_part: string | null; report: string | null; performed_at: string | null }>;
+  discharge: { summary: string; treatment_plan: string | null; follow_up: string | null } | null;
+}
+
+export function exportVisitPDF(d: VisitData) {
+  const doc = new jsPDF();
+  const w = doc.internal.pageSize.getWidth();
+  let y = 16;
+
+  doc.setFontSize(16).setFont("helvetica", "bold");
+  doc.text("Visit Summary", 14, y); y += 6;
+  doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(120);
+  doc.text(`Generated ${new Date().toLocaleString()}`, 14, y); y += 8;
+  doc.setTextColor(0);
+
+  doc.setFontSize(11).setFont("helvetica", "bold").text("Patient", 14, y); y += 5;
+  doc.setFontSize(9).setFont("helvetica", "normal");
+  doc.text(`${d.patient.full_name}${d.patient.medical_record_number ? `  ·  MRN ${d.patient.medical_record_number}` : ""}`, 14, y); y += 4;
+  if (d.patient.date_of_birth) { doc.text(`DOB: ${d.patient.date_of_birth}`, 14, y); y += 4; }
+  if (d.patient.blood_type) { doc.text(`Blood type: ${d.patient.blood_type}`, 14, y); y += 4; }
+  if (d.patient.allergies) { doc.text(`Allergies: ${d.patient.allergies}`, 14, y); y += 4; }
+  y += 2;
+
+  doc.setFontSize(11).setFont("helvetica", "bold").text("Visit", 14, y); y += 5;
+  doc.setFontSize(9).setFont("helvetica", "normal");
+  doc.text(`Opened: ${new Date(d.visit.opened_at).toLocaleString()}`, 14, y); y += 4;
+  if (d.visit.closed_at) { doc.text(`Closed: ${new Date(d.visit.closed_at).toLocaleString()}`, 14, y); y += 4; }
+  doc.text(`Status: ${d.visit.status}  ·  Triage: ${d.visit.triage_level ?? "—"}`, 14, y); y += 4;
+  if (d.visit.reason) { doc.text(`Reason: ${d.visit.reason}`, 14, y); y += 4; }
+  if (d.visit.chief_complaint) {
+    const lines = doc.splitTextToSize(`Chief complaint: ${d.visit.chief_complaint}`, w - 28);
+    doc.text(lines, 14, y); y += lines.length * 4;
+  }
+  y += 2;
+
+  if (d.vitals.length) {
+    autoTable(doc, {
+      startY: y, head: [["When", "BP", "HR", "RR", "Temp °C", "SpO₂"]],
+      body: d.vitals.map((v) => [
+        new Date(v.captured_at).toLocaleString(),
+        v.systolic_bp && v.diastolic_bp ? `${v.systolic_bp}/${v.diastolic_bp}` : "—",
+        v.heart_rate ?? "—", v.respiratory_rate ?? "—",
+        v.temperature_c ?? "—", v.oxygen_saturation ?? "—",
+      ]),
+      styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
+      didDrawPage: () => {},
+    });
+    // @ts-expect-error lastAutoTable types
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  if (d.diagnoses.length) {
+    doc.setFontSize(11).setFont("helvetica", "bold").text("Diagnoses", 14, y); y += 1;
+    autoTable(doc, {
+      startY: y + 2, head: [["Diagnosis", "ICD-11", "Primary"]],
+      body: d.diagnoses.map((x) => [x.diagnosis, x.icd_code ?? "—", x.is_primary ? "Yes" : ""]),
+      styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
+    });
+    // @ts-expect-error lastAutoTable types
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  if (d.prescriptions.length) {
+    doc.setFontSize(11).setFont("helvetica", "bold").text("Prescriptions", 14, y); y += 1;
+    autoTable(doc, {
+      startY: y + 2, head: [["Medication", "Dose", "Frequency", "Duration", "Instructions"]],
+      body: d.prescriptions.map((r) => [r.medication, r.dose ?? "—", r.frequency ?? "—", r.duration ?? "—", r.instructions ?? ""]),
+      styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
+    });
+    // @ts-expect-error lastAutoTable types
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  if (d.labs && d.labs.length) {
+    doc.setFontSize(11).setFont("helvetica", "bold").text("Lab results", 14, y); y += 1;
+    autoTable(doc, {
+      startY: y + 2, head: [["Test", "Result", "Units", "Flag", "When"]],
+      body: d.labs.map((l) => [l.test, l.result ?? "pending", l.units ?? "", l.flag ?? "", l.performed_at ? new Date(l.performed_at).toLocaleString() : ""]),
+      styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
+    });
+    // @ts-expect-error lastAutoTable types
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  if (d.imaging && d.imaging.length) {
+    doc.setFontSize(11).setFont("helvetica", "bold").text("Imaging", 14, y); y += 1;
+    autoTable(doc, {
+      startY: y + 2, head: [["Modality", "Body part", "Report", "When"]],
+      body: d.imaging.map((i) => [i.modality, i.body_part ?? "", i.report ?? "pending", i.performed_at ? new Date(i.performed_at).toLocaleString() : ""]),
+      styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
+    });
+    // @ts-expect-error lastAutoTable types
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  if (d.visit.notes) {
+    if (y > 250) { doc.addPage(); y = 16; }
+    doc.setFontSize(11).setFont("helvetica", "bold").text("Clinical notes", 14, y); y += 5;
+    doc.setFontSize(9).setFont("helvetica", "normal");
+    const lines = doc.splitTextToSize(d.visit.notes, w - 28);
+    doc.text(lines, 14, y); y += lines.length * 4 + 4;
+  }
+
+  if (d.discharge) {
+    if (y > 230) { doc.addPage(); y = 16; }
+    doc.setFontSize(11).setFont("helvetica", "bold").text("Discharge summary", 14, y); y += 5;
+    doc.setFontSize(9).setFont("helvetica", "normal");
+    const s = doc.splitTextToSize(d.discharge.summary, w - 28);
+    doc.text(s, 14, y); y += s.length * 4 + 2;
+    if (d.discharge.treatment_plan) {
+      doc.setFont("helvetica", "bold").text("Treatment plan:", 14, y); y += 4;
+      doc.setFont("helvetica", "normal");
+      const t = doc.splitTextToSize(d.discharge.treatment_plan, w - 28);
+      doc.text(t, 14, y); y += t.length * 4 + 2;
+    }
+    if (d.discharge.follow_up) {
+      doc.setFont("helvetica", "bold").text("Follow-up:", 14, y); y += 4;
+      doc.setFont("helvetica", "normal");
+      const f = doc.splitTextToSize(d.discharge.follow_up, w - 28);
+      doc.text(f, 14, y); y += f.length * 4;
+    }
+  }
+
+  // Page numbers
+  const pages = doc.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8).setTextColor(150);
+    doc.text(`Page ${i} of ${pages}`, w - 14, doc.internal.pageSize.getHeight() - 8, { align: "right" });
+  }
+
+  doc.save(`visit-${d.patient.full_name.replace(/\s+/g, "_")}-${d.visit.id.slice(0, 8)}.pdf`);
+}
