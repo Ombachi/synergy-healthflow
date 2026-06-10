@@ -15,10 +15,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
+import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
+import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
@@ -53,6 +56,16 @@ const AuthenticatedSportsRoute = AuthenticatedSportsRouteImport.update({
   path: '/sports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRadiologyRoute = AuthenticatedRadiologyRouteImport.update({
+  id: '/radiology',
+  path: '/radiology',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPharmacyRoute = AuthenticatedPharmacyRouteImport.update({
+  id: '/pharmacy',
+  path: '/pharmacy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -71,6 +84,11 @@ const AuthenticatedMedicalRoute = AuthenticatedMedicalRouteImport.update({
 const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   id: '/me',
   path: '/me',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLabRoute = AuthenticatedLabRouteImport.update({
+  id: '/lab',
+  path: '/lab',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
@@ -101,10 +119,13 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuthenticatedAuditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/lab': typeof AuthenticatedLabRoute
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/radiology': typeof AuthenticatedRadiologyRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
@@ -116,10 +137,13 @@ export interface FileRoutesByTo {
   '/audit': typeof AuthenticatedAuditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/lab': typeof AuthenticatedLabRoute
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/radiology': typeof AuthenticatedRadiologyRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
@@ -133,10 +157,13 @@ export interface FileRoutesById {
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
+  '/_authenticated/lab': typeof AuthenticatedLabRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
@@ -150,10 +177,13 @@ export interface FileRouteTypes {
     | '/audit'
     | '/dashboard'
     | '/inventory'
+    | '/lab'
     | '/me'
     | '/medical'
     | '/messages'
     | '/onboarding'
+    | '/pharmacy'
+    | '/radiology'
     | '/sports'
     | '/team'
     | '/visits'
@@ -165,10 +195,13 @@ export interface FileRouteTypes {
     | '/audit'
     | '/dashboard'
     | '/inventory'
+    | '/lab'
     | '/me'
     | '/medical'
     | '/messages'
     | '/onboarding'
+    | '/pharmacy'
+    | '/radiology'
     | '/sports'
     | '/team'
     | '/visits'
@@ -181,10 +214,13 @@ export interface FileRouteTypes {
     | '/_authenticated/audit'
     | '/_authenticated/dashboard'
     | '/_authenticated/inventory'
+    | '/_authenticated/lab'
     | '/_authenticated/me'
     | '/_authenticated/medical'
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
+    | '/_authenticated/pharmacy'
+    | '/_authenticated/radiology'
     | '/_authenticated/sports'
     | '/_authenticated/team'
     | '/_authenticated/visits'
@@ -241,6 +277,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/radiology': {
+      id: '/_authenticated/radiology'
+      path: '/radiology'
+      fullPath: '/radiology'
+      preLoaderRoute: typeof AuthenticatedRadiologyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pharmacy': {
+      id: '/_authenticated/pharmacy'
+      path: '/pharmacy'
+      fullPath: '/pharmacy'
+      preLoaderRoute: typeof AuthenticatedPharmacyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -267,6 +317,13 @@ declare module '@tanstack/react-router' {
       path: '/me'
       fullPath: '/me'
       preLoaderRoute: typeof AuthenticatedMeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lab': {
+      id: '/_authenticated/lab'
+      path: '/lab'
+      fullPath: '/lab'
+      preLoaderRoute: typeof AuthenticatedLabRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inventory': {
@@ -315,10 +372,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
+  AuthenticatedLabRoute: typeof AuthenticatedLabRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
+  AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
@@ -328,10 +388,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
+  AuthenticatedLabRoute: AuthenticatedLabRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
+  AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
@@ -348,13 +411,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
