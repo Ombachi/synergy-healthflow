@@ -2,15 +2,14 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "doctor" | "coach" | "nurse" | "patient" | "athlete";
+export type AppRole =
+  | "admin" | "doctor" | "coach" | "nurse" | "patient" | "athlete"
+  | "lab_tech" | "pharmacist" | "radiologist";
 
 export const ALL_ROLES: AppRole[] = [
-  "admin",
-  "doctor",
-  "nurse",
-  "coach",
-  "patient",
-  "athlete",
+  "admin", "doctor", "nurse", "coach",
+  "lab_tech", "pharmacist", "radiologist",
+  "patient", "athlete",
 ];
 
 export interface Profile {

@@ -1,0 +1,115 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ScanLine } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+
+export const Route = createFileRoute("/_authenticated/radiology")({ component: RadPortal });
+
+interface ImgOrder { id: string; patient_id: string; modality: string; body_part: string | null; clinical_question: string | null; status: string; priority: string; scheduled_at: string | null; performed_at: string | null; findings: string | null; report: string | null; image_path: string | null; created_at: string }
+interface Patient { id: string; full_name: string }
+
+function RadPortal() {
+  const qc = useQueryClient();
+  const { user, hasAnyRole } = useAuth();
+  const canWork = hasAnyRole(["radiologist", "admin"]);
+
+  const orders = useQuery({
+    queryKey: ["img-orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("imaging_orders" as never).select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as ImgOrder[]) ?? [];
+    },
+  });
+  const patients = useQuery({
+    queryKey: ["rad-patients"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("patients" as never).select("id, full_name").order("full_name");
+      if (error) throw error;
+      return (data as unknown as Patient[]) ?? [];
+    },
+  });
+
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [form, setForm] = useState({ findings: "", report: "" });
+  const opening = orders.data?.find((o) => o.id === openId);
+
+  const schedule = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("imaging_orders" as never).update({
+        status: "scheduled", scheduled_at: new Date().toISOString(),
+      } as never).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["img-orders"] }),
+  });
+
+  const submitReport = useMutation({
+    mutationFn: async () => {
+      if (!openId) return;
+      const { error } = await supabase.from("imaging_orders" as never).update({
+        status: "reported", findings: form.findings || null, report: form.report || null,
+        performed_at: new Date().toISOString(), performed_by: user!.id,
+      } as never).eq("id", openId);
+      if (error) throw error;
+    },
+    onSuccess: () => { setOpenId(null); setForm({ findings: "", report: "" }); qc.invalidateQueries({ queryKey: ["img-orders"] }); toast.success("Report saved"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const patientName = (id: string) => patients.data?.find((p) => p.id === id)?.full_name ?? "—";
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="flex items-center gap-2 text-2xl font-semibold"><ScanLine className="h-6 w-6 text-primary" /> Radiology portal</h1>
+        <p className="text-sm text-muted-foreground">Schedule imaging and publish reports.</p>
+      </div>
+
+      <div className="rounded-lg border bg-card">
+        <div className="border-b p-3 font-medium">Imaging orders</div>
+        <div className="divide-y">
+          {orders.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No orders.</div>}
+          {orders.data?.map((o) => (
+            <div key={o.id} className="grid grid-cols-12 items-center gap-2 p-3 text-sm">
+              <div className="col-span-3">
+                <div className="font-medium">{o.modality} {o.body_part && <span className="text-muted-foreground">· {o.body_part}</span>}</div>
+                <div className="text-xs text-muted-foreground">{patientName(o.patient_id)}</div>
+              </div>
+              <div className="col-span-4 text-xs text-muted-foreground">{o.clinical_question ?? "—"}</div>
+              <div className="col-span-2">
+                <span className={`rounded px-2 py-0.5 text-xs ${o.status === "reported" ? "bg-green-500/10 text-green-700" : o.status === "scheduled" ? "bg-blue-500/10 text-blue-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
+              </div>
+              <div className="col-span-3 flex justify-end gap-1">
+                {canWork && o.status === "ordered" && <Button size="sm" variant="outline" onClick={() => schedule.mutate(o.id)}>Schedule</Button>}
+                {canWork && o.status !== "reported" && (
+                  <Button size="sm" onClick={() => { setOpenId(o.id); setForm({ findings: o.findings ?? "", report: o.report ?? "" }); }}>Report</Button>
+                )}
+                {o.report && <span className="text-xs text-muted-foreground">✓ reported</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Dialog open={!!openId} onOpenChange={(v) => !v && setOpenId(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>{opening?.modality} — Report</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            <div><Label>Findings</Label><Textarea rows={4} value={form.findings} onChange={(e) => setForm({ ...form, findings: e.target.value })} /></div>
+            <div><Label>Impression / Report</Label><Textarea rows={5} value={form.report} onChange={(e) => setForm({ ...form, report: e.target.value })} /></div>
+          </div>
+          <DialogFooter><Button onClick={() => submitReport.mutate()} disabled={submitReport.isPending}>Publish report</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

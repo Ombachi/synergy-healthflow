@@ -1,19 +1,9 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, ClipboardList, Heart, LayoutDashboard, LogOut, MessageSquare, Package, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
+import { Activity, ClipboardList, FlaskConical, Heart, LayoutDashboard, LogOut, MessageSquare, Package, Pill, ScanLine, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -35,6 +25,9 @@ const items = [
   { title: "My health", url: "/me", icon: Stethoscope },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Medical / EHR", url: "/medical", icon: Heart },
+  { title: "Laboratory", url: "/lab", icon: FlaskConical },
+  { title: "Pharmacy", url: "/pharmacy", icon: Pill },
+  { title: "Radiology", url: "/radiology", icon: ScanLine },
   { title: "Sports & Athletes", url: "/sports", icon: Activity },
   { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Audit log", url: "/audit", icon: Shield },
@@ -88,9 +81,7 @@ function AuthedLayout() {
                   <span className="rounded bg-muted px-1.5 py-0.5">no role</span>
                 ) : (
                   roles.map((r) => (
-                    <span key={r} className="rounded bg-primary/10 px-1.5 py-0.5 text-primary">
-                      {r}
-                    </span>
+                    <span key={r} className="rounded bg-primary/10 px-1.5 py-0.5 text-primary">{r}</span>
                   ))
                 )}
               </div>
