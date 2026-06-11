@@ -254,9 +254,15 @@ function VisitDetail() {
         <div>
           <Button asChild variant="ghost" size="sm" className="-ml-2"><Link to="/visits"><ArrowLeft className="h-4 w-4" /> All visits</Link></Button>
           <h1 className="mt-1 text-2xl font-semibold">Visit · {p?.full_name ?? "…"}</h1>
-          <p className="text-sm text-muted-foreground">Opened {new Date(v.opened_at).toLocaleString()} · Status: <span className="capitalize">{v.status.replace("_"," ")}</span></p>
+          <p className="text-sm text-muted-foreground">
+            Opened {new Date(v.opened_at).toLocaleString()} · Status: <span className="capitalize">{v.status.replace("_"," ")}</span>
+            {v.current_stage && <> · Stage: <span className="capitalize">{v.current_stage}</span></>}
+          </p>
         </div>
-        <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4" /> Export PDF</Button>
+        <div className="flex items-center gap-2">
+          <AssignVisit visitId={v.id} assignedDoctorId={v.assigned_doctor_id} assignedNurseId={v.assigned_nurse_id} />
+          <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4" /> Export PDF</Button>
+        </div>
       </div>
 
       <VisitTimer visitId={v.id} openedAt={v.opened_at} closedAt={v.closed_at} canManage={canEditVisit} />
