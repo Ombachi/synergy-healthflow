@@ -70,6 +70,8 @@ function Dashboard() {
         <Stat title="Conversations" value={myUnread.data ?? "—"} icon={MessageSquare} color="text-violet-500" />
       </div>
 
+      <MyActivePatients />
+
       <div className="rounded-lg border bg-card p-5">
         <h2 className="font-medium">Quick actions</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
