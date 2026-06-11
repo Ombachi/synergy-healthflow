@@ -76,24 +76,34 @@ export function useWorkCounts() {
       const tasks: Promise<void>[] = [];
       if (roles.includes("lab_tech") || roles.includes("admin")) {
         tasks.push(
-          supabase.from("lab_orders" as never).select("*", { count: "exact", head: true }).neq("status", "resulted")
-            .then(({ count }) => { counts.lab = count ?? 0; }),
+          (async () => {
+            const { count } = await supabase.from("lab_orders" as never)
+              .select("*", { count: "exact", head: true }).neq("status", "resulted");
+            counts.lab = count ?? 0;
+          })(),
         );
       }
       if (roles.includes("radiologist") || roles.includes("admin")) {
         tasks.push(
-          supabase.from("imaging_orders" as never).select("*", { count: "exact", head: true }).neq("status", "completed")
-            .then(({ count }) => { counts.radiology = count ?? 0; }),
+          (async () => {
+            const { count } = await supabase.from("imaging_orders" as never)
+              .select("*", { count: "exact", head: true }).neq("status", "completed");
+            counts.radiology = count ?? 0;
+          })(),
         );
       }
       if (roles.includes("pharmacist") || roles.includes("admin")) {
         tasks.push(
-          supabase.from("prescriptions" as never).select("*", { count: "exact", head: true })
-            .then(({ count }) => { counts.pharmacy = count ?? 0; }),
+          (async () => {
+            const { count } = await supabase.from("prescriptions" as never)
+              .select("*", { count: "exact", head: true });
+            counts.pharmacy = count ?? 0;
+          })(),
         );
       }
       await Promise.all(tasks);
       return counts;
+
     },
     enabled: roles.length > 0,
     refetchInterval: 30000,
