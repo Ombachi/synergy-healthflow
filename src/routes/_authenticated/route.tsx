@@ -32,6 +32,7 @@ const items = [
   { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Audit log", url: "/audit", icon: Shield },
   { title: "Team & Roles", url: "/team", icon: Users },
+  { title: "User management", url: "/users", icon: ShieldCheck },
 ] as const;
 
 function AuthedLayout() {
