@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, ClipboardList, FlaskConical, Heart, LayoutDashboard, LogOut, MessageSquare, Package, Pill, ScanLine, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
+import { Activity, ClipboardList, FlaskConical, Heart, LayoutDashboard, LogOut, MessageSquare, Package, Pill, ScanLine, Shield, ShieldCheck, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -32,6 +32,7 @@ const items = [
   { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Audit log", url: "/audit", icon: Shield },
   { title: "Team & Roles", url: "/team", icon: Users },
+  { title: "User management", url: "/users", icon: ShieldCheck },
 ] as const;
 
 function AuthedLayout() {
