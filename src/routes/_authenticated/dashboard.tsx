@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, ClipboardList, Heart, MessageSquare, Package, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
+import { MyActivePatients } from "@/components/my-active-patients";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -68,6 +69,8 @@ function Dashboard() {
         {roles.includes("admin") && <Stat title="Inventory items" value={inventory.data ?? "—"} icon={Package} color="text-amber-500" />}
         <Stat title="Conversations" value={myUnread.data ?? "—"} icon={MessageSquare} color="text-violet-500" />
       </div>
+
+      <MyActivePatients />
 
       <div className="rounded-lg border bg-card p-5">
         <h2 className="font-medium">Quick actions</h2>

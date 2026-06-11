@@ -819,6 +819,45 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          recipient_id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          recipient_id: string
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           address: string | null
@@ -1069,6 +1108,44 @@ export type Database = {
         }
         Relationships: []
       }
+      visit_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          role: string
+          unassigned_at: string | null
+          user_id: string
+          visit_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role: string
+          unassigned_at?: string | null
+          user_id: string
+          visit_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role?: string
+          unassigned_at?: string | null
+          user_id?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_assignments_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visit_diagnoses: {
         Row: {
           created_at: string
@@ -1153,9 +1230,12 @@ export type Database = {
       }
       visits: {
         Row: {
+          assigned_doctor_id: string | null
+          assigned_nurse_id: string | null
           chief_complaint: string | null
           closed_at: string | null
           created_at: string
+          current_stage: string | null
           doctor_id: string | null
           id: string
           notes: string | null
@@ -1168,9 +1248,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_doctor_id?: string | null
+          assigned_nurse_id?: string | null
           chief_complaint?: string | null
           closed_at?: string | null
           created_at?: string
+          current_stage?: string | null
           doctor_id?: string | null
           id?: string
           notes?: string | null
@@ -1183,9 +1266,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_doctor_id?: string | null
+          assigned_nurse_id?: string | null
           chief_complaint?: string | null
           closed_at?: string | null
           created_at?: string
+          current_stage?: string | null
           doctor_id?: string | null
           id?: string
           notes?: string | null
@@ -1305,6 +1391,18 @@ export type Database = {
           id: string
           role: Database["public"]["Enums"]["app_role"]
         }[]
+      }
+      notify_role: {
+        Args: {
+          _body: string
+          _entity_id: string
+          _entity_type: string
+          _link: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _title: string
+          _type: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

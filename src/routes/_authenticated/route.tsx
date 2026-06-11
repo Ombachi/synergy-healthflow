@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { NotificationBell } from "@/components/notification-bell";
+import { useWorkCounts } from "@/hooks/use-notifications";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -18,27 +20,29 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
 });
 
-const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Onboarding", url: "/onboarding", icon: UserPlus },
-  { title: "Visits", url: "/visits", icon: ClipboardList },
-  { title: "My health", url: "/me", icon: Stethoscope },
-  { title: "Messages", url: "/messages", icon: MessageSquare },
-  { title: "Medical / EHR", url: "/medical", icon: Heart },
-  { title: "Laboratory", url: "/lab", icon: FlaskConical },
-  { title: "Pharmacy", url: "/pharmacy", icon: Pill },
-  { title: "Radiology", url: "/radiology", icon: ScanLine },
-  { title: "Sports & Athletes", url: "/sports", icon: Activity },
-  { title: "Inventory", url: "/inventory", icon: Package },
-  { title: "Audit log", url: "/audit", icon: Shield },
-  { title: "Team & Roles", url: "/team", icon: Users },
-  { title: "User management", url: "/users", icon: ShieldCheck },
-] as const;
+type BadgeKey = "lab" | "pharmacy" | "radiology" | undefined;
+const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }[] = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, badge: undefined },
+  { title: "Onboarding", url: "/onboarding", icon: UserPlus, badge: undefined },
+  { title: "Visits", url: "/visits", icon: ClipboardList, badge: undefined },
+  { title: "My health", url: "/me", icon: Stethoscope, badge: undefined },
+  { title: "Messages", url: "/messages", icon: MessageSquare, badge: undefined },
+  { title: "Medical / EHR", url: "/medical", icon: Heart, badge: undefined },
+  { title: "Laboratory", url: "/lab", icon: FlaskConical, badge: "lab" },
+  { title: "Pharmacy", url: "/pharmacy", icon: Pill, badge: "pharmacy" },
+  { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology" },
+  { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined },
+  { title: "Inventory", url: "/inventory", icon: Package, badge: undefined },
+  { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
+  { title: "Team & Roles", url: "/team", icon: Users, badge: undefined },
+  { title: "User management", url: "/users", icon: ShieldCheck, badge: undefined },
+];
 
 function AuthedLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, roles } = useAuth();
+  const work = useWorkCounts();
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -60,16 +64,24 @@ function AuthedLayout() {
               <SidebarGroupLabel>Modules</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((it) => (
-                    <SidebarMenuItem key={it.url}>
-                      <SidebarMenuButton asChild isActive={pathname === it.url}>
-                        <Link to={it.url}>
-                          <it.icon />
-                          <span>{it.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {items.map((it) => {
+                    const count = it.badge ? work.data?.[it.badge] ?? 0 : 0;
+                    return (
+                      <SidebarMenuItem key={it.url}>
+                        <SidebarMenuButton asChild isActive={pathname === it.url}>
+                          <Link to={it.url}>
+                            <it.icon />
+                            <span className="flex-1">{it.title}</span>
+                            {count > 0 && (
+                              <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
+                                {count}
+                              </span>
+                            )}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -95,8 +107,9 @@ function AuthedLayout() {
         </Sidebar>
 
         <div className="flex flex-1 flex-col">
-          <header className="flex h-12 items-center border-b px-2">
+          <header className="flex h-12 items-center justify-between border-b px-2">
             <SidebarTrigger />
+            <NotificationBell />
           </header>
           {user && !roles.length && pathname !== "/onboarding" && pathname !== "/team" && (
             <div className="border-b bg-primary/5 px-4 py-2 text-sm">

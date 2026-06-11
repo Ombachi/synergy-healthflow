@@ -14,10 +14,11 @@ import { RANGES, REQUIRED_KEYS, validateVitals, type VitalKey, type VitalWarning
 import { exportVisitPDF } from "@/lib/visit-pdf";
 import { IcdPicker } from "@/components/icd-picker";
 import { VisitTimer } from "@/components/visit-timer";
+import { AssignVisit } from "@/components/assign-visit";
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
 
-interface Visit { id: string; patient_id: string; status: string; reason: string | null; chief_complaint: string | null; triage_level: string | null; notes: string | null; opened_at: string; closed_at: string | null }
+interface Visit { id: string; patient_id: string; status: string; reason: string | null; chief_complaint: string | null; triage_level: string | null; notes: string | null; opened_at: string; closed_at: string | null; assigned_doctor_id: string | null; assigned_nurse_id: string | null; current_stage: string | null }
 interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth: string | null; blood_type: string | null; allergies: string | null; chronic_conditions: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null }
 interface Vital { id: string; visit_id: string; captured_at: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; respiratory_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null; weight_kg: number | null; height_cm: number | null; pain_level: number | null; glucose_mg_dl: number | null; notes: string | null }
 interface Diagnosis { id: string; visit_id: string; diagnosis: string; icd_code: string | null; notes: string | null; is_primary: boolean }
@@ -253,9 +254,15 @@ function VisitDetail() {
         <div>
           <Button asChild variant="ghost" size="sm" className="-ml-2"><Link to="/visits"><ArrowLeft className="h-4 w-4" /> All visits</Link></Button>
           <h1 className="mt-1 text-2xl font-semibold">Visit · {p?.full_name ?? "…"}</h1>
-          <p className="text-sm text-muted-foreground">Opened {new Date(v.opened_at).toLocaleString()} · Status: <span className="capitalize">{v.status.replace("_"," ")}</span></p>
+          <p className="text-sm text-muted-foreground">
+            Opened {new Date(v.opened_at).toLocaleString()} · Status: <span className="capitalize">{v.status.replace("_"," ")}</span>
+            {v.current_stage && <> · Stage: <span className="capitalize">{v.current_stage}</span></>}
+          </p>
         </div>
-        <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4" /> Export PDF</Button>
+        <div className="flex items-center gap-2">
+          <AssignVisit visitId={v.id} assignedDoctorId={v.assigned_doctor_id} assignedNurseId={v.assigned_nurse_id} />
+          <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4" /> Export PDF</Button>
+        </div>
       </div>
 
       <VisitTimer visitId={v.id} openedAt={v.opened_at} closedAt={v.closed_at} canManage={canEditVisit} />
