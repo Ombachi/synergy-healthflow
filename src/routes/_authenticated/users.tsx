@@ -101,11 +101,16 @@ function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">User management</h1>
-        <p className="text-sm text-muted-foreground">
-          Assign roles, deactivate, or delete user accounts. Changes take effect immediately.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">User management</h1>
+          <p className="text-sm text-muted-foreground">
+            Assign roles, deactivate, or delete user accounts. Changes take effect immediately.
+          </p>
+        </div>
+        <Button onClick={() => seedM.mutate()} disabled={seedM.isPending}>
+          <Sparkles className="h-4 w-4" /> {seedM.isPending ? "Seeding…" : "Seed demo users"}
+        </Button>
       </div>
 
       <div className="overflow-hidden rounded-lg border bg-card">
