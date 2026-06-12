@@ -26,6 +26,7 @@ import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
@@ -114,6 +115,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
@@ -204,6 +213,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/appointments'
     | '/audit'
+    | '/billing'
     | '/dashboard'
     | '/inventory'
     | '/lab'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/appointments'
     | '/audit'
+    | '/billing'
     | '/dashboard'
     | '/inventory'
     | '/lab'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/appointments'
     | '/_authenticated/audit'
+    | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
@@ -391,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/billing': {
+      id: '/_authenticated/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AuthenticatedBillingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/audit': {
       id: '/_authenticated/audit'
       path: '/audit'
@@ -429,6 +448,7 @@ const AuthenticatedVisitsRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
@@ -448,6 +468,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,
