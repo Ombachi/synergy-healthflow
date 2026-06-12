@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, ClipboardList, FlaskConical, Heart, LayoutDashboard, LogOut, MessageSquare, Package, Pill, ScanLine, Shield, ShieldCheck, Stethoscope, UserPlus, Users } from "lucide-react";
+import { Activity, CalendarClock, ClipboardCheck, ClipboardList, FlaskConical, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -24,6 +24,9 @@ type BadgeKey = "lab" | "pharmacy" | "radiology" | undefined;
 const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, badge: undefined },
   { title: "Onboarding", url: "/onboarding", icon: UserPlus, badge: undefined },
+  { title: "Reception", url: "/reception", icon: ClipboardCheck, badge: undefined },
+  { title: "Appointments", url: "/appointments", icon: CalendarClock, badge: undefined },
+  { title: "Queue board", url: "/queue", icon: ListOrdered, badge: undefined },
   { title: "Visits", url: "/visits", icon: ClipboardList, badge: undefined },
   { title: "My health", url: "/me", icon: Stethoscope, badge: undefined },
   { title: "Messages", url: "/messages", icon: MessageSquare, badge: undefined },
@@ -31,6 +34,8 @@ const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }
   { title: "Laboratory", url: "/lab", icon: FlaskConical, badge: "lab" },
   { title: "Pharmacy", url: "/pharmacy", icon: Pill, badge: "pharmacy" },
   { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology" },
+  { title: "Billing", url: "/billing", icon: Receipt, badge: undefined },
+  { title: "Insurance", url: "/insurance", icon: Shield, badge: undefined },
   { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined },
   { title: "Inventory", url: "/inventory", icon: Package, badge: undefined },
   { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
