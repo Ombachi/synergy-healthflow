@@ -13,7 +13,8 @@ import { useAuth, ALL_ROLES, type AppRole } from "@/hooks/use-auth";
 import {
   listAllUsers, setUserBanned, deleteUserAccount, adminSetRoles,
 } from "@/lib/admin-users.functions";
-import { Ban, CheckCircle2, ShieldCheck, Trash2, UserCog } from "lucide-react";
+import { seedDemoUsers } from "@/lib/seed-demo.functions";
+import { Ban, CheckCircle2, ShieldCheck, Sparkles, Trash2, UserCog } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/users")({
   component: UsersPage,
