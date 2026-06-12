@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          doctor_id: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          reason: string | null
+          scheduled_at: string
+          status: string
+          updated_at: string
+          visit_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          reason?: string | null
+          scheduled_at: string
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          reason?: string | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athletes: {
         Row: {
           created_at: string
@@ -372,6 +429,107 @@ export type Database = {
           },
         ]
       }
+      insurance_claims: {
+        Row: {
+          approved_amount_cents: number | null
+          created_at: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          policy_id: string | null
+          preauth_code: string | null
+          processed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_amount_cents?: number | null
+          created_at?: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          policy_id?: string | null
+          preauth_code?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_amount_cents?: number | null
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          policy_id?: string | null
+          preauth_code?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_claims_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_claims_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_policies: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          insurer: string
+          member_number: string
+          patient_id: string
+          scheme: string | null
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          insurer: string
+          member_number: string
+          patient_id: string
+          scheme?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          insurer?: string
+          member_number?: string
+          patient_id?: string
+          scheme?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_policies_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intake_forms: {
         Row: {
           allergies: string | null
@@ -515,6 +673,107 @@ export type Database = {
             columns: ["prescription_id"]
             isOneToOne: false
             referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_items: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          kind: string
+          qty: number
+          ref_id: string | null
+          ref_table: string | null
+          unit_price_cents: number
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          kind: string
+          qty?: number
+          ref_id?: string | null
+          ref_table?: string | null
+          unit_price_cents?: number
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          kind?: string
+          qty?: number
+          ref_id?: string | null
+          ref_table?: string | null
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          paid_cents: number
+          patient_id: string
+          status: string
+          total_cents: number
+          updated_at: string
+          visit_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          paid_cents?: number
+          patient_id: string
+          status?: string
+          total_cents?: number
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          paid_cents?: number
+          patient_id?: string
+          status?: string
+          total_cents?: number
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
             referencedColumns: ["id"]
           },
         ]
@@ -930,6 +1189,47 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_cents: number
+          id: string
+          invoice_id: string
+          method: string
+          notes: string | null
+          received_at: string
+          received_by: string | null
+          reference: string | null
+        }
+        Insert: {
+          amount_cents: number
+          id?: string
+          invoice_id: string
+          method?: string
+          notes?: string | null
+          received_at?: string
+          received_by?: string | null
+          reference?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          id?: string
+          invoice_id?: string
+          method?: string
+          notes?: string | null
+          received_at?: string
+          received_by?: string | null
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacy_dispenses: {
         Row: {
           created_at: string
@@ -1031,6 +1331,56 @@ export type Database = {
           },
         ]
       }
+      procedure_orders: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          ordered_by: string | null
+          performed_at: string | null
+          performed_by: string | null
+          procedure_name: string
+          status: string
+          updated_at: string
+          visit_id: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ordered_by?: string | null
+          performed_at?: string | null
+          performed_by?: string | null
+          procedure_name: string
+          status?: string
+          updated_at?: string
+          visit_id: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ordered_by?: string | null
+          performed_at?: string | null
+          performed_by?: string | null
+          procedure_name?: string
+          status?: string
+          updated_at?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_orders_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1083,6 +1433,44 @@ export type Database = {
             columns: ["thread_id"]
             isOneToOne: false
             referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      triage_records: {
+        Row: {
+          acuity: number | null
+          chief_complaint: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          nurse_id: string | null
+          visit_id: string
+        }
+        Insert: {
+          acuity?: number | null
+          chief_complaint?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          nurse_id?: string | null
+          visit_id: string
+        }
+        Update: {
+          acuity?: number | null
+          chief_complaint?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          nurse_id?: string | null
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triage_records_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
             referencedColumns: ["id"]
           },
         ]
@@ -1190,6 +1578,50 @@ export type Database = {
           },
         ]
       }
+      visit_queue: {
+        Row: {
+          called_at: string | null
+          entered_at: string
+          id: string
+          notes: string | null
+          priority: number
+          queue_type: string
+          served_at: string | null
+          served_by: string | null
+          visit_id: string
+        }
+        Insert: {
+          called_at?: string | null
+          entered_at?: string
+          id?: string
+          notes?: string | null
+          priority?: number
+          queue_type: string
+          served_at?: string | null
+          served_by?: string | null
+          visit_id: string
+        }
+        Update: {
+          called_at?: string | null
+          entered_at?: string
+          id?: string
+          notes?: string | null
+          priority?: number
+          queue_type?: string
+          served_at?: string | null
+          served_by?: string | null
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_queue_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visit_stages: {
         Row: {
           by_user: string | null
@@ -1232,6 +1664,7 @@ export type Database = {
         Row: {
           assigned_doctor_id: string | null
           assigned_nurse_id: string | null
+          billing_cleared_at: string | null
           chief_complaint: string | null
           closed_at: string | null
           created_at: string
@@ -1242,6 +1675,7 @@ export type Database = {
           opened_at: string
           opened_by: string | null
           patient_id: string
+          pharmacy_cleared_at: string | null
           reason: string | null
           status: string
           triage_level: string | null
@@ -1250,6 +1684,7 @@ export type Database = {
         Insert: {
           assigned_doctor_id?: string | null
           assigned_nurse_id?: string | null
+          billing_cleared_at?: string | null
           chief_complaint?: string | null
           closed_at?: string | null
           created_at?: string
@@ -1260,6 +1695,7 @@ export type Database = {
           opened_at?: string
           opened_by?: string | null
           patient_id: string
+          pharmacy_cleared_at?: string | null
           reason?: string | null
           status?: string
           triage_level?: string | null
@@ -1268,6 +1704,7 @@ export type Database = {
         Update: {
           assigned_doctor_id?: string | null
           assigned_nurse_id?: string | null
+          billing_cleared_at?: string | null
           chief_complaint?: string | null
           closed_at?: string | null
           created_at?: string
@@ -1278,6 +1715,7 @@ export type Database = {
           opened_at?: string
           opened_by?: string | null
           patient_id?: string
+          pharmacy_cleared_at?: string | null
           reason?: string | null
           status?: string
           triage_level?: string | null
@@ -1373,6 +1811,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_invoice_line: {
+        Args: {
+          _desc: string
+          _kind: string
+          _qty: number
+          _ref_id: string
+          _ref_table: string
+          _unit: number
+          _visit: string
+        }
+        Returns: undefined
+      }
+      can_discharge: { Args: { _visit: string }; Returns: boolean }
+      ensure_open_invoice: { Args: { _visit: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1416,6 +1868,9 @@ export type Database = {
         | "lab_tech"
         | "pharmacist"
         | "radiologist"
+        | "receptionist"
+        | "cashier"
+        | "insurance_officer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1553,6 +2008,9 @@ export const Constants = {
         "lab_tech",
         "pharmacist",
         "radiologist",
+        "receptionist",
+        "cashier",
+        "insurance_officer",
       ],
     },
   },
