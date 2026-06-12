@@ -18,6 +18,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
 import { Route as AuthenticatedReceptionRouteImport } from './routes/_authenticated/reception'
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
+import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
@@ -74,6 +75,11 @@ const AuthenticatedReceptionRoute = AuthenticatedReceptionRouteImport.update({
 const AuthenticatedRadiologyRoute = AuthenticatedRadiologyRouteImport.update({
   id: '/radiology',
   path: '/radiology',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedQueueRoute = AuthenticatedQueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPharmacyRoute = AuthenticatedPharmacyRouteImport.update({
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
   '/_authenticated/reception': typeof AuthenticatedReceptionRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/onboarding'
     | '/pharmacy'
+    | '/queue'
     | '/radiology'
     | '/reception'
     | '/sports'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/onboarding'
     | '/pharmacy'
+    | '/queue'
     | '/radiology'
     | '/reception'
     | '/sports'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
     | '/_authenticated/pharmacy'
+    | '/_authenticated/queue'
     | '/_authenticated/radiology'
     | '/_authenticated/reception'
     | '/_authenticated/sports'
@@ -357,6 +369,13 @@ declare module '@tanstack/react-router' {
       path: '/radiology'
       fullPath: '/radiology'
       preLoaderRoute: typeof AuthenticatedRadiologyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/queue': {
+      id: '/_authenticated/queue'
+      path: '/queue'
+      fullPath: '/queue'
+      preLoaderRoute: typeof AuthenticatedQueueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pharmacy': {
@@ -477,6 +496,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
+  AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
   AuthenticatedReceptionRoute: typeof AuthenticatedReceptionRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
@@ -498,6 +518,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
+  AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
   AuthenticatedReceptionRoute: AuthenticatedReceptionRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
