@@ -13,7 +13,8 @@ import { useAuth, ALL_ROLES, type AppRole } from "@/hooks/use-auth";
 import {
   listAllUsers, setUserBanned, deleteUserAccount, adminSetRoles,
 } from "@/lib/admin-users.functions";
-import { Ban, CheckCircle2, ShieldCheck, Trash2, UserCog } from "lucide-react";
+import { seedDemoUsers } from "@/lib/seed-demo.functions";
+import { Ban, CheckCircle2, ShieldCheck, Sparkles, Trash2, UserCog } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/users")({
   component: UsersPage,
@@ -39,6 +40,7 @@ function UsersPage() {
   const banFn = useServerFn(setUserBanned);
   const delFn = useServerFn(deleteUserAccount);
   const rolesFn = useServerFn(adminSetRoles);
+  const seedFn = useServerFn(seedDemoUsers);
 
   const usersQ = useQuery({
     queryKey: ["admin-users"],
@@ -68,6 +70,16 @@ function UsersPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+  const seedM = useMutation({
+    mutationFn: () => seedFn() as Promise<{ password: string; results: { email: string; status: string; role: string }[] }>,
+    onSuccess: (res) => {
+      const created = res.results.filter((r) => r.status === "created").length;
+      const existed = res.results.filter((r) => r.status === "exists").length;
+      toast.success(`Demo users ready: ${created} created, ${existed} already existed. Password: ${res.password}`, { duration: 10000 });
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   if (!isAdmin) {
     return (
@@ -89,11 +101,16 @@ function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">User management</h1>
-        <p className="text-sm text-muted-foreground">
-          Assign roles, deactivate, or delete user accounts. Changes take effect immediately.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">User management</h1>
+          <p className="text-sm text-muted-foreground">
+            Assign roles, deactivate, or delete user accounts. Changes take effect immediately.
+          </p>
+        </div>
+        <Button onClick={() => seedM.mutate()} disabled={seedM.isPending}>
+          <Sparkles className="h-4 w-4" /> {seedM.isPending ? "Seeding…" : "Seed demo users"}
+        </Button>
       </div>
 
       <div className="overflow-hidden rounded-lg border bg-card">
