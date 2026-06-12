@@ -40,6 +40,7 @@ function UsersPage() {
   const banFn = useServerFn(setUserBanned);
   const delFn = useServerFn(deleteUserAccount);
   const rolesFn = useServerFn(adminSetRoles);
+  const seedFn = useServerFn(seedDemoUsers);
 
   const usersQ = useQuery({
     queryKey: ["admin-users"],
