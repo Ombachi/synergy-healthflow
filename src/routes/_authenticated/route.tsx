@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, ClipboardList, FlaskConical, Heart, LayoutDashboard, LogOut, MessageSquare, Package, Pill, ScanLine, Shield, ShieldCheck, Stethoscope, UserPlus, Users } from "lucide-react";
+import { Activity, CalendarClock, ClipboardCheck, ClipboardList, FlaskConical, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
