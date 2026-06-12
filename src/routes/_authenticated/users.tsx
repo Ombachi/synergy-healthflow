@@ -70,6 +70,16 @@ function UsersPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+  const seedM = useMutation({
+    mutationFn: () => seedFn() as Promise<{ password: string; results: { email: string; status: string; role: string }[] }>,
+    onSuccess: (res) => {
+      const created = res.results.filter((r) => r.status === "created").length;
+      const existed = res.results.filter((r) => r.status === "exists").length;
+      toast.success(`Demo users ready: ${created} created, ${existed} already existed. Password: ${res.password}`, { duration: 10000 });
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   if (!isAdmin) {
     return (
