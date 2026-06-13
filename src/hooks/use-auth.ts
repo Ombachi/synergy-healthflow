@@ -5,12 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 export type AppRole =
   | "admin" | "doctor" | "coach" | "nurse" | "patient" | "athlete"
   | "lab_tech" | "pharmacist" | "radiologist"
-  | "receptionist" | "cashier" | "insurance_officer";
+  | "receptionist" | "cashier" | "insurance_officer"
+  | "physio" | "nutritionist" | "team_manager";
 
 export const ALL_ROLES: AppRole[] = [
   "admin", "doctor", "nurse", "coach",
   "lab_tech", "pharmacist", "radiologist",
   "receptionist", "cashier", "insurance_officer",
+  "physio", "nutritionist", "team_manager",
   "patient", "athlete",
 ];
 
