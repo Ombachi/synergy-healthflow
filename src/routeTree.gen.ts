@@ -14,13 +14,16 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedTeamManagerRouteImport } from './routes/_authenticated/team-manager'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
 import { Route as AuthenticatedReceptionRouteImport } from './routes/_authenticated/reception'
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
+import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedNutritionRouteImport } from './routes/_authenticated/nutrition'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
@@ -28,6 +31,7 @@ import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/la
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
@@ -57,6 +61,12 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTeamManagerRoute =
+  AuthenticatedTeamManagerRouteImport.update({
+    id: '/team-manager',
+    path: '/team-manager',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -82,6 +92,11 @@ const AuthenticatedQueueRoute = AuthenticatedQueueRouteImport.update({
   path: '/queue',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPhysioRoute = AuthenticatedPhysioRouteImport.update({
+  id: '/physio',
+  path: '/physio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPharmacyRoute = AuthenticatedPharmacyRouteImport.update({
   id: '/pharmacy',
   path: '/pharmacy',
@@ -90,6 +105,11 @@ const AuthenticatedPharmacyRoute = AuthenticatedPharmacyRouteImport.update({
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNutritionRoute = AuthenticatedNutritionRouteImport.update({
+  id: '/nutrition',
+  path: '/nutrition',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
@@ -127,6 +147,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
+  id: '/coach',
+  path: '/coach',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -156,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -163,13 +189,16 @@ export interface FileRoutesByFullPath {
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/nutrition': typeof AuthenticatedNutritionRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/physio': typeof AuthenticatedPhysioRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
@@ -180,6 +209,7 @@ export interface FileRoutesByTo {
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -187,13 +217,16 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/nutrition': typeof AuthenticatedNutritionRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/physio': typeof AuthenticatedPhysioRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
@@ -206,6 +239,7 @@ export interface FileRoutesById {
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
+  '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
@@ -213,13 +247,16 @@ export interface FileRoutesById {
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
+  '/_authenticated/nutrition': typeof AuthenticatedNutritionRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/_authenticated/physio': typeof AuthenticatedPhysioRoute
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
   '/_authenticated/reception': typeof AuthenticatedReceptionRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
@@ -232,6 +269,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/audit'
     | '/billing'
+    | '/coach'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -239,13 +277,16 @@ export interface FileRouteTypes {
     | '/me'
     | '/medical'
     | '/messages'
+    | '/nutrition'
     | '/onboarding'
     | '/pharmacy'
+    | '/physio'
     | '/queue'
     | '/radiology'
     | '/reception'
     | '/sports'
     | '/team'
+    | '/team-manager'
     | '/users'
     | '/visits'
     | '/visits/$visitId'
@@ -256,6 +297,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/audit'
     | '/billing'
+    | '/coach'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -263,13 +305,16 @@ export interface FileRouteTypes {
     | '/me'
     | '/medical'
     | '/messages'
+    | '/nutrition'
     | '/onboarding'
     | '/pharmacy'
+    | '/physio'
     | '/queue'
     | '/radiology'
     | '/reception'
     | '/sports'
     | '/team'
+    | '/team-manager'
     | '/users'
     | '/visits'
     | '/visits/$visitId'
@@ -281,6 +326,7 @@ export interface FileRouteTypes {
     | '/_authenticated/appointments'
     | '/_authenticated/audit'
     | '/_authenticated/billing'
+    | '/_authenticated/coach'
     | '/_authenticated/dashboard'
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
@@ -288,13 +334,16 @@ export interface FileRouteTypes {
     | '/_authenticated/me'
     | '/_authenticated/medical'
     | '/_authenticated/messages'
+    | '/_authenticated/nutrition'
     | '/_authenticated/onboarding'
     | '/_authenticated/pharmacy'
+    | '/_authenticated/physio'
     | '/_authenticated/queue'
     | '/_authenticated/radiology'
     | '/_authenticated/reception'
     | '/_authenticated/sports'
     | '/_authenticated/team'
+    | '/_authenticated/team-manager'
     | '/_authenticated/users'
     | '/_authenticated/visits'
     | '/_authenticated/visits/$visitId'
@@ -343,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/team-manager': {
+      id: '/_authenticated/team-manager'
+      path: '/team-manager'
+      fullPath: '/team-manager'
+      preLoaderRoute: typeof AuthenticatedTeamManagerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/team': {
       id: '/_authenticated/team'
       path: '/team'
@@ -378,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQueueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/physio': {
+      id: '/_authenticated/physio'
+      path: '/physio'
+      fullPath: '/physio'
+      preLoaderRoute: typeof AuthenticatedPhysioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pharmacy': {
       id: '/_authenticated/pharmacy'
       path: '/pharmacy'
@@ -390,6 +453,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/nutrition': {
+      id: '/_authenticated/nutrition'
+      path: '/nutrition'
+      fullPath: '/nutrition'
+      preLoaderRoute: typeof AuthenticatedNutritionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/messages': {
@@ -441,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/coach': {
+      id: '/_authenticated/coach'
+      path: '/coach'
+      fullPath: '/coach'
+      preLoaderRoute: typeof AuthenticatedCoachRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/billing': {
       id: '/_authenticated/billing'
       path: '/billing'
@@ -487,6 +564,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
+  AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
@@ -494,13 +572,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
+  AuthenticatedNutritionRoute: typeof AuthenticatedNutritionRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
+  AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
   AuthenticatedReceptionRoute: typeof AuthenticatedReceptionRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
 }
@@ -509,6 +590,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
+  AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
@@ -516,13 +598,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
+  AuthenticatedNutritionRoute: AuthenticatedNutritionRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
+  AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
   AuthenticatedReceptionRoute: AuthenticatedReceptionRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
 }

@@ -71,6 +71,47 @@ export type Database = {
           },
         ]
       }
+      assessments: {
+        Row: {
+          assessor_id: string | null
+          athlete_id: string
+          created_at: string
+          id: string
+          metrics: Json
+          notes: string | null
+          performed_at: string
+          type: string
+        }
+        Insert: {
+          assessor_id?: string | null
+          athlete_id: string
+          created_at?: string
+          id?: string
+          metrics?: Json
+          notes?: string | null
+          performed_at?: string
+          type?: string
+        }
+        Update: {
+          assessor_id?: string | null
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          metrics?: Json
+          notes?: string | null
+          performed_at?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athletes: {
         Row: {
           created_at: string
@@ -134,6 +175,48 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance: {
+        Row: {
+          athlete_id: string
+          id: string
+          recorded_at: string
+          recorded_by: string | null
+          session_id: string
+          status: string
+        }
+        Insert: {
+          athlete_id: string
+          id?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          session_id: string
+          status?: string
+        }
+        Update: {
+          athlete_id?: string
+          id?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -170,6 +253,54 @@ export type Database = {
         }
         Relationships: []
       }
+      clearance_records: {
+        Row: {
+          athlete_id: string
+          cleared_by: string | null
+          created_at: string
+          id: string
+          injury_id: string | null
+          notes: string | null
+          status: string
+          valid_until: string | null
+        }
+        Insert: {
+          athlete_id: string
+          cleared_by?: string | null
+          created_at?: string
+          id?: string
+          injury_id?: string | null
+          notes?: string | null
+          status?: string
+          valid_until?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          cleared_by?: string | null
+          created_at?: string
+          id?: string
+          injury_id?: string | null
+          notes?: string | null
+          status?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clearance_records_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clearance_records_injury_id_fkey"
+            columns: ["injury_id"]
+            isOneToOne: false
+            referencedRelation: "injuries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_profiles: {
         Row: {
           bio: string | null
@@ -205,6 +336,59 @@ export type Database = {
           years_experience?: number | null
         }
         Relationships: []
+      }
+      competitions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+          opponents: string | null
+          result: string | null
+          scheduled_at: string | null
+          sport: string | null
+          team_id: string | null
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          opponents?: string | null
+          result?: string | null
+          scheduled_at?: string | null
+          sport?: string | null
+          team_id?: string | null
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          opponents?: string | null
+          result?: string | null
+          scheduled_at?: string | null
+          sport?: string | null
+          team_id?: string | null
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       consents: {
         Row: {
@@ -425,6 +609,56 @@ export type Database = {
             columns: ["visit_id"]
             isOneToOne: false
             referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      injuries: {
+        Row: {
+          athlete_id: string
+          body_part: string
+          created_at: string
+          id: string
+          mechanism: string | null
+          notes: string | null
+          reported_at: string
+          reported_by: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          body_part: string
+          created_at?: string
+          id?: string
+          mechanism?: string | null
+          notes?: string | null
+          reported_at?: string
+          reported_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          body_part?: string
+          created_at?: string
+          id?: string
+          mechanism?: string | null
+          notes?: string | null
+          reported_at?: string
+          reported_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "injuries_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
             referencedColumns: ["id"]
           },
         ]
@@ -1117,6 +1351,53 @@ export type Database = {
         }
         Relationships: []
       }
+      nutrition_plans: {
+        Row: {
+          athlete_id: string
+          compliance_pct: number | null
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          nutritionist_id: string | null
+          plan: Json
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          compliance_pct?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          nutritionist_id?: string | null
+          plan?: Json
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          compliance_pct?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          nutritionist_id?: string | null
+          plan?: Json
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nutrition_plans_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
@@ -1226,6 +1507,54 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_records: {
+        Row: {
+          athlete_id: string
+          id: string
+          metric: string
+          recorded_at: string
+          recorded_by: string | null
+          session_id: string | null
+          unit: string | null
+          value: number
+        }
+        Insert: {
+          athlete_id: string
+          id?: string
+          metric: string
+          recorded_at?: string
+          recorded_by?: string | null
+          session_id?: string | null
+          unit?: string | null
+          value: number
+        }
+        Update: {
+          athlete_id?: string
+          id?: string
+          metric?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          session_id?: string | null
+          unit?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_records_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_records_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -1411,6 +1740,125 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          performed_at: string
+          performed_by: string | null
+          progress_pct: number | null
+          treatment_plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          progress_pct?: number | null
+          treatment_plan_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          progress_pct?: number | null
+          treatment_plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovery_sessions_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          id: string
+          jersey_no: string | null
+          joined_at: string | null
+          left_at: string | null
+          position: string | null
+          team_id: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          id?: string
+          jersey_no?: string | null
+          joined_at?: string | null
+          left_at?: string | null
+          position?: string | null
+          team_id: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          jersey_no?: string | null
+          joined_at?: string | null
+          left_at?: string | null
+          position?: string | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          manager_id: string | null
+          name: string
+          season: string | null
+          sport: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          manager_id?: string | null
+          name: string
+          season?: string | null
+          sport?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          manager_id?: string | null
+          name?: string
+          season?: string | null
+          sport?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       thread_participants: {
         Row: {
           last_read_at: string | null
@@ -1433,6 +1881,152 @@ export type Database = {
             columns: ["thread_id"]
             isOneToOne: false
             referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_plans: {
+        Row: {
+          athlete_id: string | null
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          goals: string | null
+          id: string
+          start_date: string | null
+          team_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          goals?: string | null
+          id?: string
+          start_date?: string | null
+          team_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          goals?: string | null
+          id?: string
+          start_date?: string | null
+          team_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_plans_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_plans_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_sessions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          focus: string | null
+          id: string
+          location: string | null
+          plan_id: string | null
+          scheduled_at: string
+          status: string
+          team_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          focus?: string | null
+          id?: string
+          location?: string | null
+          plan_id?: string | null
+          scheduled_at: string
+          status?: string
+          team_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          focus?: string | null
+          id?: string
+          location?: string | null
+          plan_id?: string | null
+          scheduled_at?: string
+          status?: string
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "training_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_sessions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_plans: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          injury_id: string
+          physio_id: string | null
+          plan: string | null
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          injury_id: string
+          physio_id?: string | null
+          plan?: string | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          injury_id?: string
+          physio_id?: string | null
+          plan?: string | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_plans_injury_id_fkey"
+            columns: ["injury_id"]
+            isOneToOne: false
+            referencedRelation: "injuries"
             referencedColumns: ["id"]
           },
         ]
@@ -1871,6 +2465,9 @@ export type Database = {
         | "receptionist"
         | "cashier"
         | "insurance_officer"
+        | "physio"
+        | "nutritionist"
+        | "team_manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2011,6 +2608,9 @@ export const Constants = {
         "receptionist",
         "cashier",
         "insurance_officer",
+        "physio",
+        "nutritionist",
+        "team_manager",
       ],
     },
   },
