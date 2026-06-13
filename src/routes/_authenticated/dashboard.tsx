@@ -34,6 +34,9 @@ const PORTAL_TITLES: Record<AppRole, string> = {
   receptionist: "Reception",
   cashier: "Billing",
   insurance_officer: "Insurance",
+  physio: "Physio portal",
+  nutritionist: "Nutrition portal",
+  team_manager: "Team manager",
 };
 
 function Dashboard() {
