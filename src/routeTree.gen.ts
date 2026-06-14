@@ -16,10 +16,12 @@ import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTeamManagerRouteImport } from './routes/_authenticated/team-manager'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
 import { Route as AuthenticatedReceptionRouteImport } from './routes/_authenticated/reception'
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
+import { Route as AuthenticatedProcurementRouteImport } from './routes/_authenticated/procurement'
 import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -33,6 +35,7 @@ import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
+import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authenticated/audit-inventory'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
@@ -72,6 +75,11 @@ const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStoreRoute = AuthenticatedStoreRouteImport.update({
+  id: '/store',
+  path: '/store',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSportsRoute = AuthenticatedSportsRouteImport.update({
   id: '/sports',
   path: '/sports',
@@ -92,6 +100,12 @@ const AuthenticatedQueueRoute = AuthenticatedQueueRouteImport.update({
   path: '/queue',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProcurementRoute =
+  AuthenticatedProcurementRouteImport.update({
+    id: '/procurement',
+    path: '/procurement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPhysioRoute = AuthenticatedPhysioRouteImport.update({
   id: '/physio',
   path: '/physio',
@@ -157,6 +171,12 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAuditInventoryRoute =
+  AuthenticatedAuditInventoryRouteImport.update({
+    id: '/audit-inventory',
+    path: '/audit-inventory',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -180,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -193,10 +214,12 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
+  '/procurement': typeof AuthenticatedProcurementRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
+  '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -208,6 +231,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -221,10 +245,12 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
+  '/procurement': typeof AuthenticatedProcurementRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
+  '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -238,6 +264,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -251,10 +278,12 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
   '/_authenticated/physio': typeof AuthenticatedPhysioRoute
+  '/_authenticated/procurement': typeof AuthenticatedProcurementRoute
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
   '/_authenticated/reception': typeof AuthenticatedReceptionRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
+  '/_authenticated/store': typeof AuthenticatedStoreRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
@@ -268,6 +297,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/appointments'
     | '/audit'
+    | '/audit-inventory'
     | '/billing'
     | '/coach'
     | '/dashboard'
@@ -281,10 +311,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pharmacy'
     | '/physio'
+    | '/procurement'
     | '/queue'
     | '/radiology'
     | '/reception'
     | '/sports'
+    | '/store'
     | '/team'
     | '/team-manager'
     | '/users'
@@ -296,6 +328,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/appointments'
     | '/audit'
+    | '/audit-inventory'
     | '/billing'
     | '/coach'
     | '/dashboard'
@@ -309,10 +342,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pharmacy'
     | '/physio'
+    | '/procurement'
     | '/queue'
     | '/radiology'
     | '/reception'
     | '/sports'
+    | '/store'
     | '/team'
     | '/team-manager'
     | '/users'
@@ -325,6 +360,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/appointments'
     | '/_authenticated/audit'
+    | '/_authenticated/audit-inventory'
     | '/_authenticated/billing'
     | '/_authenticated/coach'
     | '/_authenticated/dashboard'
@@ -338,10 +374,12 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/pharmacy'
     | '/_authenticated/physio'
+    | '/_authenticated/procurement'
     | '/_authenticated/queue'
     | '/_authenticated/radiology'
     | '/_authenticated/reception'
     | '/_authenticated/sports'
+    | '/_authenticated/store'
     | '/_authenticated/team'
     | '/_authenticated/team-manager'
     | '/_authenticated/users'
@@ -406,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/store': {
+      id: '/_authenticated/store'
+      path: '/store'
+      fullPath: '/store'
+      preLoaderRoute: typeof AuthenticatedStoreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sports': {
       id: '/_authenticated/sports'
       path: '/sports'
@@ -432,6 +477,13 @@ declare module '@tanstack/react-router' {
       path: '/queue'
       fullPath: '/queue'
       preLoaderRoute: typeof AuthenticatedQueueRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/procurement': {
+      id: '/_authenticated/procurement'
+      path: '/procurement'
+      fullPath: '/procurement'
+      preLoaderRoute: typeof AuthenticatedProcurementRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/physio': {
@@ -525,6 +577,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/audit-inventory': {
+      id: '/_authenticated/audit-inventory'
+      path: '/audit-inventory'
+      fullPath: '/audit-inventory'
+      preLoaderRoute: typeof AuthenticatedAuditInventoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/audit': {
       id: '/_authenticated/audit'
       path: '/audit'
@@ -563,6 +622,7 @@ const AuthenticatedVisitsRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedAuditInventoryRoute: typeof AuthenticatedAuditInventoryRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -576,10 +636,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
   AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
+  AuthenticatedProcurementRoute: typeof AuthenticatedProcurementRoute
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
   AuthenticatedReceptionRoute: typeof AuthenticatedReceptionRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
+  AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
@@ -589,6 +651,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedAuditInventoryRoute: AuthenticatedAuditInventoryRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -602,10 +665,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
   AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
+  AuthenticatedProcurementRoute: AuthenticatedProcurementRoute,
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
   AuthenticatedReceptionRoute: AuthenticatedReceptionRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
+  AuthenticatedStoreRoute: AuthenticatedStoreRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,

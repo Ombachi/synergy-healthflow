@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Apple, Bandage, CalendarClock, ClipboardCheck, ClipboardList, Dumbbell, FlaskConical, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, Stethoscope, Trophy, UserPlus, Users } from "lucide-react";
+import { Activity, Apple, Bandage, BarChart3, CalendarClock, ClipboardCheck, ClipboardList, Dumbbell, FlaskConical, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Trophy, UserPlus, Users, Warehouse } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -42,6 +42,9 @@ const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }
   { title: "Physio", url: "/physio", icon: Bandage, badge: undefined },
   { title: "Nutrition", url: "/nutrition", icon: Apple, badge: undefined },
   { title: "Inventory", url: "/inventory", icon: Package, badge: undefined },
+  { title: "Store", url: "/store", icon: Warehouse, badge: undefined },
+  { title: "Procurement", url: "/procurement", icon: ShoppingCart, badge: undefined },
+  { title: "Inventory audit", url: "/audit-inventory", icon: BarChart3, badge: undefined },
   { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
   { title: "Team & Roles", url: "/team", icon: Users, badge: undefined },
   { title: "User management", url: "/users", icon: ShieldCheck, badge: undefined },
