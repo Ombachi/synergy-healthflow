@@ -16,6 +16,7 @@ import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTeamManagerRouteImport } from './routes/_authenticated/team-manager'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
 import { Route as AuthenticatedReceptionRouteImport } from './routes/_authenticated/reception'
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
@@ -70,6 +71,11 @@ const AuthenticatedTeamManagerRoute =
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStoreRoute = AuthenticatedStoreRouteImport.update({
+  id: '/store',
+  path: '/store',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSportsRoute = AuthenticatedSportsRouteImport.update({
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
+  '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
   '/sports': typeof AuthenticatedSportsRoute
+  '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
   '/_authenticated/reception': typeof AuthenticatedReceptionRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
+  '/_authenticated/store': typeof AuthenticatedStoreRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/radiology'
     | '/reception'
     | '/sports'
+    | '/store'
     | '/team'
     | '/team-manager'
     | '/users'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/radiology'
     | '/reception'
     | '/sports'
+    | '/store'
     | '/team'
     | '/team-manager'
     | '/users'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/_authenticated/radiology'
     | '/_authenticated/reception'
     | '/_authenticated/sports'
+    | '/_authenticated/store'
     | '/_authenticated/team'
     | '/_authenticated/team-manager'
     | '/_authenticated/users'
@@ -404,6 +416,13 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/store': {
+      id: '/_authenticated/store'
+      path: '/store'
+      fullPath: '/store'
+      preLoaderRoute: typeof AuthenticatedStoreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sports': {
@@ -580,6 +599,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
   AuthenticatedReceptionRoute: typeof AuthenticatedReceptionRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
+  AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
@@ -606,6 +626,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
   AuthenticatedReceptionRoute: AuthenticatedReceptionRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
+  AuthenticatedStoreRoute: AuthenticatedStoreRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
