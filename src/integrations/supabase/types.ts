@@ -18,7 +18,9 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          department: string | null
           doctor_id: string | null
+          duration_minutes: number
           id: string
           notes: string | null
           patient_id: string
@@ -31,7 +33,9 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          department?: string | null
           doctor_id?: string | null
+          duration_minutes?: number
           id?: string
           notes?: string | null
           patient_id: string
@@ -44,7 +48,9 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          department?: string | null
           doctor_id?: string | null
+          duration_minutes?: number
           id?: string
           notes?: string | null
           patient_id?: string
