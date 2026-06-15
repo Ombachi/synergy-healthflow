@@ -142,6 +142,7 @@ function TodayAgenda({ userId }: { userId: string | null }) {
       </ul>
     </div>
   );
+}
 
 function buildLinks(roles: AppRole[]) {
   const has = (r: AppRole) => roles.includes(r);
