@@ -15,7 +15,7 @@ import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/radiology")({ component: () => <RoleGate path="/radiology"><RadPortal /></RoleGate> });
 
-interface ImgOrder { id: string; patient_id: string; modality: string; body_part: string | null; clinical_question: string | null; status: string; priority: string; scheduled_at: string | null; performed_at: string | null; findings: string | null; report: string | null; image_path: string | null; created_at: string }
+interface ImgOrder { id: string; visit_id: string | null; patient_id: string; modality: string; body_part: string | null; clinical_question: string | null; status: string; priority: string; scheduled_at: string | null; performed_at: string | null; findings: string | null; report: string | null; image_path: string | null; created_at: string }
 interface Patient { id: string; full_name: string }
 
 function RadPortal() {
