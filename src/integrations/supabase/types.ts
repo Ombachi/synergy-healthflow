@@ -1897,6 +1897,36 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_schedules: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          slot_minutes: number
+          start_time: string
+          user_id: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          slot_minutes?: number
+          start_time: string
+          user_id: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          slot_minutes?: number
+          start_time?: string
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
       purchase_order_items: {
         Row: {
           created_at: string
@@ -2023,6 +2053,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      service_catalog: {
+        Row: {
+          active: boolean
+          category: string
+          code: string
+          created_at: string
+          id: string
+          name: string
+          unit_price_cents: number
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          unit_price_cents?: number
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          unit_price_cents?: number
+        }
+        Relationships: []
       }
       stock_batches: {
         Row: {
@@ -2983,6 +3043,7 @@ export type Database = {
         Returns: undefined
       }
       can_discharge: { Args: { _visit: string }; Returns: boolean }
+      catalog_price: { Args: { _category: string }; Returns: number }
       ensure_open_invoice: { Args: { _visit: string }; Returns: string }
       has_role: {
         Args: {
