@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ClipboardList, Heart, MessageSquare, Package, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
+import { Activity, CalendarClock, ClipboardList, Heart, MessageSquare, Package, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { MyActivePatients } from "@/components/my-active-patients";
