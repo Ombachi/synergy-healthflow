@@ -58,6 +58,16 @@ function PharmacyPortal() {
     },
   });
 
+  const visitIds = Array.from(new Set((rx.data ?? []).map((r) => r.visit_id).filter(Boolean)));
+  const visitPatients = useQuery({
+    queryKey: ["pharm-visit-patients", visitIds.join(",")], enabled: visitIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("visits" as never).select("id, patient_id").in("id", visitIds as never);
+      return (data as unknown as { id: string; patient_id: string }[]) ?? [];
+    },
+  });
+  const patientFor = (visitId: string) => visitPatients.data?.find((v) => v.id === visitId)?.patient_id;
+
   const [dispOpen, setDispOpen] = useState<Rx | null>(null);
   const [form, setForm] = useState({ inventory_item_id: "", quantity: 0, instructions: "" });
 
