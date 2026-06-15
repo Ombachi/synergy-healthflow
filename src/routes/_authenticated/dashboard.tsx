@@ -76,6 +76,8 @@ function Dashboard() {
         <Stat title="Conversations" value={myUnread.data ?? "—"} icon={MessageSquare} color="text-violet-500" />
       </div>
 
+      {isClinical && <TodayAgenda userId={profile?.id ?? null} />}
+
       <MyActivePatients />
 
       <div className="rounded-lg border bg-card p-5">
