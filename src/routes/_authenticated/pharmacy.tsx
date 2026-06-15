@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { PatientContext } from "@/components/patient-context";
+import { RoleGate } from "@/components/role-gate";
 
-export const Route = createFileRoute("/_authenticated/pharmacy")({ component: PharmacyPortal });
+export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null; created_at: string }
 interface Dispense { id: string; prescription_id: string; quantity: number; status: string; dispensed_at: string; inventory_item_id: string | null }
@@ -55,6 +57,16 @@ function PharmacyPortal() {
       return (data as unknown as Movement[]) ?? [];
     },
   });
+
+  const visitIds = Array.from(new Set((rx.data ?? []).map((r) => r.visit_id).filter(Boolean)));
+  const visitPatients = useQuery({
+    queryKey: ["pharm-visit-patients", visitIds.join(",")], enabled: visitIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("visits" as never).select("id, patient_id").in("id", visitIds as never);
+      return (data as unknown as { id: string; patient_id: string }[]) ?? [];
+    },
+  });
+  const patientFor = (visitId: string) => visitPatients.data?.find((v) => v.id === visitId)?.patient_id;
 
   const [dispOpen, setDispOpen] = useState<Rx | null>(null);
   const [form, setForm] = useState({ inventory_item_id: "", quantity: 0, instructions: "" });
@@ -117,19 +129,23 @@ function PharmacyPortal() {
             {rx.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No prescriptions.</div>}
             {rx.data?.map((r) => {
               const d = dispenses.data?.find((x) => x.prescription_id === r.id);
+              const pid = patientFor(r.visit_id);
               return (
-                <div key={r.id} className="flex items-center justify-between gap-2 p-3 text-sm">
-                  <div>
-                    <div className="font-medium">{r.medication}</div>
-                    <div className="text-xs text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</div>
+                <div key={r.id} className="p-3 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <div className="font-medium">{r.medication}</div>
+                      <div className="text-xs text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {d ? (
+                        <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs text-green-700">Dispensed × {d.quantity}</span>
+                      ) : canDispense ? (
+                        <Button size="sm" onClick={() => setDispOpen(r)}>Dispense</Button>
+                      ) : <span className="text-xs text-muted-foreground">Pending</span>}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {d ? (
-                      <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs text-green-700">Dispensed × {d.quantity}</span>
-                    ) : canDispense ? (
-                      <Button size="sm" onClick={() => setDispOpen(r)}>Dispense</Button>
-                    ) : <span className="text-xs text-muted-foreground">Pending</span>}
-                  </div>
+                  {pid && <PatientContext patientId={pid} visitId={r.visit_id} />}
                 </div>
               );
             })}

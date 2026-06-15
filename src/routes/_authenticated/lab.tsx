@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { PatientContext } from "@/components/patient-context";
+import { RoleGate } from "@/components/role-gate";
 
-export const Route = createFileRoute("/_authenticated/lab")({ component: LabPortal });
+export const Route = createFileRoute("/_authenticated/lab")({ component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
 
 interface Test { id: string; code: string; name: string; specimen: string | null; container: string | null; units: string | null; reference_range: string | null }
 interface Order { id: string; visit_id: string | null; patient_id: string; test_id: string; status: string; priority: string; clinical_notes: string | null; created_at: string }
@@ -128,29 +130,32 @@ function LabPortal() {
             const sample = samples.data?.find((s) => s.order_id === o.id);
             const result = results.data?.find((r) => r.order_id === o.id);
             return (
-              <div key={o.id} className="grid grid-cols-12 items-center gap-2 p-3 text-sm">
-                <div className="col-span-3">
-                  <div className="font-medium">{testName(o.test_id)}</div>
-                  <div className="text-xs text-muted-foreground">Patient: {patientName(o.patient_id)}</div>
+              <div key={o.id} className="p-3 text-sm">
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <div className="col-span-3">
+                    <div className="font-medium">{testName(o.test_id)}</div>
+                    <div className="text-xs text-muted-foreground">Patient: {patientName(o.patient_id)}</div>
+                  </div>
+                  <div className="col-span-3 text-xs">
+                    <div>Specimen: <span className="font-medium">{t?.specimen ?? "—"}</span></div>
+                    <div>Container: <span className="font-medium">{t?.container ?? "—"}</span></div>
+                  </div>
+                  <div className="col-span-2">
+                    <span className={`rounded px-2 py-0.5 text-xs ${o.status === "resulted" ? "bg-green-500/10 text-green-700" : o.status === "collected" ? "bg-blue-500/10 text-blue-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
+                    <div className="mt-1 text-xs text-muted-foreground capitalize">{o.priority}</div>
+                  </div>
+                  <div className="col-span-2 text-xs text-muted-foreground">
+                    {sample && <div>Sample: {sample.sample_code}</div>}
+                    {result && <div>Result: {result.result_value} {result.abnormal_flag && <span className="text-destructive">{result.abnormal_flag}</span>}</div>}
+                  </div>
+                  <div className="col-span-2 flex justify-end gap-1">
+                    {canWork && !sample && <Button size="sm" variant="outline" onClick={() => collect.mutate(o.id)}>Collect</Button>}
+                    {canWork && sample && !result && (
+                      <Button size="sm" onClick={() => { setResOpen(o.id); setResForm({ result_value: "", units: t?.units ?? "", reference_range: t?.reference_range ?? "", abnormal_flag: "", comments: "" }); }}>Enter result</Button>
+                    )}
+                  </div>
                 </div>
-                <div className="col-span-3 text-xs">
-                  <div>Specimen: <span className="font-medium">{t?.specimen ?? "—"}</span></div>
-                  <div>Container: <span className="font-medium">{t?.container ?? "—"}</span></div>
-                </div>
-                <div className="col-span-2">
-                  <span className={`rounded px-2 py-0.5 text-xs ${o.status === "resulted" ? "bg-green-500/10 text-green-700" : o.status === "collected" ? "bg-blue-500/10 text-blue-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
-                  <div className="mt-1 text-xs text-muted-foreground capitalize">{o.priority}</div>
-                </div>
-                <div className="col-span-2 text-xs text-muted-foreground">
-                  {sample && <div>Sample: {sample.sample_code}</div>}
-                  {result && <div>Result: {result.result_value} {result.abnormal_flag && <span className="text-destructive">{result.abnormal_flag}</span>}</div>}
-                </div>
-                <div className="col-span-2 flex justify-end gap-1">
-                  {canWork && !sample && <Button size="sm" variant="outline" onClick={() => collect.mutate(o.id)}>Collect</Button>}
-                  {canWork && sample && !result && (
-                    <Button size="sm" onClick={() => { setResOpen(o.id); setResForm({ result_value: "", units: t?.units ?? "", reference_range: t?.reference_range ?? "", abnormal_flag: "", comments: "" }); }}>Enter result</Button>
-                  )}
-                </div>
+                <PatientContext patientId={o.patient_id} visitId={o.visit_id} />
               </div>
             );
           })}

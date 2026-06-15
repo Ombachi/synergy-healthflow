@@ -1,11 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Activity, FileText, HeartPulse } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Activity, CalendarClock, FileText, HeartPulse, Receipt, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
 
@@ -14,11 +21,16 @@ interface Visit { id: string; opened_at: string; closed_at: string | null; statu
 interface Vital { id: string; visit_id: string; captured_at: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null }
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null }
 interface Discharge { visit_id: string; summary: string; treatment_plan: string | null; follow_up: string | null; finalized: boolean }
+interface Appointment { id: string; scheduled_at: string; status: string; reason: string | null; doctor_id: string | null; department: string | null }
+interface Invoice { id: string; visit_id: string | null; total_cents: number; paid_cents: number; status: string; created_at: string }
+interface InvoiceItem { id: string; invoice_id: string; description: string; qty: number; unit_price_cents: number; amount_cents: number; kind: string }
+interface Doctor { id: string; full_name: string | null; role: string }
 
 const RANGES_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365, all: 100000 };
 
 function PatientTimeline() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [range, setRange] = useState<keyof typeof RANGES_DAYS>("30d");
 
   const patient = useQuery({
@@ -46,6 +58,61 @@ function PatientTimeline() {
     const { data, error } = await supabase.from("discharge_summaries" as never).select("visit_id, summary, treatment_plan, follow_up, finalized").in("visit_id", visitIds as never);
     if (error) throw error; return (data as unknown as Discharge[]) ?? [];
   }});
+  const appts = useQuery({ queryKey: ["my-appts", pid], enabled: !!pid, queryFn: async () => {
+    const { data, error } = await supabase.from("appointments" as never).select("id, scheduled_at, status, reason, doctor_id, department").eq("patient_id", pid!).order("scheduled_at", { ascending: false });
+    if (error) throw error; return (data as unknown as Appointment[]) ?? [];
+  }});
+  const invoices = useQuery({ queryKey: ["my-invoices", pid], enabled: !!pid, queryFn: async () => {
+    const { data, error } = await supabase.from("invoices" as never).select("id, visit_id, total_cents, paid_cents, status, created_at").eq("patient_id", pid!).order("created_at", { ascending: false });
+    if (error) throw error; return (data as unknown as Invoice[]) ?? [];
+  }});
+  const invoiceItems = useQuery({
+    queryKey: ["my-invoice-items", (invoices.data ?? []).map((i) => i.id).join(",")],
+    enabled: (invoices.data ?? []).length > 0,
+    queryFn: async () => {
+      const ids = (invoices.data ?? []).map((i) => i.id);
+      const { data, error } = await supabase.from("invoice_items" as never).select("*").in("invoice_id", ids as never);
+      if (error) throw error;
+      return (data as unknown as InvoiceItem[]) ?? [];
+    },
+  });
+  const doctors = useQuery({
+    queryKey: ["me-doctors"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("list_messageable_users" as never);
+      if (error) throw error;
+      return ((data as unknown as Doctor[]) ?? []).filter((u) => u.role === "doctor");
+    },
+  });
+
+  const [bookOpen, setBookOpen] = useState(false);
+  const [bookForm, setBookForm] = useState({ doctor_id: "", scheduled_at: "", reason: "" });
+  const book = useMutation({
+    mutationFn: async () => {
+      if (!pid || !bookForm.scheduled_at) throw new Error("Time required");
+      const { error } = await supabase.from("appointments" as never).insert({
+        patient_id: pid,
+        doctor_id: bookForm.doctor_id || null,
+        scheduled_at: new Date(bookForm.scheduled_at).toISOString(),
+        reason: bookForm.reason || null,
+        created_by: user!.id,
+      } as never);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setBookOpen(false); setBookForm({ doctor_id: "", scheduled_at: "", reason: "" });
+      qc.invalidateQueries({ queryKey: ["my-appts"] });
+      toast.success("Appointment requested");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const cancel = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("appointments" as never).update({ status: "cancelled" } as never).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-appts"] }); toast.success("Cancelled"); },
+  });
 
   const filteredVitals = useMemo(() => {
     const cutoff = Date.now() - RANGES_DAYS[range] * 24 * 60 * 60 * 1000;
@@ -69,78 +136,157 @@ function PatientTimeline() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">My health timeline</h1>
-          <p className="text-sm text-muted-foreground">{patient.data.full_name}</p>
-        </div>
-        <div className="flex gap-1">
-          {(Object.keys(RANGES_DAYS) as Array<keyof typeof RANGES_DAYS>).map((r) => (
-            <Button key={r} size="sm" variant={range === r ? "default" : "outline"} onClick={() => setRange(r)}>{r}</Button>
-          ))}
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-semibold">My health</h1>
+        <p className="text-sm text-muted-foreground">{patient.data.full_name}</p>
       </div>
 
-      <div className="rounded-lg border bg-card p-5">
-        <h2 className="flex items-center gap-2 font-medium"><HeartPulse className="h-4 w-4 text-primary" /> Vital trends</h2>
-        {chartData.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No vitals in this range.</p>
-        ) : (
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <ChartCard title="Blood pressure (mmHg)" data={chartData} lines={[{ key: "systolic", color: "#dc2626" }, { key: "diastolic", color: "#2563eb" }]} />
-            <ChartCard title="Heart rate (bpm)" data={chartData} lines={[{ key: "hr", color: "#9333ea" }]} />
-            <ChartCard title="SpO₂ (%)" data={chartData} lines={[{ key: "spo2", color: "#0891b2" }]} />
-            <ChartCard title="Temperature (°C)" data={chartData} lines={[{ key: "temp", color: "#ea580c" }]} />
-          </div>
-        )}
-      </div>
+      <Tabs defaultValue="timeline">
+        <TabsList>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsTrigger value="bills">Bills</TabsTrigger>
+        </TabsList>
 
-      <div className="rounded-lg border bg-card p-5">
-        <h2 className="flex items-center gap-2 font-medium"><Activity className="h-4 w-4 text-primary" /> Active prescriptions</h2>
-        {rx.data?.length ? (
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {rx.data.map((r) => (
-              <li key={r.id} className="rounded border p-2 text-sm">
-                <div className="font-medium">{r.medication}</div>
-                <div className="text-xs text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</div>
-              </li>
+        <TabsContent value="timeline" className="mt-4 space-y-6">
+          <div className="flex justify-end gap-1">
+            {(Object.keys(RANGES_DAYS) as Array<keyof typeof RANGES_DAYS>).map((r) => (
+              <Button key={r} size="sm" variant={range === r ? "default" : "outline"} onClick={() => setRange(r)}>{r}</Button>
             ))}
-          </ul>
-        ) : <p className="mt-3 text-sm text-muted-foreground">None.</p>}
-      </div>
+          </div>
+          <div className="rounded-lg border bg-card p-5">
+            <h2 className="flex items-center gap-2 font-medium"><HeartPulse className="h-4 w-4 text-primary" /> Vital trends</h2>
+            {chartData.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No vitals in this range.</p>
+            ) : (
+              <div className="mt-3 grid gap-4 md:grid-cols-2">
+                <ChartCard title="Blood pressure (mmHg)" data={chartData} lines={[{ key: "systolic", color: "#dc2626" }, { key: "diastolic", color: "#2563eb" }]} />
+                <ChartCard title="Heart rate (bpm)" data={chartData} lines={[{ key: "hr", color: "#9333ea" }]} />
+                <ChartCard title="SpO₂ (%)" data={chartData} lines={[{ key: "spo2", color: "#0891b2" }]} />
+                <ChartCard title="Temperature (°C)" data={chartData} lines={[{ key: "temp", color: "#ea580c" }]} />
+              </div>
+            )}
+          </div>
 
-      <div className="rounded-lg border bg-card p-5">
-        <h2 className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 text-primary" /> Visit history</h2>
-        {visits.data?.length === 0 && <p className="mt-3 text-sm text-muted-foreground">No visits yet.</p>}
-        <div className="mt-4 space-y-4">
-          {visits.data?.map((v) => {
-            const ds = discharges.data?.find((d) => d.visit_id === v.id);
-            return (
-              <div key={v.id} className="relative border-l-2 border-primary/40 pl-4">
-                <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-primary" />
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <div className="font-medium">{v.reason ?? "Visit"}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</div>
-                </div>
-                <div className="mt-1 text-xs">
-                  <span className="capitalize text-muted-foreground">Status: {v.status.replace("_"," ")}</span>
-                  {v.triage_level && <span className="ml-2 capitalize text-muted-foreground">· Triage: {v.triage_level}</span>}
-                </div>
-                {v.notes && <p className="mt-2 text-sm whitespace-pre-wrap">{v.notes}</p>}
-                {ds && (
-                  <div className="mt-2 rounded-md bg-muted/50 p-3 text-sm">
-                    <div className="text-xs font-medium uppercase text-muted-foreground">Discharge summary</div>
-                    <p className="mt-1 whitespace-pre-wrap">{ds.summary}</p>
-                    {ds.treatment_plan && <p className="mt-2"><span className="text-xs text-muted-foreground">Plan: </span>{ds.treatment_plan}</p>}
-                    {ds.follow_up && <p className="mt-1"><span className="text-xs text-muted-foreground">Follow-up: </span>{ds.follow_up}</p>}
+          <div className="rounded-lg border bg-card p-5">
+            <h2 className="flex items-center gap-2 font-medium"><Activity className="h-4 w-4 text-primary" /> Active prescriptions</h2>
+            {rx.data?.length ? (
+              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                {rx.data.map((r) => (
+                  <li key={r.id} className="rounded border p-2 text-sm">
+                    <div className="font-medium">{r.medication}</div>
+                    <div className="text-xs text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</div>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="mt-3 text-sm text-muted-foreground">None.</p>}
+          </div>
+
+          <div className="rounded-lg border bg-card p-5">
+            <h2 className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 text-primary" /> Visit history</h2>
+            {visits.data?.length === 0 && <p className="mt-3 text-sm text-muted-foreground">No visits yet.</p>}
+            <div className="mt-4 space-y-4">
+              {visits.data?.map((v) => {
+                const ds = discharges.data?.find((d) => d.visit_id === v.id);
+                return (
+                  <div key={v.id} className="relative border-l-2 border-primary/40 pl-4">
+                    <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-primary" />
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <div className="font-medium">{v.reason ?? "Visit"}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</div>
+                    </div>
+                    <div className="mt-1 text-xs">
+                      <span className="capitalize text-muted-foreground">Status: {v.status.replace("_"," ")}</span>
+                      {v.triage_level && <span className="ml-2 capitalize text-muted-foreground">· Triage: {v.triage_level}</span>}
+                    </div>
+                    {v.notes && <p className="mt-2 text-sm whitespace-pre-wrap">{v.notes}</p>}
+                    {ds && (
+                      <div className="mt-2 rounded-md bg-muted/50 p-3 text-sm">
+                        <div className="text-xs font-medium uppercase text-muted-foreground">Discharge summary</div>
+                        <p className="mt-1 whitespace-pre-wrap">{ds.summary}</p>
+                        {ds.treatment_plan && <p className="mt-2"><span className="text-xs text-muted-foreground">Plan: </span>{ds.treatment_plan}</p>}
+                        {ds.follow_up && <p className="mt-1"><span className="text-xs text-muted-foreground">Follow-up: </span>{ds.follow_up}</p>}
+                      </div>
+                    )}
                   </div>
-                )}
+                );
+              })}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="appointments" className="mt-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 font-medium"><CalendarClock className="h-4 w-4 text-primary" /> My appointments</h2>
+            <Dialog open={bookOpen} onOpenChange={setBookOpen}>
+              <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4" /> Book appointment</Button></DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Request an appointment</DialogTitle></DialogHeader>
+                <div className="space-y-2">
+                  <div>
+                    <Label>Preferred doctor (optional)</Label>
+                    <Select value={bookForm.doctor_id} onValueChange={(v) => setBookForm({ ...bookForm, doctor_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Any available" /></SelectTrigger>
+                      <SelectContent>{doctors.data?.map((d) => <SelectItem key={d.id} value={d.id}>{d.full_name ?? "Doctor"}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Date & time</Label><Input type="datetime-local" value={bookForm.scheduled_at} onChange={(e) => setBookForm({ ...bookForm, scheduled_at: e.target.value })} /></div>
+                  <div><Label>Reason</Label><Textarea rows={2} value={bookForm.reason} onChange={(e) => setBookForm({ ...bookForm, reason: e.target.value })} /></div>
+                </div>
+                <DialogFooter><Button onClick={() => book.mutate()} disabled={book.isPending}>Request</Button></DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="rounded-lg border bg-card divide-y">
+            {(appts.data ?? []).length === 0 && <div className="p-4 text-sm text-muted-foreground">No appointments yet.</div>}
+            {appts.data?.map((a) => (
+              <div key={a.id} className="flex items-center justify-between gap-2 p-3 text-sm">
+                <div>
+                  <div className="font-medium">{new Date(a.scheduled_at).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">{a.reason ?? "—"}{a.department ? ` · ${a.department}` : ""}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`rounded px-2 py-0.5 text-xs ${a.status === "checked_in" ? "bg-blue-500/10 text-blue-700" : a.status === "cancelled" ? "bg-rose-500/10 text-rose-700" : "bg-muted text-muted-foreground"}`}>{a.status}</span>
+                  {a.status === "booked" && <Button size="sm" variant="ghost" onClick={() => cancel.mutate(a.id)}>Cancel</Button>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="bills" className="mt-4 space-y-3">
+          <h2 className="flex items-center gap-2 font-medium"><Receipt className="h-4 w-4 text-primary" /> My bills</h2>
+          {(invoices.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No bills yet.</p>}
+          {invoices.data?.map((inv) => {
+            const items = (invoiceItems.data ?? []).filter((it) => it.invoice_id === inv.id);
+            const due = inv.total_cents - inv.paid_cents;
+            return (
+              <div key={inv.id} className="rounded-lg border bg-card">
+                <div className="flex items-center justify-between border-b p-3 text-sm">
+                  <div>
+                    <div className="font-medium">Invoice {inv.id.slice(0, 8)}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold">${(inv.total_cents / 100).toFixed(2)}</div>
+                    <span className={`rounded px-2 py-0.5 text-xs ${inv.status === "paid" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{inv.status}</span>
+                    {due > 0 && <div className="mt-0.5 text-xs text-destructive">Due ${(due / 100).toFixed(2)}</div>}
+                  </div>
+                </div>
+                <ul className="divide-y text-xs">
+                  {items.map((it) => (
+                    <li key={it.id} className="flex justify-between p-2">
+                      <span>{it.description} <span className="text-muted-foreground">× {it.qty}</span></span>
+                      <span className="font-mono">${(it.amount_cents / 100).toFixed(2)}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             );
           })}
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

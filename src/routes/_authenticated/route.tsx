@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
 import { useWorkCounts } from "@/hooks/use-notifications";
+import { canAccess } from "@/lib/role-permissions";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -36,6 +37,7 @@ const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }
   { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology" },
   { title: "Billing", url: "/billing", icon: Receipt, badge: undefined },
   { title: "Insurance", url: "/insurance", icon: Shield, badge: undefined },
+  { title: "Service catalog", url: "/service-catalog", icon: Receipt, badge: undefined },
   { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined },
   { title: "Coach", url: "/coach", icon: Dumbbell, badge: undefined },
   { title: "Team manager", url: "/team-manager", icon: Trophy, badge: undefined },
@@ -76,7 +78,7 @@ function AuthedLayout() {
               <SidebarGroupLabel>Modules</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((it) => {
+                  {items.filter((it) => canAccess(it.url, roles)).map((it) => {
                     const count = it.badge ? work.data?.[it.badge] ?? 0 : 0;
                     return (
                       <SidebarMenuItem key={it.url}>
