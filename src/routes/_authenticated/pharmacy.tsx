@@ -129,19 +129,23 @@ function PharmacyPortal() {
             {rx.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No prescriptions.</div>}
             {rx.data?.map((r) => {
               const d = dispenses.data?.find((x) => x.prescription_id === r.id);
+              const pid = patientFor(r.visit_id);
               return (
-                <div key={r.id} className="flex items-center justify-between gap-2 p-3 text-sm">
-                  <div>
-                    <div className="font-medium">{r.medication}</div>
-                    <div className="text-xs text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</div>
+                <div key={r.id} className="p-3 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <div className="font-medium">{r.medication}</div>
+                      <div className="text-xs text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {d ? (
+                        <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs text-green-700">Dispensed × {d.quantity}</span>
+                      ) : canDispense ? (
+                        <Button size="sm" onClick={() => setDispOpen(r)}>Dispense</Button>
+                      ) : <span className="text-xs text-muted-foreground">Pending</span>}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {d ? (
-                      <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs text-green-700">Dispensed × {d.quantity}</span>
-                    ) : canDispense ? (
-                      <Button size="sm" onClick={() => setDispOpen(r)}>Dispense</Button>
-                    ) : <span className="text-xs text-muted-foreground">Pending</span>}
-                  </div>
+                  {pid && <PatientContext patientId={pid} visitId={r.visit_id} />}
                 </div>
               );
             })}
