@@ -37,6 +37,7 @@ const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }
   { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology" },
   { title: "Billing", url: "/billing", icon: Receipt, badge: undefined },
   { title: "Insurance", url: "/insurance", icon: Shield, badge: undefined },
+  { title: "Service catalog", url: "/service-catalog", icon: Receipt, badge: undefined },
   { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined },
   { title: "Coach", url: "/coach", icon: Dumbbell, badge: undefined },
   { title: "Team manager", url: "/team-manager", icon: Trophy, badge: undefined },
