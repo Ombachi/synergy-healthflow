@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
 
-export const Route = createFileRoute("/_authenticated/lab")({ component: LabPortal });
+export const Route = createFileRoute("/_authenticated/lab")({ component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
 
 interface Test { id: string; code: string; name: string; specimen: string | null; container: string | null; units: string | null; reference_range: string | null }
 interface Order { id: string; visit_id: string | null; patient_id: string; test_id: string; status: string; priority: string; clinical_notes: string | null; created_at: string }
