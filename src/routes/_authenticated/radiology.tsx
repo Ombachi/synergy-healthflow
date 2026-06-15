@@ -81,22 +81,25 @@ function RadPortal() {
         <div className="divide-y">
           {orders.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No orders.</div>}
           {orders.data?.map((o) => (
-            <div key={o.id} className="grid grid-cols-12 items-center gap-2 p-3 text-sm">
-              <div className="col-span-3">
-                <div className="font-medium">{o.modality} {o.body_part && <span className="text-muted-foreground">· {o.body_part}</span>}</div>
-                <div className="text-xs text-muted-foreground">{patientName(o.patient_id)}</div>
+            <div key={o.id} className="p-3 text-sm">
+              <div className="grid grid-cols-12 items-center gap-2">
+                <div className="col-span-3">
+                  <div className="font-medium">{o.modality} {o.body_part && <span className="text-muted-foreground">· {o.body_part}</span>}</div>
+                  <div className="text-xs text-muted-foreground">{patientName(o.patient_id)}</div>
+                </div>
+                <div className="col-span-4 text-xs text-muted-foreground">{o.clinical_question ?? "—"}</div>
+                <div className="col-span-2">
+                  <span className={`rounded px-2 py-0.5 text-xs ${o.status === "reported" ? "bg-green-500/10 text-green-700" : o.status === "scheduled" ? "bg-blue-500/10 text-blue-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
+                </div>
+                <div className="col-span-3 flex justify-end gap-1">
+                  {canWork && o.status === "ordered" && <Button size="sm" variant="outline" onClick={() => schedule.mutate(o.id)}>Schedule</Button>}
+                  {canWork && o.status !== "reported" && (
+                    <Button size="sm" onClick={() => { setOpenId(o.id); setForm({ findings: o.findings ?? "", report: o.report ?? "" }); }}>Report</Button>
+                  )}
+                  {o.report && <span className="text-xs text-muted-foreground">✓ reported</span>}
+                </div>
               </div>
-              <div className="col-span-4 text-xs text-muted-foreground">{o.clinical_question ?? "—"}</div>
-              <div className="col-span-2">
-                <span className={`rounded px-2 py-0.5 text-xs ${o.status === "reported" ? "bg-green-500/10 text-green-700" : o.status === "scheduled" ? "bg-blue-500/10 text-blue-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
-              </div>
-              <div className="col-span-3 flex justify-end gap-1">
-                {canWork && o.status === "ordered" && <Button size="sm" variant="outline" onClick={() => schedule.mutate(o.id)}>Schedule</Button>}
-                {canWork && o.status !== "reported" && (
-                  <Button size="sm" onClick={() => { setOpenId(o.id); setForm({ findings: o.findings ?? "", report: o.report ?? "" }); }}>Report</Button>
-                )}
-                {o.report && <span className="text-xs text-muted-foreground">✓ reported</span>}
-              </div>
+              <PatientContext patientId={o.patient_id} visitId={o.visit_id} />
             </div>
           ))}
         </div>
