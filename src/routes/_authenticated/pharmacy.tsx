@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { PatientContext } from "@/components/patient-context";
+import { RoleGate } from "@/components/role-gate";
 
-export const Route = createFileRoute("/_authenticated/pharmacy")({ component: PharmacyPortal });
+export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null; created_at: string }
 interface Dispense { id: string; prescription_id: string; quantity: number; status: string; dispensed_at: string; inventory_item_id: string | null }
