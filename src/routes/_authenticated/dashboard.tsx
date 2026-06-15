@@ -110,6 +110,39 @@ function Stat({ title, value, icon: Icon, color }: { title: string; value: numbe
   );
 }
 
+interface ApptRow { id: string; patient_id: string; scheduled_at: string; status: string; doctor_id: string | null; reason: string | null }
+function TodayAgenda({ userId }: { userId: string | null }) {
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayEnd = new Date(); todayEnd.setHours(23,59,59,999);
+  const list = useQuery({
+    queryKey: ["today-agenda", userId],
+    queryFn: async () => {
+      let q = supabase.from("appointments" as never).select("id, patient_id, scheduled_at, status, doctor_id, reason")
+        .gte("scheduled_at", todayStart.toISOString()).lte("scheduled_at", todayEnd.toISOString())
+        .order("scheduled_at");
+      if (userId) q = q.eq("doctor_id", userId);
+      const { data } = await q;
+      return (data as unknown as ApptRow[]) ?? [];
+    },
+  });
+  return (
+    <div className="rounded-lg border bg-card p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-medium"><CalendarClock className="h-4 w-4 text-primary" /> Today's agenda</h2>
+        <Link to="/appointments" className="text-xs text-primary hover:underline">Open calendar →</Link>
+      </div>
+      {(list.data ?? []).length === 0 && <p className="mt-3 text-sm text-muted-foreground">Nothing scheduled today.</p>}
+      <ul className="mt-3 divide-y text-sm">
+        {list.data?.map((a) => (
+          <li key={a.id} className="flex items-center justify-between py-2">
+            <span><span className="font-mono">{new Date(a.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> · {a.reason ?? "Visit"}</span>
+            <span className={`rounded px-2 py-0.5 text-xs ${a.status === "checked_in" ? "bg-blue-500/10 text-blue-700" : "bg-muted text-muted-foreground"}`}>{a.status}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
 function buildLinks(roles: AppRole[]) {
   const has = (r: AppRole) => roles.includes(r);
   const any = (rs: AppRole[]) => rs.some(has);
