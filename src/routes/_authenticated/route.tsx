@@ -77,7 +77,7 @@ function AuthedLayout() {
               <SidebarGroupLabel>Modules</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((it) => {
+                  {items.filter((it) => canAccess(it.url, roles)).map((it) => {
                     const count = it.badge ? work.data?.[it.badge] ?? 0 : 0;
                     return (
                       <SidebarMenuItem key={it.url}>
