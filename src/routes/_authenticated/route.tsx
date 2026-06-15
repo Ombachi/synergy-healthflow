@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
 import { useWorkCounts } from "@/hooks/use-notifications";
+import { canAccess } from "@/lib/role-permissions";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
