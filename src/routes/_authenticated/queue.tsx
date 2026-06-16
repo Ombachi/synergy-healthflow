@@ -13,11 +13,26 @@ interface QueueEntry { id: string; visit_id: string; queue_type: string; priorit
 interface Visit { id: string; patient_id: string; current_stage: string | null }
 interface Patient { id: string; full_name: string }
 
-const TYPES = ["triage", "doctor", "lab", "radiology", "pharmacy", "billing"];
+const ALL_TYPES = ["triage", "doctor", "lab", "radiology", "pharmacy", "billing"];
+
+// Each role only sees the queue board(s) relevant to them.
+const ROLE_QUEUES: Record<string, string[]> = {
+  receptionist: ["triage"],
+  nurse: ["triage"],
+  doctor: ["doctor"],
+  lab_tech: ["lab"],
+  radiologist: ["radiology"],
+  pharmacist: ["pharmacy"],
+  cashier: ["billing"],
+  billing_officer: ["billing"],
+};
 
 function QueueBoard() {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const { user, roles } = useAuth();
+  const TYPES = roles.includes("admin")
+    ? ALL_TYPES
+    : Array.from(new Set(roles.flatMap((r) => ROLE_QUEUES[r] ?? [])));
 
   const queue = useQuery({
     queryKey: ["queue"],
