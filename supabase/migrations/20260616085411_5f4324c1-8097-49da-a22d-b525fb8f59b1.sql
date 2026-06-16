@@ -1,0 +1,2 @@
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'procurement';
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'billing_officer';

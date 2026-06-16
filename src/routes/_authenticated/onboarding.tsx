@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Activity, HeartPulse, Stethoscope, User as UserIcon, Users, Dumbbell } from "lucide-react";
+import { Apple, Bandage, ClipboardCheck, Receipt, ShoppingCart, Trophy, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,13 +28,18 @@ type RoleCard = {
   icon: typeof UserIcon;
 };
 
+// Only self-serve roles. Clinical staff (doctor, nurse, lab_tech, pharmacist,
+// radiologist, coach, store_keeper) and patients/athletes added by reception
+// are created and managed by admin/store-manager from the User Management
+// portal — they do not self-onboard.
 const CARDS: RoleCard[] = [
   { role: "patient", title: "Patient", blurb: "Register to access your health record and visits.", icon: UserIcon },
-  { role: "athlete", title: "Athlete", blurb: "Join your team's roster with health metrics.", icon: Dumbbell },
-  { role: "doctor", title: "Doctor", blurb: "Provide care, review visits, write notes.", icon: Stethoscope },
-  { role: "nurse", title: "Nurse", blurb: "Triage patients and capture vitals.", icon: HeartPulse },
-  { role: "coach", title: "Coach", blurb: "Track your athletes and report injuries.", icon: Activity },
-  { role: "admin", title: "Admin", blurb: "Manage staff, roles, and inventory.", icon: Users },
+  { role: "receptionist", title: "Receptionist", blurb: "Front desk: register walk-ins, check-in, route to queues.", icon: ClipboardCheck },
+  { role: "billing_officer", title: "Billing officer", blurb: "Invoices, payments, clearance before discharge.", icon: Receipt },
+  { role: "nutritionist", title: "Nutritionist", blurb: "Plans and tracks athlete nutrition.", icon: Apple },
+  { role: "physio", title: "Physiotherapist", blurb: "Injury management and recovery.", icon: Bandage },
+  { role: "team_manager", title: "Team manager", blurb: "Manage your team and competitions.", icon: Trophy },
+  { role: "procurement", title: "Procurement", blurb: "Suppliers, purchase orders, fulfilment.", icon: ShoppingCart },
 ];
 
 const CONSENTS = [

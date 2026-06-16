@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, CalendarClock, ClipboardList, Heart, MessageSquare, Package, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { MyActivePatients } from "@/components/my-active-patients";
+import { ROLE_HOME } from "@/lib/role-permissions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -33,15 +34,28 @@ const PORTAL_TITLES: Record<AppRole, string> = {
   radiologist: "Radiology portal",
   receptionist: "Reception",
   cashier: "Billing",
+  billing_officer: "Billing",
   insurance_officer: "Insurance",
   physio: "Physio portal",
   nutritionist: "Nutrition portal",
   team_manager: "Team manager",
+  store_keeper: "Central store",
+  procurement: "Procurement",
 };
 
 function Dashboard() {
-  const { roles, profile } = useAuth();
+  const { roles, profile, loading } = useAuth();
   const primary: AppRole = (profile?.onboarded_as ?? roles[0] ?? "patient") as AppRole;
+
+  // Role-based home routing: send each role straight to their portal.
+  // Admins stay on the dashboard (they manage everything).
+  if (!loading && roles.length > 0 && !roles.includes("admin")) {
+    const home = ROLE_HOME[primary];
+    if (home && typeof window !== "undefined" && window.location.pathname === "/dashboard") {
+      return <Navigate to={home} replace />;
+    }
+  }
+
   const isClinical = roles.some((r) => ["doctor","nurse","admin"].includes(r));
 
   const patients = useCount("patients", isClinical);
