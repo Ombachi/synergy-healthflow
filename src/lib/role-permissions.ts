@@ -1,31 +1,47 @@
 import type { AppRole } from "@/hooks/use-auth";
 
 // Roles allowed for each module route. Admin always has access.
+// Empty array = admin only.
 export const ROUTE_ROLES: Record<string, AppRole[]> = {
+  // Front desk / patient flow
   "/reception": ["receptionist"],
-  "/appointments": ["receptionist", "doctor", "nurse"],
-  "/queue": ["receptionist", "nurse", "doctor", "lab_tech", "pharmacist", "radiologist", "cashier"],
-  "/visits": ["doctor", "nurse"],
+  "/appointments": ["receptionist", "doctor"],
+  "/queue": ["receptionist", "nurse", "doctor", "lab_tech", "pharmacist", "radiologist", "cashier", "billing_officer"],
+
+  // Patient
   "/me": ["patient"],
-  "/medical": ["doctor", "nurse"],
-  "/lab": ["lab_tech", "doctor", "nurse"],
-  "/pharmacy": ["pharmacist", "doctor", "nurse"],
-  "/radiology": ["radiologist", "doctor", "nurse"],
-  "/billing": ["cashier", "receptionist"],
-  "/insurance": ["insurance_officer", "cashier"],
-  "/service-catalog": ["cashier"],
-  "/sports": ["coach", "physio", "doctor", "nutritionist", "team_manager"],
+
+  // Clinical (tightened per spec)
+  "/visits": ["doctor"],
+  "/medical": ["doctor"],
+  "/lab": ["lab_tech"],
+  "/pharmacy": ["pharmacist"],
+  "/radiology": ["radiologist"],
+
+  // Billing & insurance
+  "/billing": ["cashier", "billing_officer"],
+  "/insurance": ["insurance_officer", "billing_officer", "cashier"],
+  "/service-catalog": [], // admin only
+
+  // Sports & athletes (no clinical staff)
+  "/sports": ["coach", "physio", "nutritionist", "team_manager"],
   "/coach": ["coach"],
   "/team-manager": ["team_manager"],
   "/physio": ["physio"],
   "/nutrition": ["nutritionist"],
-  "/inventory": ["pharmacist", "doctor", "nurse"],
-  "/store": ["pharmacist"], // storekeeper alias
-  "/procurement": [],        // admin only
-  "/audit-inventory": [],    // admin only
-  "/audit": [],              // admin only
-  "/users": [],              // admin only
-  "/team": [],               // admin only
+
+  // Inventory / store — central store is the source of truth
+  "/inventory": ["store_keeper"],
+  "/store": ["store_keeper"],
+  "/audit-inventory": ["store_keeper"],
+
+  // Procurement
+  "/procurement": ["procurement"],
+
+  // Admin-only
+  "/audit": [],
+  "/users": [],
+  "/team": [],
 };
 
 // Always visible to all signed-in users.
@@ -43,3 +59,24 @@ export function canAccess(path: string, roles: AppRole[]): boolean {
   if (allowed.length === 0) return false; // explicitly admin-only
   return allowed.some((r) => roles.includes(r));
 }
+
+// Where each role should land after sign-in.
+export const ROLE_HOME: Partial<Record<AppRole, string>> = {
+  patient: "/me",
+  receptionist: "/reception",
+  nurse: "/queue",
+  doctor: "/queue",
+  lab_tech: "/lab",
+  pharmacist: "/pharmacy",
+  radiologist: "/radiology",
+  cashier: "/billing",
+  billing_officer: "/billing",
+  insurance_officer: "/insurance",
+  store_keeper: "/store",
+  procurement: "/procurement",
+  coach: "/coach",
+  physio: "/physio",
+  nutritionist: "/nutrition",
+  team_manager: "/team-manager",
+  athlete: "/me",
+};
