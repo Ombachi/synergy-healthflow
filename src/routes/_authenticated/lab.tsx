@@ -162,18 +162,7 @@ function LabPortal() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card">
-        <div className="border-b p-3 font-medium">Test catalog ({tests.data?.length ?? 0})</div>
-        <div className="grid grid-cols-2 gap-2 p-3 md:grid-cols-3">
-          {tests.data?.map((t) => (
-            <div key={t.id} className="rounded border p-2 text-xs">
-              <div className="font-mono text-primary">{t.code}</div>
-              <div className="font-medium">{t.name}</div>
-              <div className="text-muted-foreground">{t.specimen} · {t.container}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Test catalog is managed by admin only and shown in the doctor's order form — not here. */}
 
       <Dialog open={!!resOpen} onOpenChange={(v) => !v && setResOpen(null)}>
         <DialogContent>
