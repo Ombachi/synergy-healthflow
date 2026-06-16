@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Activity, Apple, Bandage, ClipboardCheck, Receipt, ShoppingCart, Trophy, User as UserIcon } from "lucide-react";
+import { Apple, Bandage, ClipboardCheck, Receipt, ShoppingCart, Trophy, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
