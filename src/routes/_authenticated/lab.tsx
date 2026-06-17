@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
+import { StockRequestForm } from "@/components/stock-request-form";
+import { WorkflowChip } from "@/components/workflow-chip";
 
 export const Route = createFileRoute("/_authenticated/lab")({ component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
 
@@ -141,7 +143,7 @@ function LabPortal() {
                     <div>Container: <span className="font-medium">{t?.container ?? "—"}</span></div>
                   </div>
                   <div className="col-span-2">
-                    <span className={`rounded px-2 py-0.5 text-xs ${o.status === "resulted" ? "bg-green-500/10 text-green-700" : o.status === "collected" ? "bg-blue-500/10 text-blue-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
+                    <WorkflowChip status={o.status} />
                     <div className="mt-1 text-xs text-muted-foreground capitalize">{o.priority}</div>
                   </div>
                   <div className="col-span-2 text-xs text-muted-foreground">
@@ -161,6 +163,9 @@ function LabPortal() {
           })}
         </div>
       </div>
+
+      {/* Lab raises stock requests to central store for reagents/consumables */}
+      <StockRequestForm department="lab" categoryHint="lab" />
 
       {/* Test catalog is managed by admin only and shown in the doctor's order form — not here. */}
 

@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { StockRequestInbox } from "@/components/stock-request-inbox";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/store")({
-  component: StoreDashboard,
+  component: () => <StoreDashboard />,
 });
 
 interface Batch { id: string; item_id: string; batch_no: string | null; expiry_date: string | null; qty_on_hand: number; location_id: string | null }
@@ -21,7 +22,7 @@ interface GRN { id: string; received_at: string; notes: string | null; po_id: st
 
 function StoreDashboard() {
   const { hasAnyRole, user } = useAuth();
-  const allowed = hasAnyRole(["admin", "pharmacist"]);
+  const allowed = hasAnyRole(["admin", "store_keeper", "pharmacist"]);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ item_id: "", batch_no: "", expiry_date: "", qty: 0, unit_cost_cents: 0, location_id: "" });
