@@ -187,6 +187,9 @@ function StoreDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Incoming stock requests from lab/pharmacy departments */}
+      <StockRequestInbox />
     </div>
   );
 }

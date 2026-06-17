@@ -6,6 +6,7 @@ import { ListOrdered, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { WorkflowChip, workflowLabel } from "@/components/workflow-chip";
 
 export const Route = createFileRoute("/_authenticated/queue")({ component: QueueBoard });
 
@@ -106,7 +107,7 @@ function QueueBoard() {
           return (
             <div key={type} className="rounded-lg border bg-card">
               <div className="flex items-center justify-between border-b p-3">
-                <div className="font-medium capitalize">{type}</div>
+                <div className="font-medium">{workflowLabel(type)}</div>
                 <span className="rounded bg-muted px-2 py-0.5 text-xs">{entries.length}</span>
               </div>
               <div className="divide-y">
@@ -117,7 +118,10 @@ function QueueBoard() {
                     <div key={q.id} className="flex items-center justify-between gap-2 p-3 text-sm">
                       <div>
                         <div className="font-medium">{v ? patientName(v.patient_id) : "—"}</div>
-                        <div className="text-xs text-muted-foreground">P{q.priority} · waited {elapsed(q.entered_at)} {q.called_at && "· called"}</div>
+                        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                          {v?.current_stage && <WorkflowChip status={v.current_stage} />}
+                          <span>P{q.priority} · waited {elapsed(q.entered_at)} {q.called_at && "· called"}</span>
+                        </div>
                       </div>
                       <div className="flex gap-1">
                         {!q.called_at && <Button size="sm" variant="outline" onClick={() => call.mutate(q.id)}><BellRing className="h-3 w-3" /></Button>}
