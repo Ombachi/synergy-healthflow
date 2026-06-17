@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
+import { StockRequestForm } from "@/components/stock-request-form";
+import { WorkflowChip } from "@/components/workflow-chip";
 
 export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
@@ -139,10 +141,10 @@ function PharmacyPortal() {
                     </div>
                     <div className="flex items-center gap-2">
                       {d ? (
-                        <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs text-green-700">Dispensed × {d.quantity}</span>
+                        <WorkflowChip status={d.status === "dispensed" ? "dispensed" : d.status} />
                       ) : canDispense ? (
                         <Button size="sm" onClick={() => setDispOpen(r)}>Dispense</Button>
-                      ) : <span className="text-xs text-muted-foreground">Pending</span>}
+                      ) : <WorkflowChip status="pending" />}
                     </div>
                   </div>
                   {pid && <PatientContext patientId={pid} visitId={r.visit_id} />}
@@ -167,6 +169,9 @@ function PharmacyPortal() {
           </div>
         </div>
       </div>
+      {/* Pharmacy raises stock requests to central store (partial fills handled by store keeper) */}
+      <StockRequestForm department="pharmacy" />
+
 
       <div className="rounded-lg border bg-card">
         <div className="border-b p-3 font-medium">Recent stock movements</div>
