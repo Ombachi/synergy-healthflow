@@ -47,17 +47,10 @@ function Dashboard() {
   const { roles, profile, loading } = useAuth();
   const primary: AppRole = (profile?.onboarded_as ?? roles[0] ?? "patient") as AppRole;
 
-  // Role-based home routing: send each role straight to their portal.
-  // Admins stay on the dashboard (they manage everything).
-  if (!loading && roles.length > 0 && !roles.includes("admin")) {
-    const home = ROLE_HOME[primary];
-    if (home && typeof window !== "undefined" && window.location.pathname === "/dashboard") {
-      return <Navigate to={home} replace />;
-    }
-  }
-
   const isClinical = roles.some((r) => ["doctor","nurse","admin"].includes(r));
 
+  // All hooks must run unconditionally on every render; the Navigate redirect
+  // is decided AFTER the hooks below to keep hook order stable (fixes React #300).
   const patients = useCount("patients", isClinical);
   const athletes = useCount("athletes", roles.some((r) => ["coach","admin"].includes(r)));
   const inventory = useCount("inventory_items", roles.includes("admin"));
@@ -70,6 +63,15 @@ function Dashboard() {
       return count ?? 0;
     },
   });
+
+  // Role-based home routing: send each role straight to their portal.
+  // Admins stay on the dashboard (they manage everything).
+  if (!loading && roles.length > 0 && !roles.includes("admin")) {
+    const home = ROLE_HOME[primary];
+    if (home && typeof window !== "undefined" && window.location.pathname === "/dashboard") {
+      return <Navigate to={home} replace />;
+    }
+  }
 
   const quickLinks = buildLinks(roles);
 
