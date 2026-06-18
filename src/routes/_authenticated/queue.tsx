@@ -7,8 +7,19 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { WorkflowChip, workflowLabel } from "@/components/workflow-chip";
+import { NurseStation } from "@/components/workstations/nurse-station";
+import { DoctorStation } from "@/components/workstations/doctor-station";
 
-export const Route = createFileRoute("/_authenticated/queue")({ component: QueueBoard });
+export const Route = createFileRoute("/_authenticated/queue")({ component: QueueRouter });
+
+function QueueRouter() {
+  const { roles, loading } = useAuth();
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  // Specialized workstations
+  if (roles.includes("nurse") && !roles.includes("admin")) return <NurseStation />;
+  if (roles.includes("doctor") && !roles.includes("admin")) return <DoctorStation />;
+  return <QueueBoard />;
+}
 
 interface QueueEntry { id: string; visit_id: string; queue_type: string; priority: number; entered_at: string; called_at: string | null; served_at: string | null }
 interface Visit { id: string; patient_id: string; current_stage: string | null }
@@ -16,11 +27,8 @@ interface Patient { id: string; full_name: string }
 
 const ALL_TYPES = ["triage", "doctor", "lab", "radiology", "pharmacy", "billing"];
 
-// Each role only sees the queue board(s) relevant to them.
 const ROLE_QUEUES: Record<string, string[]> = {
   receptionist: ["triage"],
-  nurse: ["triage"],
-  doctor: ["doctor"],
   lab_tech: ["lab"],
   radiologist: ["radiology"],
   pharmacist: ["pharmacy"],

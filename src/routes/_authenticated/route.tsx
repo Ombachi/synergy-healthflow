@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Apple, Bandage, BarChart3, CalendarClock, ClipboardCheck, ClipboardList, Dumbbell, FlaskConical, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Trophy, UserPlus, Users, Warehouse } from "lucide-react";
+import { Activity, Apple, Bandage, BarChart3, CalendarClock, ClipboardCheck, ClipboardList, Dumbbell, FlaskConical, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Trophy, Users, Warehouse } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated")({
 type BadgeKey = "lab" | "pharmacy" | "radiology" | undefined;
 const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, badge: undefined },
-  { title: "Onboarding", url: "/onboarding", icon: UserPlus, badge: undefined },
+
   { title: "Reception", url: "/reception", icon: ClipboardCheck, badge: undefined },
   { title: "Appointments", url: "/appointments", icon: CalendarClock, badge: undefined },
   { title: "Queue board", url: "/queue", icon: ListOrdered, badge: undefined },
@@ -125,14 +125,7 @@ function AuthedLayout() {
             <SidebarTrigger />
             <NotificationBell />
           </header>
-          {user && !roles.length && pathname !== "/onboarding" && pathname !== "/team" && (
-            <div className="border-b bg-primary/5 px-4 py-2 text-sm">
-              Finish setting up your account.{" "}
-              <Link to="/onboarding" className="font-medium text-primary underline">
-                Complete onboarding →
-              </Link>
-            </div>
-          )}
+
           <main className="flex-1 p-6">
             <Outlet />
           </main>

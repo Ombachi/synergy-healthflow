@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, CalendarClock, ClipboardList, Heart, MessageSquare, Package, Shield, Stethoscope, UserPlus, Users } from "lucide-react";
+import { Activity, CalendarClock, ClipboardList, Heart, MessageSquare, Package, Shield, Stethoscope, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { MyActivePatients } from "@/components/my-active-patients";
@@ -176,8 +176,8 @@ function buildLinks(roles: AppRole[]) {
     links.push({ to: "/team", label: "Team & roles", blurb: "Grant or revoke access", icon: Users });
   }
   if (any(["patient","athlete"])) links.push({ to: "/me", label: "My health", blurb: "Visits & vitals trends", icon: Stethoscope });
-  if (!roles.length) links.push({ to: "/onboarding", label: "Finish onboarding", blurb: "Complete your profile", icon: UserPlus });
 
   links.push({ to: "/messages", label: "Messages", blurb: "Talk to your care team", icon: MessageSquare });
+
   return links;
 }

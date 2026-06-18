@@ -47,9 +47,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 // Always visible to all signed-in users.
 export const ALWAYS_VISIBLE = new Set<string>([
   "/dashboard",
-  "/onboarding",
   "/messages",
 ]);
+
 
 export function canAccess(path: string, roles: AppRole[]): boolean {
   if (ALWAYS_VISIBLE.has(path)) return true;
