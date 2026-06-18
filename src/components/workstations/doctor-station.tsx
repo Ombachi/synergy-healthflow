@@ -1,0 +1,160 @@
+import { useEffect } from "react";
+import { Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Stethoscope, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { WorkflowChip } from "@/components/workflow-chip";
+
+interface QueueEntry { id: string; visit_id: string; priority: number; entered_at: string }
+interface Visit { id: string; patient_id: string; current_stage: string | null; triage_level: string | null; chief_complaint: string | null; reason: string | null; assigned_doctor_id: string | null }
+interface Patient { id: string; full_name: string; date_of_birth: string | null; gender: string | null; medical_record_number: string | null; allergies: string | null }
+interface VitalRow { visit_id: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null; captured_at: string }
+
+const PRIO_COLOR: Record<number, string> = {
+  1: "bg-rose-500/15 text-rose-700 border-rose-500/40",
+  2: "bg-amber-500/15 text-amber-700 border-amber-500/40",
+  3: "bg-sky-500/10 text-sky-700 border-sky-500/30",
+};
+
+function ageOf(dob: string | null) {
+  if (!dob) return "—";
+  const y = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000));
+  return `${y}y`;
+}
+
+export function DoctorStation() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const queue = useQuery({
+    queryKey: ["doc-queue", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("visit_queue" as never)
+        .select("id, visit_id, priority, entered_at")
+        .eq("queue_type", "doctor").is("served_at", null)
+        .order("priority").order("entered_at");
+      if (error) throw error;
+      return (data as unknown as QueueEntry[]) ?? [];
+    },
+  });
+
+  const ids = (queue.data ?? []).map((q) => q.visit_id);
+  const visits = useQuery({
+    queryKey: ["doc-visits", ids.join(",")],
+    enabled: ids.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("visits" as never)
+        .select("id, patient_id, current_stage, triage_level, chief_complaint, reason, assigned_doctor_id")
+        .in("id", ids as never);
+      if (error) throw error;
+      return (data as unknown as Visit[]) ?? [];
+    },
+  });
+
+  // Filter to only patients assigned to this doctor (or unassigned for admins)
+  const myVisits = (visits.data ?? []).filter((v) => !v.assigned_doctor_id || v.assigned_doctor_id === user?.id);
+  const myQueueIds = new Set(myVisits.map((v) => v.id));
+  const myQueue = (queue.data ?? []).filter((q) => myQueueIds.has(q.visit_id));
+
+  const patientIds = myVisits.map((v) => v.patient_id);
+  const patients = useQuery({
+    queryKey: ["doc-patients", patientIds.join(",")],
+    enabled: patientIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("patients" as never)
+        .select("id, full_name, date_of_birth, gender, medical_record_number, allergies")
+        .in("id", patientIds as never);
+      if (error) throw error;
+      return (data as unknown as Patient[]) ?? [];
+    },
+  });
+
+  const vitals = useQuery({
+    queryKey: ["doc-vitals", myVisits.map((v) => v.id).join(",")],
+    enabled: myVisits.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("vitals" as never)
+        .select("visit_id, systolic_bp, diastolic_bp, heart_rate, temperature_c, oxygen_saturation, captured_at")
+        .in("visit_id", myVisits.map((v) => v.id) as never)
+        .order("captured_at", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as VitalRow[]) ?? [];
+    },
+  });
+
+  useEffect(() => {
+    const ch = supabase.channel("doc-queue-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "visit_queue" }, () => qc.invalidateQueries({ queryKey: ["doc-queue"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
+
+  const patientOf = (id: string) => patients.data?.find((p) => p.id === id);
+  const latestVitals = (vid: string) => vitals.data?.find((v) => v.visit_id === vid);
+  const elapsed = (iso: string) => {
+    const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold"><Stethoscope className="h-6 w-6 text-primary" /> Doctor workspace</h1>
+          <p className="text-sm text-muted-foreground">Patients assigned to you, sorted by priority.</p>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          <span className="rounded-full bg-primary/10 px-2 py-1 font-medium text-primary">{myQueue.length} in queue</span>
+        </div>
+      </div>
+
+      {myQueue.length === 0 ? (
+        <div className="rounded-lg border bg-card p-10 text-center text-sm text-muted-foreground">
+          No patients in your queue. Nurses send patients here after triage.
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {myQueue.map((q) => {
+            const v = visits.data!.find((x) => x.id === q.visit_id)!;
+            const p = patientOf(v.patient_id);
+            const vt = latestVitals(v.id);
+            return (
+              <Link
+                key={q.id}
+                to="/visits/$visitId" params={{ visitId: v.id }}
+                className="group flex items-center gap-4 rounded-lg border bg-card p-4 transition hover:border-primary hover:shadow-sm"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-semibold text-primary">
+                  {p?.full_name.split(" ").map((n) => n[0]).slice(0, 2).join("") ?? "?"}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">{p?.full_name ?? "—"}</span>
+                    <span className="text-xs text-muted-foreground">MRN {p?.medical_record_number ?? "—"} · {ageOf(p?.date_of_birth ?? null)} · {p?.gender ?? "—"}</span>
+                  </div>
+                  <div className="mt-0.5 text-sm text-muted-foreground line-clamp-1">{v.chief_complaint ?? v.reason ?? "—"}</div>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                    <span className={`rounded border px-1.5 py-0.5 ${PRIO_COLOR[q.priority] ?? PRIO_COLOR[3]}`}>
+                      {q.priority === 1 ? "Emergency" : q.priority === 2 ? "Urgent" : "Normal"}
+                    </span>
+                    {v.current_stage && <WorkflowChip status={v.current_stage} />}
+                    <span className="text-muted-foreground">Waiting {elapsed(q.entered_at)}</span>
+                    {p?.allergies && <span className="rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-amber-700">⚠ {p.allergies}</span>}
+                    {vt && (
+                      <span className="font-mono text-muted-foreground">
+                        BP {vt.systolic_bp ?? "—"}/{vt.diastolic_bp ?? "—"} · HR {vt.heart_rate ?? "—"} · SpO₂ {vt.oxygen_saturation ?? "—"}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
