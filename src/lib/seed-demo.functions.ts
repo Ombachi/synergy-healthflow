@@ -4,12 +4,19 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "nurse@demo.local", full_name: "Nina Nurse", role: "nurse" },
   { email: "doctor@demo.local", full_name: "Dr. Dan Doctor", role: "doctor" },
-  { email: "store@demo.local", full_name: "Sam Store Manager", role: "admin" },
+  { email: "admin@demo.local", full_name: "Ada Admin", role: "admin" },
+  { email: "store@demo.local", full_name: "Sam Store Keeper", role: "store_keeper" },
   { email: "coach@demo.local", full_name: "Casey Coach", role: "coach" },
   { email: "patient@demo.local", full_name: "Pat Patient", role: "patient" },
   { email: "pharmacist@demo.local", full_name: "Phil Pharmacist", role: "pharmacist" },
   { email: "lab@demo.local", full_name: "Lara Lab Scientist", role: "lab_tech" },
   { email: "radiologist@demo.local", full_name: "Riya Radiologist", role: "radiologist" },
+  { email: "receptionist@demo.local", full_name: "Rita Receptionist", role: "receptionist" },
+  { email: "billing@demo.local", full_name: "Bea Billing Officer", role: "billing_officer" },
+  { email: "insurance@demo.local", full_name: "Ivan Insurance Officer", role: "insurance_officer" },
+  { email: "physio@demo.local", full_name: "Pam Physio", role: "physio" },
+  { email: "nutritionist@demo.local", full_name: "Nora Nutritionist", role: "nutritionist" },
+  { email: "procurement@demo.local", full_name: "Pete Procurement", role: "procurement" },
 ];
 
 const DEMO_PASSWORD = "Demo123!";
@@ -51,10 +58,10 @@ export const seedDemoUsers = createServerFn({ method: "POST" })
         id: userId,
         full_name: u.full_name,
         onboarded: true,
-        onboarded_as: u.role as any,
+        onboarded_as: u.role as never,
       });
       await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
-      await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: u.role as any });
+      await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: u.role as never });
       results.push({ email: u.email, status, role: u.role });
     }
 
