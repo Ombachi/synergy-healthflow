@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -48,10 +48,12 @@ interface PatientOpt {
 
 function Visits() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { user, hasAnyRole } = useAuth();
   const canOpen = hasAnyRole(["doctor", "nurse", "admin"]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
+
 
   const visits = useQuery({
     queryKey: ["visits"],
@@ -84,24 +86,27 @@ function Visits() {
   const create = useMutation({
     mutationFn: async () => {
       if (!form.patient_id) throw new Error("Pick a patient");
-      const { error } = await supabase.from("visits" as never).insert({
+      const { data, error } = await supabase.from("visits" as never).insert({
         patient_id: form.patient_id,
         opened_by: user!.id,
         reason: form.reason || null,
         chief_complaint: form.chief_complaint || null,
         triage_level: form.triage_level || "routine",
         status: "open",
-      } as never);
+      } as never).select("id").single();
       if (error) throw error;
+      return (data as { id: string }).id;
     },
-    onSuccess: () => {
+    onSuccess: (visitId) => {
       qc.invalidateQueries({ queryKey: ["visits"] });
       setOpen(false);
       setForm({});
       toast.success("Visit started");
+      navigate({ to: "/visits/$visitId", params: { visitId } });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const triageBadge = (level: string | null) => {
     const cls =
