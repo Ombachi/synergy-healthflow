@@ -25,7 +25,6 @@ import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedProcurementRouteImport } from './routes/_authenticated/procurement'
 import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
-import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNutritionRouteImport } from './routes/_authenticated/nutrition'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
@@ -123,11 +122,6 @@ const AuthenticatedPharmacyRoute = AuthenticatedPharmacyRouteImport.update({
   path: '/pharmacy',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedNutritionRoute = AuthenticatedNutritionRouteImport.update({
   id: '/nutrition',
   path: '/nutrition',
@@ -218,7 +212,6 @@ export interface FileRoutesByFullPath {
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
-  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/procurement': typeof AuthenticatedProcurementRoute
@@ -250,7 +243,6 @@ export interface FileRoutesByTo {
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
-  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/procurement': typeof AuthenticatedProcurementRoute
@@ -284,7 +276,6 @@ export interface FileRoutesById {
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/nutrition': typeof AuthenticatedNutritionRoute
-  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
   '/_authenticated/physio': typeof AuthenticatedPhysioRoute
   '/_authenticated/procurement': typeof AuthenticatedProcurementRoute
@@ -318,7 +309,6 @@ export interface FileRouteTypes {
     | '/medical'
     | '/messages'
     | '/nutrition'
-    | '/onboarding'
     | '/pharmacy'
     | '/physio'
     | '/procurement'
@@ -350,7 +340,6 @@ export interface FileRouteTypes {
     | '/medical'
     | '/messages'
     | '/nutrition'
-    | '/onboarding'
     | '/pharmacy'
     | '/physio'
     | '/procurement'
@@ -383,7 +372,6 @@ export interface FileRouteTypes {
     | '/_authenticated/medical'
     | '/_authenticated/messages'
     | '/_authenticated/nutrition'
-    | '/_authenticated/onboarding'
     | '/_authenticated/pharmacy'
     | '/_authenticated/physio'
     | '/_authenticated/procurement'
@@ -520,13 +508,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPharmacyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/onboarding': {
-      id: '/_authenticated/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/nutrition': {
       id: '/_authenticated/nutrition'
       path: '/nutrition'
@@ -653,7 +634,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedNutritionRoute: typeof AuthenticatedNutritionRoute
-  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
   AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
   AuthenticatedProcurementRoute: typeof AuthenticatedProcurementRoute
@@ -683,7 +663,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedNutritionRoute: AuthenticatedNutritionRoute,
-  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
   AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
   AuthenticatedProcurementRoute: AuthenticatedProcurementRoute,
