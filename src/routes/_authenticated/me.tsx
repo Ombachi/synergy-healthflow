@@ -130,10 +130,11 @@ function PatientTimeline() {
     return (
       <div className="rounded-lg border bg-card p-6">
         <h1 className="text-xl font-semibold">No patient profile found</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Complete <Link to="/onboarding" className="text-primary underline">onboarding as a patient</Link>.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Ask reception to register you as a patient.</p>
       </div>
     );
   }
+
 
   return (
     <div className="space-y-4">
