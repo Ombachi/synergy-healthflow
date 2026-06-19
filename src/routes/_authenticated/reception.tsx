@@ -41,7 +41,7 @@ function ReceptionPage() {
     queryKey: ["recep-patients", search],
     queryFn: async () => {
       let q = supabase.from("patients" as never).select("id, full_name, phone, medical_record_number").order("full_name").limit(50);
-      if (search) q = q.ilike("full_name", `%${search}%`);
+      if (search) q = q.or(`full_name.ilike.%${search}%,medical_record_number.ilike.%${search}%`);
       const { data, error } = await q;
       if (error) throw error;
       return (data as unknown as Patient[]) ?? [];

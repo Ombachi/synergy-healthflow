@@ -17,7 +17,15 @@ export const Route = createFileRoute("/_authenticated/nutrition")({
 });
 
 interface Athlete { id: string; full_name: string; sport: string | null; team: string | null; height_cm: number | null; weight_kg: number | null; date_of_birth: string | null }
-interface Plan { id: string; athlete_id: string; notes: string | null; start_date: string | null; end_date: string | null; compliance_pct: number | null; plan: Record<string, unknown> }
+interface Plan { id: string; athlete_id: string; notes: string | null; start_date: string | null; end_date: string | null; compliance_pct: number | null; plan: Record<string, unknown>; created_at: string }
+
+type AssessmentForm = {
+  weight: string; height: string; muac: string;
+  diet_history: string; diagnosis: string;
+  meal_plan: string; recommendations: string; follow_up: string;
+};
+
+const BLANK: AssessmentForm = { weight: "", height: "", muac: "", diet_history: "", diagnosis: "", meal_plan: "", recommendations: "", follow_up: "" };
 
 function NutritionStation() {
   const { user } = useAuth();
@@ -49,17 +57,26 @@ function NutritionStation() {
 
   const selected = athletes.data?.find((a) => a.id === selectedId) ?? null;
 
-  const [assess, setAssess] = useState({ weight: "", height: "", muac: "", diet_history: "", diagnosis: "", meal_plan: "", recommendations: "", follow_up: "" });
+  const [assess, setAssess] = useState<AssessmentForm>(BLANK);
 
+  // Load last saved assessment (most recent nutrition_plan with kind=assessment) for this athlete
   useEffect(() => {
-    if (selected) {
-      setAssess({
-        weight: selected.weight_kg?.toString() ?? "",
-        height: selected.height_cm?.toString() ?? "",
-        muac: "", diet_history: "", diagnosis: "", meal_plan: "", recommendations: "", follow_up: "",
-      });
-    }
-  }, [selected?.id]);
+    if (!selected) return;
+    const latest = (plans.data ?? [])
+      .filter((p) => p.athlete_id === selected.id)
+      .sort((a, b) => (b.created_at > a.created_at ? 1 : -1))[0];
+    const planJson = (latest?.plan ?? {}) as Record<string, string | undefined>;
+    setAssess({
+      weight: planJson.weight ?? selected.weight_kg?.toString() ?? "",
+      height: planJson.height ?? selected.height_cm?.toString() ?? "",
+      muac: planJson.muac ?? "",
+      diet_history: planJson.diet_history ?? "",
+      diagnosis: planJson.diagnosis ?? "",
+      meal_plan: planJson.meal_plan ?? "",
+      recommendations: planJson.recommendations ?? latest?.notes ?? "",
+      follow_up: latest?.end_date ?? "",
+    });
+  }, [selected?.id, plans.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const bmi = useMemo(() => {
     const w = Number(assess.weight), h = Number(assess.height) / 100;
@@ -73,33 +90,50 @@ function NutritionStation() {
     return `${y}y`;
   };
 
+  const buildPlanJson = () => ({
+    kind: "assessment",
+    weight: assess.weight, height: assess.height, bmi,
+    muac: assess.muac, diet_history: assess.diet_history,
+    diagnosis: assess.diagnosis, recommendations: assess.recommendations,
+    meal_plan: assess.meal_plan,
+  });
+
   const saveAssessment = useMutation({
     mutationFn: async () => {
       if (!selected) throw new Error("Pick an athlete");
       const w = assess.weight ? Number(assess.weight) : null;
       const h = assess.height ? Number(assess.height) : null;
-      const { error } = await supabase.from("athletes" as never)
+      // 1. Update athlete profile vitals
+      const { error: aErr } = await supabase.from("athletes" as never)
         .update({ weight_kg: w, height_cm: h } as never).eq("id", selected.id);
-      if (error) throw error;
+      if (aErr) throw aErr;
+      // 2. Persist the full assessment as a nutrition_plan row so it survives refresh
+      const { error: pErr } = await supabase.from("nutrition_plans" as never).insert({
+        athlete_id: selected.id, nutritionist_id: user!.id,
+        notes: assess.recommendations || null,
+        start_date: new Date().toISOString().slice(0, 10),
+        end_date: assess.follow_up || null,
+        plan: buildPlanJson(),
+      } as never);
+      if (pErr) throw pErr;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["nut-athletes"] }); toast.success("Assessment saved"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["nut-athletes"] });
+      qc.invalidateQueries({ queryKey: ["nut-plans"] });
+      toast.success("Assessment saved");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const issuePlan = useMutation({
     mutationFn: async () => {
       if (!selected) throw new Error("Pick an athlete");
-      const planJson = {
-        bmi, muac: assess.muac, diet_history: assess.diet_history,
-        diagnosis: assess.diagnosis, recommendations: assess.recommendations,
-        meal_plan: assess.meal_plan,
-      };
       const { error } = await supabase.from("nutrition_plans" as never).insert({
         athlete_id: selected.id, nutritionist_id: user!.id,
         notes: assess.recommendations || null,
         start_date: new Date().toISOString().slice(0, 10),
         end_date: assess.follow_up || null,
-        plan: planJson,
+        plan: { ...buildPlanJson(), kind: "plan" },
       } as never);
       if (error) throw error;
     },
@@ -111,7 +145,6 @@ function NutritionStation() {
 
   return (
     <div className="grid h-[calc(100vh-8rem)] gap-4 lg:grid-cols-[320px_1fr]">
-      {/* LEFT: athlete queue */}
       <div className="flex flex-col overflow-hidden rounded-lg border bg-card">
         <div className="border-b p-3">
           <div className="flex items-center gap-2 font-semibold"><Apple className="h-4 w-4 text-emerald-600" />Athletes</div>
@@ -134,7 +167,6 @@ function NutritionStation() {
         </div>
       </div>
 
-      {/* RIGHT */}
       <div className="flex flex-col overflow-hidden rounded-lg border bg-card">
         {!selected ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">Select an athlete.</div>
@@ -167,18 +199,20 @@ function NutritionStation() {
                     <Box label="BMI"><div className="flex h-9 items-center rounded-md border bg-muted/40 px-3 font-mono text-sm">{bmi ?? "—"}</div></Box>
                     <Box label="MUAC (cm)"><Input type="number" step="0.1" value={assess.muac} onChange={(e) => setAssess({ ...assess, muac: e.target.value })} /></Box>
                   </div>
-                  <Button variant="outline" onClick={() => saveAssessment.mutate()} disabled={saveAssessment.isPending}>
+                  <Button onClick={() => saveAssessment.mutate()} disabled={saveAssessment.isPending}>
                     <Save className="h-4 w-4" /> Save assessment
                   </Button>
                 </TabsContent>
 
-                <TabsContent value="diet" className="mt-4">
+                <TabsContent value="diet" className="mt-4 space-y-3">
                   <Box label="Diet history"><Textarea rows={6} value={assess.diet_history} onChange={(e) => setAssess({ ...assess, diet_history: e.target.value })} placeholder="Typical day's intake, eating patterns, supplements…" /></Box>
+                  <Button variant="outline" onClick={() => saveAssessment.mutate()} disabled={saveAssessment.isPending}><Save className="h-4 w-4" /> Save</Button>
                 </TabsContent>
 
-                <TabsContent value="diagnosis" className="mt-4">
+                <TabsContent value="diagnosis" className="mt-4 space-y-3">
                   <Box label="Nutrition diagnosis"><Textarea rows={4} value={assess.diagnosis} onChange={(e) => setAssess({ ...assess, diagnosis: e.target.value })} /></Box>
-                  <div className="mt-3"><Box label="Recommendations"><Textarea rows={4} value={assess.recommendations} onChange={(e) => setAssess({ ...assess, recommendations: e.target.value })} /></Box></div>
+                  <Box label="Recommendations"><Textarea rows={4} value={assess.recommendations} onChange={(e) => setAssess({ ...assess, recommendations: e.target.value })} /></Box>
+                  <Button variant="outline" onClick={() => saveAssessment.mutate()} disabled={saveAssessment.isPending}><Save className="h-4 w-4" /> Save</Button>
                 </TabsContent>
 
                 <TabsContent value="plan" className="mt-4 space-y-3">
@@ -192,12 +226,18 @@ function NutritionStation() {
 
                 <TabsContent value="history" className="mt-4 space-y-2">
                   {myPlans.length === 0 && <p className="text-sm text-muted-foreground">No past plans.</p>}
-                  {myPlans.map((p) => (
-                    <div key={p.id} className="rounded border p-3 text-sm">
-                      <div className="font-medium">{p.start_date ?? "—"} → {p.end_date ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground">{p.notes ?? "—"}</div>
-                    </div>
-                  ))}
+                  {myPlans.map((p) => {
+                    const kind = (p.plan as { kind?: string } | null)?.kind ?? "plan";
+                    return (
+                      <div key={p.id} className="rounded border p-3 text-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium">{p.start_date ?? "—"} → {p.end_date ?? "—"}</div>
+                          <span className="rounded bg-muted px-2 py-0.5 text-xs capitalize">{kind}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">{p.notes ?? "—"}</div>
+                      </div>
+                    );
+                  })}
                 </TabsContent>
               </Tabs>
             </div>
