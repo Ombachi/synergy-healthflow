@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Pill, Package, AlertTriangle } from "lucide-react";
+import { Pill, AlertTriangle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,45 +20,27 @@ export const Route = createFileRoute("/_authenticated/pharmacy")({ component: ()
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null; created_at: string }
 interface Dispense { id: string; prescription_id: string; quantity: number; status: string; dispensed_at: string; inventory_item_id: string | null }
 interface InvItem { id: string; name: string; sku: string | null; quantity: number; reorder_threshold: number; category: string | null }
-interface Movement { id: string; inventory_item_id: string; change: number; reason: string | null; created_at: string }
 
 function PharmacyPortal() {
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
   const canDispense = hasAnyRole(["pharmacist", "admin"]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "dispensed">("pending");
+  const [search, setSearch] = useState("");
 
-  const rx = useQuery({
-    queryKey: ["pharm-rx"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("prescriptions" as never).select("*").order("created_at", { ascending: false }).limit(50);
-      if (error) throw error;
-      return (data as unknown as Rx[]) ?? [];
-    },
-  });
-  const dispenses = useQuery({
-    queryKey: ["pharm-disp"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("pharmacy_dispenses" as never).select("*").order("dispensed_at", { ascending: false });
-      if (error) throw error;
-      return (data as unknown as Dispense[]) ?? [];
-    },
-  });
-  const inv = useQuery({
-    queryKey: ["pharm-inv"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("inventory_items" as never).select("*").order("name");
-      if (error) throw error;
-      return (data as unknown as InvItem[]) ?? [];
-    },
-  });
-  const movs = useQuery({
-    queryKey: ["pharm-mov"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("inventory_movements" as never).select("*").order("created_at", { ascending: false }).limit(20);
-      if (error) throw error;
-      return (data as unknown as Movement[]) ?? [];
-    },
-  });
+  const rx = useQuery({ queryKey: ["pharm-rx"], queryFn: async () => {
+    const { data, error } = await supabase.from("prescriptions" as never).select("*").order("created_at", { ascending: false }).limit(200);
+    if (error) throw error; return (data as unknown as Rx[]) ?? [];
+  }});
+  const dispenses = useQuery({ queryKey: ["pharm-disp"], queryFn: async () => {
+    const { data, error } = await supabase.from("pharmacy_dispenses" as never).select("*").order("dispensed_at", { ascending: false });
+    if (error) throw error; return (data as unknown as Dispense[]) ?? [];
+  }});
+  const inv = useQuery({ queryKey: ["pharm-inv"], queryFn: async () => {
+    const { data, error } = await supabase.from("inventory_items" as never).select("*").order("name");
+    if (error) throw error; return (data as unknown as InvItem[]) ?? [];
+  }});
 
   const visitIds = Array.from(new Set((rx.data ?? []).map((r) => r.visit_id).filter(Boolean)));
   const visitPatients = useQuery({
@@ -86,21 +68,17 @@ function PharmacyPortal() {
       } as never);
       if (e1) throw e1;
       if (form.inventory_item_id && item) {
-        const { error: e2 } = await supabase.from("inventory_items" as never)
-          .update({ quantity: item.quantity - qty } as never).eq("id", item.id);
-        if (e2) throw e2;
-        const { error: e3 } = await supabase.from("inventory_movements" as never).insert({
+        await supabase.from("inventory_items" as never).update({ quantity: item.quantity - qty } as never).eq("id", item.id);
+        await supabase.from("inventory_movements" as never).insert({
           inventory_item_id: item.id, change: -qty, reason: `Dispense for ${dispOpen.medication}`,
           prescription_id: dispOpen.id, by_user: user!.id,
         } as never);
-        if (e3) throw e3;
       }
     },
     onSuccess: () => {
       setDispOpen(null); setForm({ inventory_item_id: "", quantity: 0, instructions: "" });
       qc.invalidateQueries({ queryKey: ["pharm-disp"] });
       qc.invalidateQueries({ queryKey: ["pharm-inv"] });
-      qc.invalidateQueries({ queryKey: ["pharm-mov"] });
       toast.success("Dispensed");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -108,85 +86,107 @@ function PharmacyPortal() {
 
   const lowStock = inv.data?.filter((i) => i.quantity <= i.reorder_threshold) ?? [];
 
+  const statusOf = (r: Rx) => dispenses.data?.find((d) => d.prescription_id === r.id) ? "dispensed" : "pending";
+  const filtered = useMemo(() => {
+    return (rx.data ?? []).filter((r) => {
+      const s = statusOf(r);
+      if (filter !== "all" && s !== filter) return false;
+      if (search && !r.medication.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }, [rx.data, dispenses.data, filter, search]); // eslint-disable-line
+
+  const selected = filtered.find((r) => r.id === selectedId) ?? filtered[0] ?? null;
+  const selDispense = selected && dispenses.data?.find((d) => d.prescription_id === selected.id);
+  const selPid = selected && patientFor(selected.visit_id);
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-semibold"><Pill className="h-6 w-6 text-primary" /> Pharmacy portal</h1>
-        <p className="text-sm text-muted-foreground">Dispense prescriptions and manage stock.</p>
-      </div>
-
-      {lowStock.length > 0 && (
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
-          <div className="flex items-center gap-2 font-medium"><AlertTriangle className="h-4 w-4 text-amber-600" /> Low stock alerts</div>
-          <ul className="mt-1 list-disc pl-5 text-xs">
-            {lowStock.map((i) => <li key={i.id}>{i.name} — {i.quantity} left (reorder at {i.reorder_threshold})</li>)}
-          </ul>
-        </div>
-      )}
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-lg border bg-card lg:col-span-2">
-          <div className="border-b p-3 font-medium">Prescription queue</div>
-          <div className="divide-y">
-            {rx.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No prescriptions.</div>}
-            {rx.data?.map((r) => {
-              const d = dispenses.data?.find((x) => x.prescription_id === r.id);
-              const pid = patientFor(r.visit_id);
+    <div className="grid h-[calc(100vh-8rem)] gap-4 lg:grid-cols-[360px_1fr]">
+      {/* LEFT PANEL: queue + filters + low stock + stock requests */}
+      <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
+        {lowStock.length > 0 && (
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs">
+            <div className="flex items-center gap-1 font-medium"><AlertTriangle className="h-3 w-3 text-amber-600" /> {lowStock.length} low-stock alerts</div>
+          </div>
+        )}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
+          <div className="border-b p-3">
+            <div className="flex items-center gap-2 font-semibold"><Pill className="h-4 w-4 text-rose-500" /> Prescription queue</div>
+            <div className="relative mt-2">
+              <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input placeholder="Search medication..." value={search} onChange={(e)=>setSearch(e.target.value)} className="h-8 pl-7 text-xs" />
+            </div>
+            <div className="mt-2 flex gap-1 text-xs">
+              {(["pending","dispensed","all"] as const).map((f) => (
+                <button key={f} onClick={() => setFilter(f)}
+                  className={`flex-1 rounded px-2 py-1 capitalize transition ${filter===f ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/70"}`}>{f}</button>
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 overflow-auto">
+            {filtered.length === 0 && <div className="p-4 text-xs text-muted-foreground">No prescriptions.</div>}
+            {filtered.map((r) => {
+              const active = r.id === selected?.id;
+              const s = statusOf(r);
               return (
-                <div key={r.id} className="p-3 text-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <div className="font-medium">{r.medication}</div>
-                      <div className="text-xs text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {d ? (
-                        <WorkflowChip status={d.status === "dispensed" ? "dispensed" : d.status} />
-                      ) : canDispense ? (
-                        <Button size="sm" onClick={() => setDispOpen(r)}>Dispense</Button>
-                      ) : <WorkflowChip status="pending" />}
-                    </div>
+                <button key={r.id} onClick={() => setSelectedId(r.id)}
+                  className={`flex w-full flex-col gap-0.5 border-l-4 border-b p-3 text-left text-xs transition ${
+                    active ? "bg-accent border-l-primary" : "border-l-transparent hover:bg-accent/40"
+                  }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">{r.medication}</span>
+                    <WorkflowChip status={s} />
                   </div>
-                  {pid && <PatientContext patientId={pid} visitId={r.visit_id} />}
-                </div>
+                  <span className="text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</span>
+                </button>
               );
             })}
           </div>
         </div>
-
-        <div className="rounded-lg border bg-card">
-          <div className="border-b p-3 font-medium flex items-center gap-2"><Package className="h-4 w-4" /> Inventory</div>
-          <div className="max-h-96 divide-y overflow-auto">
-            {inv.data?.map((i) => (
-              <div key={i.id} className="flex items-center justify-between p-2 text-sm">
-                <div>
-                  <div className="font-medium">{i.name}</div>
-                  <div className="text-xs text-muted-foreground">{i.sku ?? ""}</div>
-                </div>
-                <div className={`font-mono text-sm ${i.quantity <= i.reorder_threshold ? "text-amber-600" : ""}`}>{i.quantity}</div>
-              </div>
-            ))}
-          </div>
+        <div className="max-h-[40%] overflow-auto">
+          <StockRequestForm department="pharmacy" />
         </div>
       </div>
-      {/* Pharmacy raises stock requests to central store (partial fills handled by store keeper) */}
-      <StockRequestForm department="pharmacy" />
 
-
-      <div className="rounded-lg border bg-card">
-        <div className="border-b p-3 font-medium">Recent stock movements</div>
-        <div className="divide-y">
-          {movs.data?.length === 0 && <div className="p-3 text-sm text-muted-foreground">No movements.</div>}
-          {movs.data?.map((m) => {
-            const item = inv.data?.find((i) => i.id === m.inventory_item_id);
-            return (
-              <div key={m.id} className="flex justify-between p-2 text-xs">
-                <div>{item?.name ?? m.inventory_item_id.slice(0,8)} — {m.reason}</div>
-                <div className={m.change < 0 ? "text-destructive" : "text-green-700"}>{m.change > 0 ? "+" : ""}{m.change}</div>
+      {/* RIGHT: selected prescription */}
+      <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border bg-card">
+        {!selected ? (
+          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">Select a prescription.</div>
+        ) : (
+          <div className="flex flex-1 flex-col overflow-auto">
+            <div className="flex items-center justify-between border-b bg-muted/30 p-4">
+              <div>
+                <div className="text-lg font-semibold">{selected.medication}</div>
+                <div className="text-xs text-muted-foreground">{new Date(selected.created_at).toLocaleString()}</div>
               </div>
-            );
-          })}
-        </div>
+              <WorkflowChip status={selDispense ? "dispensed" : "pending"} />
+            </div>
+
+            <div className="space-y-4 p-4 text-sm">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Detail label="Dose" value={selected.dose ?? "—"} />
+                <Detail label="Frequency" value={selected.frequency ?? "—"} />
+                <Detail label="Duration" value={selected.duration ?? "—"} />
+              </div>
+              {selected.instructions && (
+                <div className="rounded border bg-muted/30 p-3 text-xs">
+                  <div className="font-medium">Instructions</div>
+                  <div className="text-muted-foreground">{selected.instructions}</div>
+                </div>
+              )}
+              {selPid && <PatientContext patientId={selPid} visitId={selected.visit_id} />}
+              {selDispense && (
+                <div className="rounded border border-emerald-500/40 bg-emerald-500/5 p-3 text-xs">
+                  <div className="font-medium">Dispensed</div>
+                  <div className="text-muted-foreground">Qty {selDispense.quantity} · {new Date(selDispense.dispensed_at).toLocaleString()}</div>
+                </div>
+              )}
+              {canDispense && !selDispense && (
+                <Button onClick={() => setDispOpen(selected)}><Pill className="h-4 w-4" /> Dispense</Button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={!!dispOpen} onOpenChange={(v) => !v && setDispOpen(null)}>
@@ -196,8 +196,7 @@ function PharmacyPortal() {
             <div>
               <Label>Link to inventory item (optional)</Label>
               <select className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm"
-                value={form.inventory_item_id}
-                onChange={(e) => setForm({ ...form, inventory_item_id: e.target.value })}>
+                value={form.inventory_item_id} onChange={(e) => setForm({ ...form, inventory_item_id: e.target.value })}>
                 <option value="">— none —</option>
                 {inv.data?.map((i) => <option key={i.id} value={i.id}>{i.name} (qty {i.quantity})</option>)}
               </select>
@@ -208,6 +207,15 @@ function PharmacyPortal() {
           <DialogFooter><Button onClick={() => dispense.mutate()} disabled={dispense.isPending}>Dispense & deduct stock</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded border bg-background p-2">
+      <div className="text-[10px] uppercase text-muted-foreground">{label}</div>
+      <div className="font-medium">{value}</div>
     </div>
   );
 }

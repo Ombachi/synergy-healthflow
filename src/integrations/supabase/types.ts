@@ -3050,6 +3050,7 @@ export type Database = {
       }
       can_discharge: { Args: { _visit: string }; Returns: boolean }
       catalog_price: { Args: { _category: string }; Returns: number }
+      compute_patient_initials: { Args: { _name: string }; Returns: string }
       ensure_open_invoice: { Args: { _visit: string }; Returns: string }
       has_role: {
         Args: {

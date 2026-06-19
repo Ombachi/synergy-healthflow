@@ -98,7 +98,7 @@ function ServiceCatalogPage() {
               <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-2">
                 <div><Label>Category</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
-                <div><Label>Unit price ($)</Label><Input type="number" step="0.01" value={form.unit_price} onChange={(e) => setForm({ ...form, unit_price: Number(e.target.value) })} /></div>
+                <div><Label>Unit price (KES)</Label><Input type="number" step="0.01" value={form.unit_price} onChange={(e) => setForm({ ...form, unit_price: Number(e.target.value) })} /></div>
               </div>
             </div>
             <DialogFooter><Button onClick={() => save.mutate()} disabled={save.isPending}>Save</Button></DialogFooter>
@@ -114,7 +114,7 @@ function ServiceCatalogPage() {
               <div key={s.id} className="grid grid-cols-12 items-center gap-2 p-3 text-sm">
                 <div className="col-span-3 font-mono text-primary">{s.code}</div>
                 <div className="col-span-5">{s.name}</div>
-                <div className="col-span-2 text-right font-medium">${(s.unit_price_cents / 100).toFixed(2)}</div>
+                <div className="col-span-2 text-right font-medium">KES {(s.unit_price_cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
                 <div className="col-span-2 flex justify-end gap-1">
                   <Button size="sm" variant="ghost" onClick={() => openEdit(s)}><Pencil className="h-3 w-3" /></Button>
                   <Button size="sm" variant={s.active ? "outline" : "secondary"} onClick={() => toggleActive.mutate(s)}>

@@ -98,16 +98,50 @@ export function DoctorStation() {
     return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`;
   };
 
+  // Summary stats for the doctor dashboard panel
+  const seenToday = useQuery({
+    queryKey: ["doc-seen-today", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const start = new Date(); start.setHours(0,0,0,0);
+      const { count } = await supabase.from("visits" as never).select("*", { count:"exact", head:true })
+        .eq("assigned_doctor_id", user!.id).gte("opened_at", start.toISOString());
+      return count ?? 0;
+    },
+  });
+  const completed = useQuery({
+    queryKey: ["doc-completed-today", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const start = new Date(); start.setHours(0,0,0,0);
+      const { count } = await supabase.from("visits" as never).select("*", { count:"exact", head:true })
+        .eq("assigned_doctor_id", user!.id).eq("status","closed").gte("closed_at", start.toISOString());
+      return count ?? 0;
+    },
+  });
+  const pendingResults = useQuery({
+    queryKey: ["doc-pending-results", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { count } = await supabase.from("lab_orders" as never).select("*", { count:"exact", head:true })
+        .eq("ordered_by", user!.id).neq("status","resulted");
+      return count ?? 0;
+    },
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold"><Stethoscope className="h-6 w-6 text-primary" /> Doctor workspace</h1>
-          <p className="text-sm text-muted-foreground">Patients assigned to you, sorted by priority.</p>
+          <p className="text-sm text-muted-foreground">Click a patient to open the consultation interface.</p>
         </div>
-        <div className="text-sm text-muted-foreground">
-          <span className="rounded-full bg-primary/10 px-2 py-1 font-medium text-primary">{myQueue.length} in queue</span>
-        </div>
+      </div>
+
+      {/* Summary panel */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <SummaryStat label="Patients waiting" value={myQueue.length} tone="amber" />
+        <SummaryStat label="Seen today" value={seenToday.data ?? "—"} tone="sky" />
+        <SummaryStat label="Completed" value={completed.data ?? "—"} tone="emerald" />
+        <SummaryStat label="Pending results" value={pendingResults.data ?? "—"} tone="rose" />
+        <SummaryStat label="Assigned queue" value={myQueue.length} tone="violet" />
       </div>
 
       {myQueue.length === 0 ? (
@@ -155,6 +189,22 @@ export function DoctorStation() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function SummaryStat({ label, value, tone }: { label: string; value: number | string; tone: "amber"|"sky"|"emerald"|"rose"|"violet" }) {
+  const tones: Record<string,string> = {
+    amber: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+    sky: "bg-sky-500/10 text-sky-700 border-sky-500/30",
+    emerald: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
+    rose: "bg-rose-500/10 text-rose-700 border-rose-500/30",
+    violet: "bg-violet-500/10 text-violet-700 border-violet-500/30",
+  };
+  return (
+    <div className={`rounded-lg border p-3 ${tones[tone]}`}>
+      <div className="text-2xl font-semibold">{value}</div>
+      <div className="text-[11px] uppercase tracking-wide">{label}</div>
     </div>
   );
 }
