@@ -103,6 +103,22 @@ function ReceptionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const bookInPatient = useMutation({
+    mutationFn: async (p: Patient) => {
+      const { data: v, error: ve } = await supabase.from("visits" as never).insert({
+        patient_id: p.id, opened_by: user!.id, reason: "Walk-in", status: "open", current_stage: "checked_in",
+      } as never).select("id").single();
+      if (ve) throw ve;
+      const vid = (v as { id: string }).id;
+      await supabase.from("visit_queue" as never).insert({ visit_id: vid, queue_type: "triage", priority: 3 } as never);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["recep-visits"] });
+      toast.success("Patient checked in & queued for triage");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const patientName = (id: string) => patients.data?.find((p) => p.id === id)?.full_name ?? id.slice(0,8);
 
   return (
@@ -169,15 +185,22 @@ function ReceptionPage() {
       <div className="rounded-lg border bg-card">
         <div className="flex items-center justify-between border-b p-3">
           <div className="font-medium">Patient search</div>
-          <Input placeholder="Search name..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
+          <Input placeholder="Search by name or MRN..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
         </div>
         <div className="divide-y">
+          {patients.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No matching patients.</div>}
           {patients.data?.slice(0,20).map((p) => (
-            <div key={p.id} className="flex items-center justify-between p-3 text-sm">
-              <div>
+            <div key={p.id} className="flex items-center justify-between gap-2 p-3 text-sm hover:bg-muted/30">
+              <div className="min-w-0">
                 <div className="font-medium">{p.full_name}</div>
-                <div className="text-xs text-muted-foreground">MRN: {p.medical_record_number ?? "—"} · {p.phone ?? "—"}</div>
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-mono">{p.medical_record_number ?? "MRN pending"}</span>
+                  {p.phone ? ` · ${p.phone}` : ""}
+                </div>
               </div>
+              <Button size="sm" onClick={() => bookInPatient.mutate(p)} disabled={bookInPatient.isPending}>
+                <ClipboardCheck className="h-3.5 w-3.5" /> Book in
+              </Button>
             </div>
           ))}
         </div>

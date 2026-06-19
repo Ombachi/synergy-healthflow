@@ -11,9 +11,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Patient
   "/me": ["patient"],
 
-  // Clinical (tightened per spec)
-  "/visits": ["doctor"],
-  "/medical": ["doctor"],
+  // Clinical — physio & nutritionist can also place orders/prescribe via the visit workspace
+  "/visits": ["doctor", "physio", "nutritionist"],
+  "/medical": ["doctor", "physio", "nutritionist"],
   "/lab": ["lab_tech"],
   "/pharmacy": ["pharmacist"],
   "/radiology": ["radiologist"],
