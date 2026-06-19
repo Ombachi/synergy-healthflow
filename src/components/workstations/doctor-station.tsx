@@ -192,3 +192,19 @@ export function DoctorStation() {
     </div>
   );
 }
+
+function SummaryStat({ label, value, tone }: { label: string; value: number | string; tone: "amber"|"sky"|"emerald"|"rose"|"violet" }) {
+  const tones: Record<string,string> = {
+    amber: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+    sky: "bg-sky-500/10 text-sky-700 border-sky-500/30",
+    emerald: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
+    rose: "bg-rose-500/10 text-rose-700 border-rose-500/30",
+    violet: "bg-violet-500/10 text-violet-700 border-violet-500/30",
+  };
+  return (
+    <div className={`rounded-lg border p-3 ${tones[tone]}`}>
+      <div className="text-2xl font-semibold">{value}</div>
+      <div className="text-[11px] uppercase tracking-wide">{label}</div>
+    </div>
+  );
+}
