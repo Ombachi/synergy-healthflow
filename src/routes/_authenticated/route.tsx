@@ -22,35 +22,46 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 type BadgeKey = "lab" | "pharmacy" | "radiology" | undefined;
-const items: { title: string; url: string; icon: typeof Heart; badge: BadgeKey }[] = [
+type Item = {
+  title: string;
+  url: string;
+  icon: typeof Heart;
+  badge: BadgeKey;
+  /** Department slug used for the admin analytics view at /department/$dept. */
+  dept?: string;
+  /** Hidden from the Admin sidebar (operator-only entries). */
+  hideForAdmin?: boolean;
+};
+const items: Item[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, badge: undefined },
 
-  { title: "Reception", url: "/reception", icon: ClipboardCheck, badge: undefined },
-  { title: "Appointments", url: "/appointments", icon: CalendarClock, badge: undefined },
+  { title: "Reception", url: "/reception", icon: ClipboardCheck, badge: undefined, dept: "reception" },
+  { title: "Appointments", url: "/appointments", icon: CalendarClock, badge: undefined, dept: "appointments" },
   { title: "Queue board", url: "/queue", icon: ListOrdered, badge: undefined },
-  { title: "Visits", url: "/visits", icon: ClipboardList, badge: undefined },
-  { title: "My health", url: "/me", icon: Stethoscope, badge: undefined },
+  { title: "Visits", url: "/visits", icon: ClipboardList, badge: undefined, hideForAdmin: true },
+  { title: "My health", url: "/me", icon: Stethoscope, badge: undefined, hideForAdmin: true },
   { title: "Messages", url: "/messages", icon: MessageSquare, badge: undefined },
   { title: "Medical / EHR", url: "/medical", icon: Heart, badge: undefined },
-  { title: "Laboratory", url: "/lab", icon: FlaskConical, badge: "lab" },
-  { title: "Pharmacy", url: "/pharmacy", icon: Pill, badge: "pharmacy" },
-  { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology" },
-  { title: "Billing", url: "/billing", icon: Receipt, badge: undefined },
-  { title: "Insurance", url: "/insurance", icon: Shield, badge: undefined },
+  { title: "Laboratory", url: "/lab", icon: FlaskConical, badge: "lab", dept: "lab" },
+  { title: "Pharmacy", url: "/pharmacy", icon: Pill, badge: "pharmacy", dept: "pharmacy" },
+  { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology", dept: "radiology" },
+  { title: "Billing", url: "/billing", icon: Receipt, badge: undefined, dept: "billing" },
+  { title: "Insurance", url: "/insurance", icon: Shield, badge: undefined, dept: "insurance" },
   { title: "Service catalog", url: "/service-catalog", icon: Receipt, badge: undefined },
-  { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined },
-  { title: "Coach", url: "/coach", icon: Dumbbell, badge: undefined },
-  { title: "Team manager", url: "/team-manager", icon: Trophy, badge: undefined },
-  { title: "Physio", url: "/physio", icon: Bandage, badge: undefined },
-  { title: "Nutrition", url: "/nutrition", icon: Apple, badge: undefined },
-  { title: "Inventory", url: "/inventory", icon: Package, badge: undefined },
-  { title: "Store", url: "/store", icon: Warehouse, badge: undefined },
-  { title: "Procurement", url: "/procurement", icon: ShoppingCart, badge: undefined },
+  { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined, dept: "sports" },
+  { title: "Coach", url: "/coach", icon: Dumbbell, badge: undefined, dept: "coach" },
+  { title: "Team manager", url: "/team-manager", icon: Trophy, badge: undefined, dept: "team-manager" },
+  { title: "Physio", url: "/physio", icon: Bandage, badge: undefined, dept: "physio" },
+  { title: "Nutrition", url: "/nutrition", icon: Apple, badge: undefined, dept: "nutrition" },
+  { title: "Inventory", url: "/inventory", icon: Package, badge: undefined, dept: "inventory" },
+  { title: "Store", url: "/store", icon: Warehouse, badge: undefined, dept: "store" },
+  { title: "Procurement", url: "/procurement", icon: ShoppingCart, badge: undefined, dept: "procurement" },
   { title: "Inventory audit", url: "/audit-inventory", icon: BarChart3, badge: undefined },
   { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
-  { title: "Team & Roles", url: "/team", icon: Users, badge: undefined },
+  { title: "Team & Roles", url: "/team", icon: Users, badge: undefined, hideForAdmin: true },
   { title: "User management", url: "/users", icon: ShieldCheck, badge: undefined },
 ];
+
 
 function AuthedLayout() {
   const navigate = useNavigate();
