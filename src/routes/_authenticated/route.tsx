@@ -89,24 +89,31 @@ function AuthedLayout() {
               <SidebarGroupLabel>Modules</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.filter((it) => canAccess(it.url, roles)).map((it) => {
-                    const count = it.badge ? work.data?.[it.badge] ?? 0 : 0;
-                    return (
-                      <SidebarMenuItem key={it.url}>
-                        <SidebarMenuButton asChild isActive={pathname === it.url}>
-                          <Link to={it.url}>
-                            <it.icon />
-                            <span className="flex-1">{it.title}</span>
-                            {count > 0 && (
-                              <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
-                                {count}
-                              </span>
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
+                  {items
+                    .filter((it) => canAccess(it.url, roles))
+                    .filter((it) => !(roles.includes("admin") && it.hideForAdmin))
+                    .map((it) => {
+                      const isAdmin = roles.includes("admin");
+                      // Admins clicking on a department go to the analytics view, not the operator workstation.
+                      const targetUrl = isAdmin && it.dept ? `/department/${it.dept}` : it.url;
+                      const count = it.badge ? work.data?.[it.badge] ?? 0 : 0;
+                      return (
+                        <SidebarMenuItem key={it.url}>
+                          <SidebarMenuButton asChild isActive={pathname === targetUrl}>
+                            <Link to={targetUrl}>
+                              <it.icon />
+                              <span className="flex-1">{it.title}</span>
+                              {count > 0 && (
+                                <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
+                                  {count}
+                                </span>
+                              )}
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
