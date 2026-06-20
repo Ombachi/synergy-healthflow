@@ -100,7 +100,7 @@ function AuthedLayout() {
                       return (
                         <SidebarMenuItem key={it.url}>
                           <SidebarMenuButton asChild isActive={pathname === targetUrl}>
-                            <Link to={targetUrl}>
+                            <Link to={targetUrl as string}>
                               <it.icon />
                               <span className="flex-1">{it.title}</span>
                               {count > 0 && (
