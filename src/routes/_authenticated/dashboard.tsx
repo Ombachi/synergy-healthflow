@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ClipboardCheck, ClipboardList, FlaskConical, Package, Pill, Receipt, ScanLine, Shield, ShoppingCart, Users, Warehouse, Apple, Bandage, Dumbbell, Trophy, CalendarClock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,23 +40,35 @@ function AdminAnalytics({ name }: { name: string | null }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <AppointmentsCard />
-        <ReceptionCard />
-        <LabCard />
-        <PharmacyCard />
-        <RadiologyCard />
-        <BillingCard />
-        <InsuranceCard />
-        <SportsCard />
-        <CoachCard />
-        <TeamMgrCard />
-        <PhysioCard />
-        <NutritionCard />
-        <InventoryCard />
-        <StoreCard />
-        <ProcurementCard />
+        <DeptLink dept="appointments"><AppointmentsCard /></DeptLink>
+        <DeptLink dept="reception"><ReceptionCard /></DeptLink>
+        <DeptLink dept="lab"><LabCard /></DeptLink>
+        <DeptLink dept="pharmacy"><PharmacyCard /></DeptLink>
+        <DeptLink dept="radiology"><RadiologyCard /></DeptLink>
+        <DeptLink dept="billing"><BillingCard /></DeptLink>
+        <DeptLink dept="insurance"><InsuranceCard /></DeptLink>
+        <DeptLink dept="sports"><SportsCard /></DeptLink>
+        <DeptLink dept="coach"><CoachCard /></DeptLink>
+        <DeptLink dept="team-manager"><TeamMgrCard /></DeptLink>
+        <DeptLink dept="physio"><PhysioCard /></DeptLink>
+        <DeptLink dept="nutrition"><NutritionCard /></DeptLink>
+        <DeptLink dept="inventory"><InventoryCard /></DeptLink>
+        <DeptLink dept="store"><StoreCard /></DeptLink>
+        <DeptLink dept="procurement"><ProcurementCard /></DeptLink>
       </div>
     </div>
+  );
+}
+
+function DeptLink({ dept, children }: { dept: string; children: React.ReactNode }) {
+  return (
+    <Link
+      to="/department/$dept"
+      params={{ dept }}
+      className="block rounded-lg transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      {children}
+    </Link>
   );
 }
 
