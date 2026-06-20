@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ClipboardCheck, ClipboardList, FlaskConical, Package, Pill, Receipt, ScanLine, Shield, ShoppingCart, Users, Warehouse, Apple, Bandage, Dumbbell, Trophy, CalendarClock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";

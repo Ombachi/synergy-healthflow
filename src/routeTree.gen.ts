@@ -39,6 +39,7 @@ import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authe
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
+import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -195,6 +196,12 @@ const AuthenticatedVisitsVisitIdRoute =
     path: '/$visitId',
     getParentRoute: () => AuthenticatedVisitsRoute,
   } as any)
+const AuthenticatedDepartmentDeptRoute =
+  AuthenticatedDepartmentDeptRouteImport.update({
+    id: '/department/$dept',
+    path: '/department/$dept',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRoutesByTo {
@@ -256,6 +264,7 @@ export interface FileRoutesByTo {
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRoutesById {
@@ -289,6 +298,7 @@ export interface FileRoutesById {
   '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRouteTypes {
@@ -322,6 +332,7 @@ export interface FileRouteTypes {
     | '/team-manager'
     | '/users'
     | '/visits'
+    | '/department/$dept'
     | '/visits/$visitId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -353,6 +364,7 @@ export interface FileRouteTypes {
     | '/team-manager'
     | '/users'
     | '/visits'
+    | '/department/$dept'
     | '/visits/$visitId'
   id:
     | '__root__'
@@ -385,6 +397,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team-manager'
     | '/_authenticated/users'
     | '/_authenticated/visits'
+    | '/_authenticated/department/$dept'
     | '/_authenticated/visits/$visitId'
   fileRoutesById: FileRoutesById
 }
@@ -606,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVisitsVisitIdRouteImport
       parentRoute: typeof AuthenticatedVisitsRoute
     }
+    '/_authenticated/department/$dept': {
+      id: '/_authenticated/department/$dept'
+      path: '/department/$dept'
+      fullPath: '/department/$dept'
+      preLoaderRoute: typeof AuthenticatedDepartmentDeptRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -647,6 +667,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
+  AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -676,6 +697,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
+  AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -689,13 +711,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
