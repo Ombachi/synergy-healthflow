@@ -34,28 +34,36 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    let active = true;
+
+    async function loadSession(s: Session | null) {
+      if (!active) return;
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) {
-        setTimeout(() => {
-          fetchRoles(s.user.id);
-          fetchProfile(s.user.id);
-        }, 0);
-      } else {
+      if (!s?.user) {
         setRoles([]);
         setProfile(null);
+        setLoading(false);
+        return;
       }
+
+      setLoading(true);
+      const [roleRows, profileRow] = await Promise.all([
+        fetchRoles(s.user.id),
+        fetchProfile(s.user.id),
+      ]);
+      if (!active) return;
+      setRoles(roleRows);
+      setProfile(profileRow);
+      setLoading(false);
+    }
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      void loadSession(s);
     });
 
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) {
-        fetchRoles(data.session.user.id);
-        fetchProfile(data.session.user.id);
-      }
-      setLoading(false);
+      void loadSession(data.session);
     });
 
     async function fetchRoles(userId: string) {
@@ -63,7 +71,7 @@ export function useAuth() {
         .from("user_roles" as never)
         .select("role")
         .eq("user_id", userId);
-      setRoles(((data as { role: AppRole }[] | null) ?? []).map((r) => r.role));
+      return ((data as { role: AppRole }[] | null) ?? []).map((r) => r.role);
     }
 
     async function fetchProfile(userId: string) {
@@ -72,10 +80,13 @@ export function useAuth() {
         .select("id, full_name, phone, onboarded, onboarded_as")
         .eq("id", userId)
         .maybeSingle();
-      setProfile((data as unknown as Profile | null) ?? null);
+      return (data as unknown as Profile | null) ?? null;
     }
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const hasRole = (r: AppRole) => roles.includes(r);
