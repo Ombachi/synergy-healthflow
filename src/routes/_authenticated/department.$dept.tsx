@@ -37,6 +37,25 @@ function startOfWeek(d = new Date()) { const x = startOfDay(d); x.setDate(x.getD
 function startOfMonth(d = new Date()) { const x = startOfDay(d); x.setDate(1); return x; }
 const moneyKES = (cents: number) => `KES ${(cents/100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
+type SummaryConfig = { table: string; dateCol: string; pending: string[]; approved: string[]; statusCol?: string; revenueRef?: string };
+const SUMMARY: Record<DeptKey, SummaryConfig> = {
+  appointments: { table: "appointments", dateCol: "scheduled_at", statusCol: "status", pending: ["booked"], approved: ["checked_in", "completed"] },
+  reception: { table: "visit_queue", dateCol: "entered_at", statusCol: "queue_type", pending: ["triage"], approved: ["doctor"] },
+  lab: { table: "lab_orders", dateCol: "created_at", pending: ["ordered", "collected", "processing"], approved: ["resulted"], revenueRef: "lab_orders" },
+  pharmacy: { table: "prescriptions", dateCol: "created_at", pending: [], approved: [], revenueRef: "prescriptions" },
+  radiology: { table: "imaging_orders", dateCol: "created_at", pending: ["ordered", "in_progress"], approved: ["reported"], revenueRef: "imaging_orders" },
+  billing: { table: "invoices", dateCol: "created_at", pending: ["draft", "issued", "partial"], approved: ["paid"] },
+  insurance: { table: "insurance_claims", dateCol: "created_at", pending: ["submitted"], approved: ["approved"] },
+  sports: { table: "athletes", dateCol: "created_at", pending: ["injured"], approved: ["cleared"] },
+  coach: { table: "training_plans", dateCol: "created_at", pending: ["draft"], approved: ["active", "completed"] },
+  "team-manager": { table: "teams", dateCol: "created_at", pending: [], approved: [] },
+  physio: { table: "treatment_plans", dateCol: "created_at", pending: [], approved: [] },
+  nutrition: { table: "nutrition_plans", dateCol: "created_at", pending: [], approved: [] },
+  inventory: { table: "inventory_items", dateCol: "created_at", pending: [], approved: [] },
+  store: { table: "stock_requests", dateCol: "created_at", pending: ["pending"], approved: ["approved", "fulfilled"] },
+  procurement: { table: "purchase_orders", dateCol: "created_at", pending: ["open", "pending", "approved"], approved: ["closed", "fulfilled"] },
+};
+
 function DepartmentDetail() {
   const { roles, loading } = useAuth();
   const { dept } = useParams({ from: "/_authenticated/department/$dept" });
@@ -59,6 +78,7 @@ function DepartmentDetail() {
           <p className="text-sm text-muted-foreground">Operational metrics and workload for the {TITLES[key].toLowerCase()} department.</p>
         </div>
       </div>
+      <DepartmentSummary dept={key} />
       <DeptMetrics dept={key} />
     </div>
   );
@@ -79,6 +99,44 @@ function Stat({ label, value, sub }: { label: string; value: number | string; su
       <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       {sub && <div className="mt-1 text-[11px] text-muted-foreground">{sub}</div>}
     </div>
+  );
+}
+
+function DepartmentSummary({ dept }: { dept: DeptKey }) {
+  const cfg = SUMMARY[dept];
+  const statusCol = cfg.statusCol ?? "status";
+  const pending = useCount(`${dept}-summary-pending`, () =>
+    cfg.pending.length === 0 ? Promise.resolve(0) : countSimple(cfg.table, q => q.in(statusCol as never, cfg.pending as never))
+  );
+  const approved = useCount(`${dept}-summary-approved`, () =>
+    cfg.approved.length === 0 ? Promise.resolve(0) : countSimple(cfg.table, q => q.in(statusCol as never, cfg.approved as never))
+  );
+  const today = useCount(`${dept}-summary-today`, () => countSimple(cfg.table, q => q.gte(cfg.dateCol, startOfDay().toISOString())));
+  const week = useCount(`${dept}-summary-week`, () => countSimple(cfg.table, q => q.gte(cfg.dateCol, startOfWeek().toISOString())));
+  const revenue = useQuery({
+    queryKey: ["dept", dept, "summary-revenue"],
+    queryFn: async () => {
+      if (dept === "billing") {
+        const { data } = await supabase.from("payments" as never).select("amount_cents").gte("received_at", startOfMonth().toISOString());
+        return ((data as { amount_cents: number }[] | null) ?? []).reduce((sum, row) => sum + row.amount_cents, 0);
+      }
+      if (dept === "insurance") {
+        const { data } = await supabase.from("insurance_claims" as never).select("approved_amount_cents").eq("status", "approved");
+        return ((data as { approved_amount_cents: number | null }[] | null) ?? []).reduce((sum, row) => sum + (row.approved_amount_cents ?? 0), 0);
+      }
+      if (!cfg.revenueRef) return 0;
+      const { data } = await supabase.from("invoice_items" as never).select("amount_cents, ref_table").eq("ref_table", cfg.revenueRef);
+      return ((data as { amount_cents: number }[] | null) ?? []).reduce((sum, row) => sum + row.amount_cents, 0);
+    },
+  });
+
+  return (
+    <Section title="Department operational summary">
+      <Stat label="Pending" value={pending.data ?? "—"} />
+      <Stat label="Approved" value={approved.data ?? "—"} />
+      <Stat label="Throughput" value={today.data ?? "—"} sub={`${week.data ?? "—"} this week`} />
+      <Stat label="Revenue" value={moneyKES(revenue.data ?? 0)} sub="Recognized charges" />
+    </Section>
   );
 }
 

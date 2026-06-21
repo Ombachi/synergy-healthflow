@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/visits")({
-  component: Visits,
+  component: VisitsRouteShell,
 });
 
 interface Visit {
@@ -44,6 +44,12 @@ interface PatientOpt {
   id: string;
   full_name: string;
   medical_record_number: string | null;
+}
+
+function VisitsRouteShell() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  if (pathname !== "/visits" && pathname !== "/visits/") return <Outlet />;
+  return <Visits />;
 }
 
 function Visits() {
@@ -217,7 +223,7 @@ function Visits() {
                 <td className="px-4 py-2 text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</td>
                 <td className="px-4 py-2 text-right">
                   <Button asChild variant="ghost" size="sm">
-                    <Link to="/visits/$visitId" params={{ visitId: v.id }}>Open</Link>
+                    <Link to="/visits/$visitId" params={{ visitId: v.id }}>Open visit</Link>
                   </Button>
                 </td>
               </tr>
