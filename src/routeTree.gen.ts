@@ -37,7 +37,6 @@ import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authenticated/audit-inventory'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
-import { Route as AuthenticatedVisitsIndexRouteImport } from './routes/_authenticated/visits.index'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 
@@ -185,12 +184,6 @@ const AuthenticatedAppointmentsRoute =
     path: '/appointments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedVisitsIndexRoute =
-  AuthenticatedVisitsIndexRouteImport.update({
-    id: '/visits/',
-    path: '/visits/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedVisitsVisitIdRoute =
   AuthenticatedVisitsVisitIdRouteImport.update({
     id: '/visits/$visitId',
@@ -234,7 +227,6 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
-  '/visits/': typeof AuthenticatedVisitsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -266,7 +258,6 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
-  '/visits': typeof AuthenticatedVisitsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -300,7 +291,6 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
-  '/_authenticated/visits/': typeof AuthenticatedVisitsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -334,7 +324,6 @@ export interface FileRouteTypes {
     | '/users'
     | '/department/$dept'
     | '/visits/$visitId'
-    | '/visits/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -366,7 +355,6 @@ export interface FileRouteTypes {
     | '/users'
     | '/department/$dept'
     | '/visits/$visitId'
-    | '/visits'
   id:
     | '__root__'
     | '/'
@@ -399,7 +387,6 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/department/$dept'
     | '/_authenticated/visits/$visitId'
-    | '/_authenticated/visits/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -606,13 +593,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/visits/': {
-      id: '/_authenticated/visits/'
-      path: '/visits'
-      fullPath: '/visits/'
-      preLoaderRoute: typeof AuthenticatedVisitsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/visits/$visitId': {
       id: '/_authenticated/visits/$visitId'
       path: '/visits/$visitId'
@@ -658,7 +638,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
   AuthenticatedVisitsVisitIdRoute: typeof AuthenticatedVisitsVisitIdRoute
-  AuthenticatedVisitsIndexRoute: typeof AuthenticatedVisitsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -689,7 +668,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
   AuthenticatedVisitsVisitIdRoute: AuthenticatedVisitsVisitIdRoute,
-  AuthenticatedVisitsIndexRoute: AuthenticatedVisitsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
