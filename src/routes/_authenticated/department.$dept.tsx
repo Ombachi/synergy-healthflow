@@ -37,6 +37,24 @@ function startOfWeek(d = new Date()) { const x = startOfDay(d); x.setDate(x.getD
 function startOfMonth(d = new Date()) { const x = startOfDay(d); x.setDate(1); return x; }
 const moneyKES = (cents: number) => `KES ${(cents/100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
+const SUMMARY: Record<DeptKey, { table: string; dateCol: string; pending: string[]; approved: string[]; revenueRef?: string }> = {
+  appointments: { table: "appointments", dateCol: "scheduled_at", pending: ["booked"], approved: ["checked_in", "completed"] },
+  reception: { table: "visit_queue", dateCol: "entered_at", pending: ["triage"], approved: ["doctor"] },
+  lab: { table: "lab_orders", dateCol: "created_at", pending: ["ordered", "collected", "processing"], approved: ["resulted"], revenueRef: "lab_orders" },
+  pharmacy: { table: "prescriptions", dateCol: "created_at", pending: ["ordered", "pending"], approved: ["dispensed", "filled"], revenueRef: "prescriptions" },
+  radiology: { table: "imaging_orders", dateCol: "created_at", pending: ["ordered", "in_progress"], approved: ["reported"], revenueRef: "imaging_orders" },
+  billing: { table: "invoices", dateCol: "created_at", pending: ["draft", "issued", "partial"], approved: ["paid"] },
+  insurance: { table: "insurance_claims", dateCol: "created_at", pending: ["submitted"], approved: ["approved"] },
+  sports: { table: "athletes", dateCol: "created_at", pending: ["injured"], approved: ["cleared"] },
+  coach: { table: "training_plans", dateCol: "created_at", pending: ["draft"], approved: ["active", "completed"] },
+  "team-manager": { table: "teams", dateCol: "created_at", pending: ["pending"], approved: ["active"] },
+  physio: { table: "treatment_plans", dateCol: "created_at", pending: ["active"], approved: ["completed"] },
+  nutrition: { table: "nutrition_plans", dateCol: "created_at", pending: ["draft"], approved: ["issued", "active"] },
+  inventory: { table: "inventory_items", dateCol: "created_at", pending: ["low_stock"], approved: ["active"] },
+  store: { table: "stock_requests", dateCol: "created_at", pending: ["pending"], approved: ["approved", "fulfilled"] },
+  procurement: { table: "purchase_orders", dateCol: "created_at", pending: ["open", "pending", "approved"], approved: ["closed", "fulfilled"] },
+};
+
 function DepartmentDetail() {
   const { roles, loading } = useAuth();
   const { dept } = useParams({ from: "/_authenticated/department/$dept" });
@@ -59,6 +77,7 @@ function DepartmentDetail() {
           <p className="text-sm text-muted-foreground">Operational metrics and workload for the {TITLES[key].toLowerCase()} department.</p>
         </div>
       </div>
+      <DepartmentSummary dept={key} />
       <DeptMetrics dept={key} />
     </div>
   );
