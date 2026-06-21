@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTeamManagerRouteImport } from './routes/_authenticated/team-manager'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
@@ -53,6 +54,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
+  id: '/visits',
+  path: '/visits',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
@@ -186,9 +192,9 @@ const AuthenticatedAppointmentsRoute =
   } as any)
 const AuthenticatedVisitsVisitIdRoute =
   AuthenticatedVisitsVisitIdRouteImport.update({
-    id: '/visits/$visitId',
-    path: '/visits/$visitId',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/$visitId',
+    path: '/$visitId',
+    getParentRoute: () => AuthenticatedVisitsRoute,
   } as any)
 const AuthenticatedDepartmentDeptRoute =
   AuthenticatedDepartmentDeptRouteImport.update({
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/team-manager'
     | '/users'
+    | '/visits'
     | '/department/$dept'
     | '/visits/$visitId'
   fileRoutesByTo: FileRoutesByTo
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/team-manager'
     | '/users'
+    | '/visits'
     | '/department/$dept'
     | '/visits/$visitId'
   id:
@@ -385,6 +396,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/_authenticated/team-manager'
     | '/_authenticated/users'
+    | '/_authenticated/visits'
     | '/_authenticated/department/$dept'
     | '/_authenticated/visits/$visitId'
   fileRoutesById: FileRoutesById
@@ -417,6 +429,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/visits': {
+      id: '/_authenticated/visits'
+      path: '/visits'
+      fullPath: '/visits'
+      preLoaderRoute: typeof AuthenticatedVisitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/users': {
       id: '/_authenticated/users'
@@ -595,10 +614,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/visits/$visitId': {
       id: '/_authenticated/visits/$visitId'
-      path: '/visits/$visitId'
+      path: '/$visitId'
       fullPath: '/visits/$visitId'
       preLoaderRoute: typeof AuthenticatedVisitsVisitIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedVisitsRoute
     }
     '/_authenticated/department/$dept': {
       id: '/_authenticated/department/$dept'
@@ -609,6 +628,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedVisitsRouteChildren {
+  AuthenticatedVisitsVisitIdRoute: typeof AuthenticatedVisitsVisitIdRoute
+}
+
+const AuthenticatedVisitsRouteChildren: AuthenticatedVisitsRouteChildren = {
+  AuthenticatedVisitsVisitIdRoute: AuthenticatedVisitsVisitIdRoute,
+}
+
+const AuthenticatedVisitsRouteWithChildren =
+  AuthenticatedVisitsRoute._addFileChildren(AuthenticatedVisitsRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
@@ -636,8 +666,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
-  AuthenticatedVisitsVisitIdRoute: typeof AuthenticatedVisitsVisitIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -666,8 +696,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
-  AuthenticatedVisitsVisitIdRoute: AuthenticatedVisitsVisitIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
