@@ -102,6 +102,44 @@ function Stat({ label, value, sub }: { label: string; value: number | string; su
   );
 }
 
+function DepartmentSummary({ dept }: { dept: DeptKey }) {
+  const cfg = SUMMARY[dept];
+  const statusCol = cfg.statusCol ?? "status";
+  const pending = useCount(`${dept}-summary-pending`, () =>
+    cfg.pending.length === 0 ? Promise.resolve(0) : countSimple(cfg.table, q => q.in(statusCol as never, cfg.pending as never))
+  );
+  const approved = useCount(`${dept}-summary-approved`, () =>
+    cfg.approved.length === 0 ? Promise.resolve(0) : countSimple(cfg.table, q => q.in(statusCol as never, cfg.approved as never))
+  );
+  const today = useCount(`${dept}-summary-today`, () => countSimple(cfg.table, q => q.gte(cfg.dateCol, startOfDay().toISOString())));
+  const week = useCount(`${dept}-summary-week`, () => countSimple(cfg.table, q => q.gte(cfg.dateCol, startOfWeek().toISOString())));
+  const revenue = useQuery({
+    queryKey: ["dept", dept, "summary-revenue"],
+    queryFn: async () => {
+      if (dept === "billing") {
+        const { data } = await supabase.from("payments" as never).select("amount_cents").gte("received_at", startOfMonth().toISOString());
+        return ((data as { amount_cents: number }[] | null) ?? []).reduce((sum, row) => sum + row.amount_cents, 0);
+      }
+      if (dept === "insurance") {
+        const { data } = await supabase.from("insurance_claims" as never).select("approved_amount_cents").eq("status", "approved");
+        return ((data as { approved_amount_cents: number | null }[] | null) ?? []).reduce((sum, row) => sum + (row.approved_amount_cents ?? 0), 0);
+      }
+      if (!cfg.revenueRef) return 0;
+      const { data } = await supabase.from("invoice_items" as never).select("amount_cents, ref_table").eq("ref_table", cfg.revenueRef);
+      return ((data as { amount_cents: number }[] | null) ?? []).reduce((sum, row) => sum + row.amount_cents, 0);
+    },
+  });
+
+  return (
+    <Section title="Department operational summary">
+      <Stat label="Pending" value={pending.data ?? "—"} />
+      <Stat label="Approved" value={approved.data ?? "—"} />
+      <Stat label="Throughput" value={today.data ?? "—"} sub={`${week.data ?? "—"} this week`} />
+      <Stat label="Revenue" value={moneyKES(revenue.data ?? 0)} sub="Recognized charges" />
+    </Section>
+  );
+}
+
 function useCount(key: string, fn: () => Promise<number>) {
   return useQuery({ queryKey: ["dept", key], queryFn: fn });
 }
