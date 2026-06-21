@@ -235,7 +235,7 @@ function SportsCard() {
 function CoachCard() {
   const sessions = useCountRange("training_sessions", "created_at", startOfWeek());
   const plans = useCountRange("training_plans", "created_at", null);
-  const attendance = useCountRange("attendance", "created_at", startOfWeek());
+  const attendance = useCountRange("attendance", "recorded_at", startOfWeek());
   return <Card title="Coach" icon={Dumbbell} color="text-orange-500">
     <Stat label="Sessions/wk" value={sessions.data ?? "—"} />
     <Stat label="Plans" value={plans.data ?? "—"} />
