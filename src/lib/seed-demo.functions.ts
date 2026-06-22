@@ -29,6 +29,7 @@ function generateDemoPassword(): string {
 export const seedDemoUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const DEMO_PASSWORD = generateDemoPassword();
     const { data: isAdmin, error: roleErr } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,
       _role: "admin",
