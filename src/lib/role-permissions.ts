@@ -42,6 +42,13 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/audit": [],
   "/users": [],
   "/team": [],
+  "/department": [], // admin-only analytics (and /department/$dept)
+};
+
+// Prefix-based rules for dynamic routes (path starts with key).
+export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
+  "/visits/": ["doctor", "physio", "nutritionist"],
+  "/department/": [], // admin only
 };
 
 // Always visible to all signed-in users.
