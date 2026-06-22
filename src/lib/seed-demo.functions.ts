@@ -19,7 +19,12 @@ const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "procurement@demo.local", full_name: "Pete Procurement", role: "procurement" },
 ];
 
-const DEMO_PASSWORD = "Demo123!";
+function generateDemoPassword(): string {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  const base = Array.from(bytes, (b) => b.toString(36)).join("").slice(0, 20);
+  return base + "A1!";
+}
 
 export const seedDemoUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
