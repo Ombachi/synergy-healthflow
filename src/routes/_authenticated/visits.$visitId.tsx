@@ -1,19 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Download, FlaskConical, HeartPulse, Pill, ScanLine, Stethoscope, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Download, FlaskConical, Pill, ScanLine, Stethoscope, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { RANGES, REQUIRED_KEYS, validateVitals, type VitalKey, type VitalWarning } from "@/lib/vitals-ranges";
 import { exportVisitPDF } from "@/lib/visit-pdf";
 import { IcdPicker } from "@/components/icd-picker";
-import { VisitTimer } from "@/components/visit-timer";
 import { AssignVisit } from "@/components/assign-visit";
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
@@ -23,17 +20,18 @@ interface Patient { id: string; full_name: string; medical_record_number: string
 interface Vital { id: string; visit_id: string; captured_at: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; respiratory_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null; weight_kg: number | null; height_cm: number | null; pain_level: number | null; glucose_mg_dl: number | null; notes: string | null }
 interface Diagnosis { id: string; visit_id: string; diagnosis: string; icd_code: string | null; notes: string | null; is_primary: boolean }
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null }
+interface Drug { id: string; drug_name: string; default_dose: string | null; default_frequency: string | null; default_duration: string | null; medication_class: string | null; contraindications: string | null; instructions: string | null }
 interface Discharge { id: string; visit_id: string; summary: string; treatment_plan: string | null; follow_up: string | null; finalized: boolean }
 interface LabTest { id: string; code: string; name: string }
 interface LabOrder { id: string; test_id: string; status: string; priority: string; clinical_notes: string | null }
-interface LabResult { id: string; order_id: string; result_value: string | null; units: string | null; abnormal_flag: string | null; performed_at: string | null }
-interface ImgOrder { id: string; modality: string; body_part: string | null; clinical_question: string | null; status: string; report: string | null; performed_at: string | null }
+interface LabResult { id: string; order_id: string; result_value: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; performed_at: string | null; comments: string | null }
+interface ImgOrder { id: string; modality: string; body_part: string | null; clinical_question: string | null; status: string; findings: string | null; report: string | null; image_path: string | null; performed_at: string | null }
+interface ProcedureOrder { id: string; procedure_name: string; status: string; notes: string | null; performed_at: string | null }
 
 function VisitDetail() {
   const { visitId } = Route.useParams();
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
-  const canCapture = hasAnyRole(["nurse", "doctor", "admin"]);
   const canEditVisit = hasAnyRole(["doctor", "nurse", "admin"]);
   const canClose = hasAnyRole(["doctor", "admin"]);
   const canOrder = hasAnyRole(["doctor", "admin"]);
@@ -58,6 +56,10 @@ function VisitDetail() {
     const { data, error } = await supabase.from("prescriptions" as never).select("*").eq("visit_id", visitId).order("created_at");
     if (error) throw error; return (data as unknown as Rx[]) ?? [];
   }});
+  const drugs = useQuery({ queryKey: ["drug-catalog"], queryFn: async () => {
+    const { data, error } = await supabase.from("drug_catalog" as never).select("*").eq("active", true).order("drug_name");
+    if (error) throw error; return (data as unknown as Drug[]) ?? [];
+  }});
   const discharge = useQuery({ queryKey: ["discharge", visitId], queryFn: async () => {
     const { data, error } = await supabase.from("discharge_summaries" as never).select("*").eq("visit_id", visitId).maybeSingle();
     if (error) throw error; return data as unknown as Discharge | null;
@@ -79,46 +81,30 @@ function VisitDetail() {
     const { data, error } = await supabase.from("imaging_orders" as never).select("*").eq("visit_id", visitId);
     if (error) throw error; return (data as unknown as ImgOrder[]) ?? [];
   }});
-
-  const [form, setForm] = useState<Record<string, string>>({});
-  const setField = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
-  const num = (v: string | undefined) => (v === undefined || v === "" ? null : Number(v));
-  const vitalValues = useMemo(() => {
-    const obj: Partial<Record<VitalKey, number | null>> = {};
-    (Object.keys(RANGES) as VitalKey[]).forEach((k) => { obj[k] = num(form[k]); });
-    return obj;
-  }, [form]);
-  const warnings = useMemo(() => validateVitals(vitalValues), [vitalValues]);
-  const missing = warnings.filter((w) => w.severity === "missing");
-  const outOfRange = warnings.filter((w) => w.severity !== "missing");
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const persistVitals = useMutation({
-    mutationFn: async () => {
-      if (!visit.data) throw new Error("Visit not loaded");
-      const payload = {
-        visit_id: visit.data.id, patient_id: visit.data.patient_id, captured_by: user!.id,
-        ...Object.fromEntries((Object.keys(RANGES) as VitalKey[]).map((k) => [k, num(form[k])])),
-        notes: form.notes || null,
-      };
-      const { error } = await supabase.from("vitals" as never).insert(payload as never);
-      if (error) throw error;
-      if (visit.data.status === "open") {
-        await supabase.from("visits" as never).update({ status: "in_progress" } as never).eq("id", visit.data.id);
-      }
+  const imageUrls = useQuery({
+    queryKey: ["img-order-files", (imgOrders.data ?? []).map((o) => o.image_path).filter(Boolean).join(",")],
+    enabled: (imgOrders.data ?? []).some((o) => !!o.image_path),
+    queryFn: async () => {
+      const entries = await Promise.all((imgOrders.data ?? []).filter((o) => o.image_path).map(async (o) => {
+        const { data } = await supabase.storage.from("imaging-files").createSignedUrl(o.image_path!, 60 * 10);
+        return [o.id, data?.signedUrl ?? ""] as const;
+      }));
+      return Object.fromEntries(entries) as Record<string, string>;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["vitals", visitId] }); qc.invalidateQueries({ queryKey: ["visit", visitId] });
-      setForm({}); setConfirmOpen(false); toast.success("Vitals recorded");
-    },
-    onError: (e: Error) => { setConfirmOpen(false); toast.error(e.message); },
   });
+  const procedureOrders = useQuery({ queryKey: ["procedure-orders-v", visitId], queryFn: async () => {
+    const { data, error } = await supabase.from("procedure_orders" as never).select("*").eq("visit_id", visitId).order("created_at");
+    if (error) throw error; return (data as unknown as ProcedureOrder[]) ?? [];
+  }});
 
-  function handleSaveVitals() {
-    if (missing.length > 0) { toast.error(`Missing required: ${missing.map((m) => RANGES[m.key].label).join(", ")}`); return; }
-    if (outOfRange.length > 0) { setConfirmOpen(true); return; }
-    persistVitals.mutate();
-  }
+  useEffect(() => {
+    if (!visit.data || !user || !hasAnyRole(["doctor"])) return;
+    if (visit.data.current_stage === "waiting_for_doctor" || visit.data.current_stage === "doctor" || visit.data.status === "open") {
+      supabase.from("visits" as never).update({ current_stage: "in_consultation", status: "in_progress" } as never).eq("id", visitId).then(() => {
+        qc.invalidateQueries({ queryKey: ["visit", visitId] });
+      });
+    }
+  }, [visit.data?.id, visit.data?.current_stage, visit.data?.status, user?.id, hasAnyRole, qc, visitId]);
 
   const [diagForm, setDiagForm] = useState<{ diagnosis: string; icd_code: string; is_primary: boolean }>({ diagnosis: "", icd_code: "", is_primary: false });
   const addDiagnosis = useMutation({
@@ -139,6 +125,17 @@ function VisitDetail() {
   });
 
   const [rxForm, setRxForm] = useState({ medication: "", dose: "", frequency: "", duration: "", instructions: "" });
+  function pickDrug(id: string) {
+    const d = drugs.data?.find((x) => x.id === id);
+    if (!d) return;
+    setRxForm({
+      medication: d.drug_name,
+      dose: d.default_dose ?? "",
+      frequency: d.default_frequency ?? "",
+      duration: d.default_duration ?? "",
+      instructions: d.instructions ?? "",
+    });
+  }
   const addRx = useMutation({
     mutationFn: async () => {
       if (!rxForm.medication.trim()) throw new Error("Medication required");
@@ -149,7 +146,10 @@ function VisitDetail() {
       } as never);
       if (error) throw error;
     },
-    onSuccess: () => { setRxForm({ medication: "", dose: "", frequency: "", duration: "", instructions: "" }); qc.invalidateQueries({ queryKey: ["prescriptions", visitId] }); },
+    onSuccess: async () => {
+      await supabase.from("visits" as never).update({ current_stage: "awaiting_pharmacy" } as never).eq("id", visitId);
+      setRxForm({ medication: "", dose: "", frequency: "", duration: "", instructions: "" }); qc.invalidateQueries({ queryKey: ["prescriptions", visitId] }); qc.invalidateQueries({ queryKey: ["visit", visitId] }); toast.success("Prescription routed to pharmacy");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
   const removeRx = useMutation({
@@ -169,7 +169,10 @@ function VisitDetail() {
       } as never);
       if (error) throw error;
     },
-    onSuccess: () => { setLabForm({ test_id: "", priority: "routine", clinical_notes: "" }); qc.invalidateQueries({ queryKey: ["lab-orders-v", visitId] }); toast.success("Lab ordered"); },
+    onSuccess: async () => {
+      await supabase.from("visits" as never).update({ current_stage: "lab_ordered" } as never).eq("id", visitId);
+      setLabForm({ test_id: "", priority: "routine", clinical_notes: "" }); qc.invalidateQueries({ queryKey: ["lab-orders-v", visitId] }); qc.invalidateQueries({ queryKey: ["visit", visitId] }); toast.success("Lab ordered and routed");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -186,7 +189,26 @@ function VisitDetail() {
       } as never);
       if (error) throw error;
     },
-    onSuccess: () => { setImgForm({ modality: "X-ray", body_part: "", clinical_question: "", priority: "routine" }); qc.invalidateQueries({ queryKey: ["img-orders-v", visitId] }); toast.success("Imaging ordered"); },
+    onSuccess: async () => {
+      await supabase.from("visits" as never).update({ current_stage: "imaging_ordered" } as never).eq("id", visitId);
+      setImgForm({ modality: "X-ray", body_part: "", clinical_question: "", priority: "routine" }); qc.invalidateQueries({ queryKey: ["img-orders-v", visitId] }); qc.invalidateQueries({ queryKey: ["visit", visitId] }); toast.success("Imaging ordered and routed");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const [procForm, setProcForm] = useState({ procedure_name: "", notes: "" });
+  const addProcedure = useMutation({
+    mutationFn: async () => {
+      if (!procForm.procedure_name.trim()) throw new Error("Procedure required");
+      const { error } = await supabase.from("procedure_orders" as never).insert({
+        visit_id: visitId, procedure_name: procForm.procedure_name.trim(), notes: procForm.notes || null, ordered_by: user!.id,
+      } as never);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await supabase.from("visits" as never).update({ current_stage: "procedure_ordered" } as never).eq("id", visitId);
+      setProcForm({ procedure_name: "", notes: "" }); qc.invalidateQueries({ queryKey: ["procedure-orders-v", visitId] }); qc.invalidateQueries({ queryKey: ["visit", visitId] }); toast.success("Procedure routed to nursing");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -200,9 +222,10 @@ function VisitDetail() {
     mutationFn: async (finalize: boolean) => {
       if (finalize && !ds.summary.trim()) throw new Error("Discharge summary required");
       if (finalize && diagnoses.data?.length === 0) throw new Error("Add at least one diagnosis");
+      const keepFinalized = Boolean(discharge.data?.finalized && !finalize);
       const payload: Record<string, unknown> = {
         visit_id: visitId, summary: ds.summary, treatment_plan: ds.treatment_plan || null,
-        follow_up: ds.follow_up || null, finalized: finalize,
+        follow_up: ds.follow_up || null, finalized: keepFinalized || finalize,
       };
       if (finalize) { payload.finalized_at = new Date().toISOString(); payload.finalized_by = user!.id; }
       if (!discharge.data) payload.created_by = user!.id;
@@ -214,7 +237,7 @@ function VisitDetail() {
     },
     onSuccess: (_d, finalize) => {
       qc.invalidateQueries({ queryKey: ["discharge", visitId] }); qc.invalidateQueries({ queryKey: ["visit", visitId] }); qc.invalidateQueries({ queryKey: ["visits"] });
-      toast.success(finalize ? "Visit completed" : "Discharge saved");
+      toast.success(finalize ? "Visit completed" : "Report saved");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -265,10 +288,27 @@ function VisitDetail() {
         </div>
       </div>
 
-      <VisitTimer visitId={v.id} openedAt={v.opened_at} closedAt={v.closed_at} canManage={canEditVisit} />
-
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
+          <div className="rounded-lg border bg-card p-5">
+            <h2 className="font-medium">Vitals from nursing triage</h2>
+            {vitals.data?.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No vitals captured yet.</p>}
+            <div className="mt-3 space-y-2">
+              {vitals.data?.slice(0, 1).map((vt) => (
+                <div key={vt.id} className="rounded-md border bg-background p-3 text-sm">
+                  <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString()}</div>
+                  <div className="grid gap-2 sm:grid-cols-4">
+                    <VitalReadout label="BP" value={vt.systolic_bp != null && vt.diastolic_bp != null ? `${vt.systolic_bp}/${vt.diastolic_bp}` : "—"} />
+                    <VitalReadout label="HR" value={vt.heart_rate != null ? `${vt.heart_rate} bpm` : "—"} />
+                    <VitalReadout label="Temp" value={vt.temperature_c != null ? `${vt.temperature_c} °C` : "—"} />
+                    <VitalReadout label="SpO₂" value={vt.oxygen_saturation != null ? `${vt.oxygen_saturation}%` : "—"} />
+                  </div>
+                  {vt.notes && <div className="mt-2 text-muted-foreground">{vt.notes}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="rounded-lg border bg-card p-5">
             <h2 className="font-medium">Visit summary</h2>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
@@ -276,28 +316,8 @@ function VisitDetail() {
               <div><dt className="text-muted-foreground">Triage</dt><dd className="capitalize">{v.triage_level ?? "routine"}</dd></div>
               <div className="col-span-2"><dt className="text-muted-foreground">Chief complaint</dt><dd>{v.chief_complaint ?? "—"}</dd></div>
             </dl>
-            {canEditVisit && !finalized && <NotesEditor initial={v.notes ?? ""} onSave={(t) => saveNotes.mutate(t)} disabled={saveNotes.isPending} />}
+            {canEditVisit && <NotesEditor initial={v.notes ?? ""} onSave={(t) => saveNotes.mutate(t)} disabled={saveNotes.isPending} />}
           </div>
-
-          {canCapture && !finalized && (
-            <div className="rounded-lg border bg-card p-5">
-              <h2 className="flex items-center gap-2 font-medium"><HeartPulse className="h-4 w-4 text-primary" /> Capture vitals</h2>
-              <p className="mt-1 text-xs text-muted-foreground">Required: BP, HR, temperature, SpO₂. Out-of-range values require confirmation.</p>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {(Object.keys(RANGES) as VitalKey[]).map((k) => (
-                  <VitalField key={k} k={k} form={form} setField={setField} warnings={warnings} />
-                ))}
-              </div>
-              <div className="mt-3"><Label>Notes</Label><Textarea rows={2} value={form.notes ?? ""} onChange={(e) => setField("notes", e.target.value)} /></div>
-              {outOfRange.length > 0 && (
-                <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
-                  <div className="mb-1 flex items-center gap-1 font-medium"><AlertTriangle className="h-3.5 w-3.5" /> Out-of-range values</div>
-                  <ul className="list-disc pl-5">{outOfRange.map((w) => <li key={w.key}>{w.message}</li>)}</ul>
-                </div>
-              )}
-              <div className="mt-3 flex justify-end"><Button onClick={handleSaveVitals} disabled={persistVitals.isPending}>{persistVitals.isPending ? "Saving..." : "Record vitals"}</Button></div>
-            </div>
-          )}
 
           {(canClose || (diagnoses.data?.length ?? 0) > 0) && (
             <div className="rounded-lg border bg-card p-5">
@@ -341,7 +361,13 @@ function VisitDetail() {
                     <li key={o.id} className="flex justify-between rounded border p-2">
                       <div>
                         <div className="font-medium">{t?.name ?? o.test_id} <span className="text-xs text-muted-foreground">· {o.priority}</span></div>
-                        {r?.result_value && <div className="text-xs">Result: <span className="font-medium">{r.result_value} {r.units}</span> {r.abnormal_flag && <span className="text-destructive">{r.abnormal_flag}</span>}</div>}
+                        {r?.result_value && (
+                          <div className="mt-1 text-xs">
+                            <div>Result: <span className="font-medium">{r.result_value} {r.units}</span> {r.abnormal_flag && <span className={r.abnormal_flag === "normal" ? "text-emerald-700" : "text-destructive"}>{r.abnormal_flag}</span>}</div>
+                            {r.reference_range && <div className="text-muted-foreground">Reference: {r.reference_range}</div>}
+                            {r.comments && <div>{r.comments}</div>}
+                          </div>
+                        )}
                       </div>
                       <span className={`self-start rounded px-2 py-0.5 text-xs ${o.status === "resulted" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
                     </li>
@@ -377,7 +403,9 @@ function VisitDetail() {
                       <span className={`rounded px-2 py-0.5 text-xs ${o.status === "reported" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
                     </div>
                     {o.clinical_question && <div className="text-xs text-muted-foreground">{o.clinical_question}</div>}
+                    {o.findings && <div className="mt-1 text-xs"><span className="font-medium">Findings: </span>{o.findings}</div>}
                     {o.report && <div className="mt-1 text-xs"><span className="font-medium">Report: </span>{o.report}</div>}
+                    {imageUrls.data?.[o.id] && <img src={imageUrls.data[o.id]} alt={`${o.modality} report attachment`} className="mt-2 max-h-56 rounded border object-contain" />}
                   </li>
                 ))}
               </ul>
@@ -392,6 +420,31 @@ function VisitDetail() {
                     <option value="routine">R</option><option value="urgent">U</option><option value="stat">S</option>
                   </select>
                   <Button className="col-span-1" size="sm" onClick={() => addImg.mutate()}>Order</Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(canOrder || (procedureOrders.data?.length ?? 0) > 0) && (
+            <div className="rounded-lg border bg-card p-5">
+              <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Nursing procedures</h2>
+              <ul className="mt-3 space-y-1 text-sm">
+                {procedureOrders.data?.length === 0 && <li className="text-muted-foreground">No procedures ordered.</li>}
+                {procedureOrders.data?.map((o) => (
+                  <li key={o.id} className="flex justify-between rounded border p-2">
+                    <div>
+                      <div className="font-medium">{o.procedure_name}</div>
+                      {o.notes && <div className="text-xs text-muted-foreground">{o.notes}</div>}
+                    </div>
+                    <span className="self-start rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status}</span>
+                  </li>
+                ))}
+              </ul>
+              {canOrder && !finalized && (
+                <div className="mt-3 grid grid-cols-12 gap-2">
+                  <Input className="col-span-5" placeholder="Procedure" value={procForm.procedure_name} onChange={(e) => setProcForm({ ...procForm, procedure_name: e.target.value })} />
+                  <Input className="col-span-5" placeholder="Notes" value={procForm.notes} onChange={(e) => setProcForm({ ...procForm, notes: e.target.value })} />
+                  <Button className="col-span-2" size="sm" onClick={() => addProcedure.mutate()} disabled={addProcedure.isPending}>Route to nurse</Button>
                 </div>
               )}
             </div>
@@ -415,6 +468,10 @@ function VisitDetail() {
               </ul>
               {canClose && !finalized && (
                 <div className="mt-3 grid grid-cols-2 gap-2">
+                  <select className="col-span-2 rounded border bg-background px-2 py-2 text-sm" onChange={(e) => e.target.value && pickDrug(e.target.value)} defaultValue="">
+                    <option value="">— Select from drug database —</option>
+                    {drugs.data?.map((d) => <option key={d.id} value={d.id}>{d.drug_name} · {d.medication_class ?? "medication"}</option>)}
+                  </select>
                   <Input placeholder="Medication" value={rxForm.medication} onChange={(e) => setRxForm({ ...rxForm, medication: e.target.value })} />
                   <Input placeholder="Dose" value={rxForm.dose} onChange={(e) => setRxForm({ ...rxForm, dose: e.target.value })} />
                   <Input placeholder="Frequency" value={rxForm.frequency} onChange={(e) => setRxForm({ ...rxForm, frequency: e.target.value })} />
@@ -430,38 +487,16 @@ function VisitDetail() {
             <div className="rounded-lg border bg-card p-5">
               <h2 className="flex items-center gap-2 font-medium"><CheckCircle2 className="h-4 w-4 text-primary" /> Discharge & complete</h2>
               <div className="mt-3 space-y-3">
-                <div><Label>Discharge summary *</Label><Textarea rows={4} value={ds.summary} onChange={(e) => setDs({ ...ds, summary: e.target.value })} disabled={finalized} /></div>
-                <div><Label>Treatment plan</Label><Textarea rows={3} value={ds.treatment_plan} onChange={(e) => setDs({ ...ds, treatment_plan: e.target.value })} disabled={finalized} /></div>
-                <div><Label>Follow-up</Label><Textarea rows={2} value={ds.follow_up} onChange={(e) => setDs({ ...ds, follow_up: e.target.value })} disabled={finalized} /></div>
+                <div><Label>Discharge summary *</Label><Textarea rows={4} value={ds.summary} onChange={(e) => setDs({ ...ds, summary: e.target.value })} /></div>
+                <div><Label>Treatment plan</Label><Textarea rows={3} value={ds.treatment_plan} onChange={(e) => setDs({ ...ds, treatment_plan: e.target.value })} /></div>
+                <div><Label>Follow-up</Label><Textarea rows={2} value={ds.follow_up} onChange={(e) => setDs({ ...ds, follow_up: e.target.value })} /></div>
               </div>
-              {!finalized && (
-                <div className="mt-3 flex justify-end gap-2">
-                  <Button variant="secondary" onClick={() => saveDischarge.mutate(false)} disabled={saveDischarge.isPending}>Save draft</Button>
-                  <Button onClick={() => saveDischarge.mutate(true)} disabled={saveDischarge.isPending}>Complete visit</Button>
-                </div>
-              )}
-              {finalized && <p className="mt-3 text-xs text-muted-foreground">Visit completed. Records are read-only.</p>}
+              <div className="mt-3 flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => saveDischarge.mutate(false)} disabled={saveDischarge.isPending}>{finalized ? "Save report changes" : "Save draft"}</Button>
+                {!finalized && <Button onClick={() => saveDischarge.mutate(true)} disabled={saveDischarge.isPending}>Complete visit</Button>}
+              </div>
             </div>
           )}
-
-          <div className="rounded-lg border bg-card p-5">
-            <h2 className="font-medium">Vitals history</h2>
-            {vitals.data?.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No vitals captured yet.</p>}
-            <div className="mt-3 space-y-2">
-              {vitals.data?.map((vt) => (
-                <div key={vt.id} className="rounded-md border bg-background p-3 text-sm">
-                  <div className="mb-2 text-xs text-muted-foreground">{new Date(vt.captured_at).toLocaleString()}</div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    {vt.systolic_bp != null && vt.diastolic_bp != null && <span>BP: <strong>{vt.systolic_bp}/{vt.diastolic_bp}</strong></span>}
-                    {vt.heart_rate != null && <span>HR: <strong>{vt.heart_rate}</strong></span>}
-                    {vt.temperature_c != null && <span>Temp: <strong>{vt.temperature_c}°C</strong></span>}
-                    {vt.oxygen_saturation != null && <span>SpO₂: <strong>{vt.oxygen_saturation}%</strong></span>}
-                  </div>
-                  {vt.notes && <div className="mt-2 text-muted-foreground">{vt.notes}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="space-y-4">
@@ -481,30 +516,15 @@ function VisitDetail() {
         </div>
       </div>
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-amber-500" /> Confirm out-of-range vitals</DialogTitle></DialogHeader>
-          <ul className="space-y-1 text-sm">
-            {outOfRange.map((w) => <li key={w.key} className={w.severity === "critical" ? "text-destructive" : ""}>• {w.message}</li>)}
-          </ul>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setConfirmOpen(false)}>Re-check</Button>
-            <Button onClick={() => persistVitals.mutate()} disabled={persistVitals.isPending}>Confirm & save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
 
-function VitalField({ k, form, setField, warnings }: { k: VitalKey; form: Record<string, string>; setField: (k: string, v: string) => void; warnings: VitalWarning[] }) {
-  const r = RANGES[k];
-  const w = warnings.find((x) => x.key === k);
-  const tone = w?.severity === "critical" ? "border-destructive" : w?.severity === "out_of_range" ? "border-amber-500" : "";
+function VitalReadout({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <Label className="text-xs">{r.label} ({r.unit}){REQUIRED_KEYS.includes(k) && " *"}</Label>
-      <Input type="number" step="0.1" value={form[k] ?? ""} onChange={(e) => setField(k, e.target.value)} className={tone} />
+    <div className="rounded border bg-card p-2">
+      <div className="text-[10px] uppercase text-muted-foreground">{label}</div>
+      <div className="font-mono font-semibold">{value}</div>
     </div>
   );
 }

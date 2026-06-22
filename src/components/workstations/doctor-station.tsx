@@ -10,6 +10,9 @@ interface QueueEntry { id: string; visit_id: string; priority: number; entered_a
 interface Visit { id: string; patient_id: string; current_stage: string | null; triage_level: string | null; chief_complaint: string | null; reason: string | null; assigned_doctor_id: string | null }
 interface Patient { id: string; full_name: string; date_of_birth: string | null; gender: string | null; medical_record_number: string | null; allergies: string | null }
 interface VitalRow { visit_id: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null; captured_at: string }
+interface LabOrder { id: string; visit_id: string; test_id: string; status: string }
+interface LabResult { order_id: string; result_value: string | null; units: string | null; abnormal_flag: string | null; comments: string | null }
+interface ImgOrder { visit_id: string | null; modality: string; body_part: string | null; status: string; report: string | null; findings: string | null }
 
 const PRIO_COLOR: Record<number, string> = {
   1: "bg-rose-500/15 text-rose-700 border-rose-500/40",
@@ -84,6 +87,40 @@ export function DoctorStation() {
     },
   });
 
+  const labOrders = useQuery({
+    queryKey: ["doc-lab-orders", myVisits.map((v) => v.id).join(",")],
+    enabled: myVisits.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_orders" as never)
+        .select("id, visit_id, test_id, status")
+        .in("visit_id", myVisits.map((v) => v.id) as never);
+      if (error) throw error;
+      return (data as unknown as LabOrder[]) ?? [];
+    },
+  });
+  const labResults = useQuery({
+    queryKey: ["doc-lab-results", (labOrders.data ?? []).map((o) => o.id).join(",")],
+    enabled: (labOrders.data ?? []).length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_results" as never)
+        .select("order_id, result_value, units, abnormal_flag, comments")
+        .in("order_id", (labOrders.data ?? []).map((o) => o.id) as never);
+      if (error) throw error;
+      return (data as unknown as LabResult[]) ?? [];
+    },
+  });
+  const imaging = useQuery({
+    queryKey: ["doc-imaging", myVisits.map((v) => v.id).join(",")],
+    enabled: myVisits.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("imaging_orders" as never)
+        .select("visit_id, modality, body_part, status, report, findings")
+        .in("visit_id", myVisits.map((v) => v.id) as never);
+      if (error) throw error;
+      return (data as unknown as ImgOrder[]) ?? [];
+    },
+  });
+
   useEffect(() => {
     const ch = supabase.channel("doc-queue-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "visit_queue" }, () => qc.invalidateQueries({ queryKey: ["doc-queue"] }))
@@ -93,6 +130,11 @@ export function DoctorStation() {
 
   const patientOf = (id: string) => patients.data?.find((p) => p.id === id);
   const latestVitals = (vid: string) => vitals.data?.find((v) => v.visit_id === vid);
+  const visitLabResults = (vid: string) => {
+    const orders = (labOrders.data ?? []).filter((o) => o.visit_id === vid);
+    return orders.map((o) => labResults.data?.find((r) => r.order_id === o.id)).filter(Boolean) as LabResult[];
+  };
+  const visitImagingReports = (vid: string) => (imaging.data ?? []).filter((i) => i.visit_id === vid && (i.report || i.findings));
   const elapsed = (iso: string) => {
     const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
     return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`;
@@ -154,6 +196,8 @@ export function DoctorStation() {
             const v = visits.data!.find((x) => x.id === q.visit_id)!;
             const p = patientOf(v.patient_id);
             const vt = latestVitals(v.id);
+            const resultCount = visitLabResults(v.id).length;
+            const reportCount = visitImagingReports(v.id).length;
             return (
               <Link
                 key={q.id}
@@ -181,6 +225,8 @@ export function DoctorStation() {
                         BP {vt.systolic_bp ?? "—"}/{vt.diastolic_bp ?? "—"} · HR {vt.heart_rate ?? "—"} · SpO₂ {vt.oxygen_saturation ?? "—"}%
                       </span>
                     )}
+                    {resultCount > 0 && <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-emerald-700">{resultCount} lab result{resultCount === 1 ? "" : "s"}</span>}
+                    {reportCount > 0 && <span className="rounded border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-sky-700">{reportCount} imaging report{reportCount === 1 ? "" : "s"}</span>}
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />

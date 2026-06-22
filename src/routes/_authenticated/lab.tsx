@@ -115,6 +115,7 @@ function LabPortal() {
     <div className="grid h-[calc(100vh-8rem)] gap-4 lg:grid-cols-[360px_1fr]">
       {/* LEFT PANEL: queue + filters + stock requests */}
       <div className="flex min-h-0 flex-col gap-4 overflow-hidden">
+        <StockRequestForm department="lab" categoryHint="lab" />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
           <div className="border-b p-3">
             <div className="flex items-center gap-2 font-semibold"><FlaskConical className="h-4 w-4 text-emerald-600" /> Lab queue</div>
@@ -147,9 +148,6 @@ function LabPortal() {
               );
             })}
           </div>
-        </div>
-        <div className="max-h-[40%] overflow-auto">
-          <StockRequestForm department="lab" categoryHint="lab" />
         </div>
       </div>
 
@@ -222,7 +220,9 @@ function LabPortal() {
               <div><Label>Units</Label><Input value={resForm.units} onChange={(e) => setResForm({ ...resForm, units: e.target.value })} /></div>
               <div><Label>Reference range</Label><Input value={resForm.reference_range} onChange={(e) => setResForm({ ...resForm, reference_range: e.target.value })} /></div>
             </div>
-            <div><Label>Flag (H/L/Critical)</Label><Input value={resForm.abnormal_flag} onChange={(e) => setResForm({ ...resForm, abnormal_flag: e.target.value })} /></div>
+            <div className="rounded border bg-muted/30 p-2 text-xs text-muted-foreground">
+              The reference range and abnormal flag are applied automatically when the result is saved.
+            </div>
             <div><Label>Comments</Label><Textarea rows={2} value={resForm.comments} onChange={(e) => setResForm({ ...resForm, comments: e.target.value })} /></div>
           </div>
           <DialogFooter><Button onClick={() => submitResult.mutate()} disabled={submitResult.isPending}>Save result</Button></DialogFooter>

@@ -41,7 +41,6 @@ const items: Item[] = [
   { title: "Visits", url: "/visits", icon: ClipboardList, badge: undefined, hideForAdmin: true },
   { title: "My health", url: "/me", icon: Stethoscope, badge: undefined, hideForAdmin: true },
   { title: "Messages", url: "/messages", icon: MessageSquare, badge: undefined },
-  { title: "Medical / EHR", url: "/medical", icon: Heart, badge: undefined },
   { title: "Laboratory", url: "/lab", icon: FlaskConical, badge: "lab", dept: "lab" },
   { title: "Pharmacy", url: "/pharmacy", icon: Pill, badge: "pharmacy", dept: "pharmacy" },
   { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology", dept: "radiology" },
@@ -58,7 +57,6 @@ const items: Item[] = [
   { title: "Procurement", url: "/procurement", icon: ShoppingCart, badge: undefined, dept: "procurement" },
   { title: "Inventory audit", url: "/audit-inventory", icon: BarChart3, badge: undefined },
   { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
-  { title: "Team & Roles", url: "/team", icon: Users, badge: undefined, hideForAdmin: true },
   { title: "User management", url: "/users", icon: ShieldCheck, badge: undefined },
 ];
 

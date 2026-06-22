@@ -109,6 +109,7 @@ function PharmacyPortal() {
             <div className="flex items-center gap-1 font-medium"><AlertTriangle className="h-3 w-3 text-amber-600" /> {lowStock.length} low-stock alerts</div>
           </div>
         )}
+        <StockRequestForm department="pharmacy" categoryHint="pharmacy" />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
           <div className="border-b p-3">
             <div className="flex items-center gap-2 font-semibold"><Pill className="h-4 w-4 text-rose-500" /> Prescription queue</div>
@@ -142,9 +143,6 @@ function PharmacyPortal() {
               );
             })}
           </div>
-        </div>
-        <div className="max-h-[40%] overflow-auto">
-          <StockRequestForm department="pharmacy" />
         </div>
       </div>
 

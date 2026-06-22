@@ -11,9 +11,8 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Patient
   "/me": ["patient"],
 
-  // Clinical — physio & nutritionist can also place orders/prescribe via the visit workspace
-  "/visits": ["doctor", "physio", "nutritionist"],
-  "/medical": ["doctor", "physio", "nutritionist"],
+  // Clinical — reception/nursing open visits; doctors/therapists continue consultations.
+  "/visits": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
   "/lab": ["lab_tech"],
   "/pharmacy": ["pharmacist"],
   "/radiology": ["radiologist"],
@@ -47,7 +46,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
 // Prefix-based rules for dynamic routes (path starts with key).
 export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
-  "/visits/": ["doctor", "physio", "nutritionist"],
+  "/visits/": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
   "/department/": [], // admin only
 };
 

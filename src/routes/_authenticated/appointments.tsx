@@ -46,7 +46,8 @@ function fmtDay(d: Date) { return d.toLocaleDateString(undefined, { weekday: "sh
 
 function AppointmentsPage() {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const { user, hasAnyRole } = useAuth();
+  const canCheckIn = hasAnyRole(["receptionist", "nurse", "admin"]);
   const [view, setView] = useState<"week" | "day" | "list">("week");
   const [anchor, setAnchor] = useState(new Date());
   const [open, setOpen] = useState(false);
@@ -227,6 +228,7 @@ function AppointmentsPage() {
             doctorName={doctorName}
             onEdit={openEdit}
             onStatus={(id, status) => setStatus.mutate({ id, status })}
+            canCheckIn={canCheckIn}
           />
         </TabsContent>
 
@@ -242,7 +244,7 @@ function AppointmentsPage() {
                   <div className="col-span-2"><span className={`rounded px-2 py-0.5 text-xs ${STATUS_COLOR[a.status] ?? STATUS_COLOR.booked}`}>{a.status}</span></div>
                   <div className="col-span-2 flex justify-end gap-1">
                     <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>Edit</Button>
-                    {a.status === "booked" && (
+                    {canCheckIn && a.status === "booked" && (
                       <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: a.id, status: "checked_in" })}>Check in</Button>
                     )}
                   </div>
@@ -256,10 +258,11 @@ function AppointmentsPage() {
   );
 }
 
-function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus }: {
+function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, canCheckIn }: {
   day: Date; items: Appointment[]; patientName: (id: string) => string;
   doctorName: (id: string | null) => string;
   onEdit: (a: Appointment) => void; onStatus: (id: string, status: string) => void;
+  canCheckIn: boolean;
 }) {
   const hours = Array.from({ length: 12 }, (_, i) => 8 + i); // 8..19
   return (
@@ -282,7 +285,7 @@ function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus }: {
                     <div className="flex gap-1">
                       <span className={`rounded px-2 py-0.5 text-xs ${STATUS_COLOR[a.status] ?? STATUS_COLOR.booked}`}>{a.status}</span>
                       <Button size="sm" variant="ghost" onClick={() => onEdit(a)}>Edit</Button>
-                      {a.status === "booked" && <Button size="sm" variant="outline" onClick={() => onStatus(a.id, "checked_in")}>Check in</Button>}
+                      {canCheckIn && a.status === "booked" && <Button size="sm" variant="outline" onClick={() => onStatus(a.id, "checked_in")}>Check in</Button>}
                     </div>
                   </div>
                 ))}

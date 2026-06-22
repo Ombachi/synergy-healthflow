@@ -523,6 +523,48 @@ export type Database = {
         }
         Relationships: []
       }
+      drug_catalog: {
+        Row: {
+          active: boolean
+          contraindications: string | null
+          created_at: string
+          default_dose: string | null
+          default_duration: string | null
+          default_frequency: string | null
+          drug_name: string
+          id: string
+          instructions: string | null
+          medication_class: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          contraindications?: string | null
+          created_at?: string
+          default_dose?: string | null
+          default_duration?: string | null
+          default_frequency?: string | null
+          drug_name: string
+          id?: string
+          instructions?: string | null
+          medication_class?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          contraindications?: string | null
+          created_at?: string
+          default_dose?: string | null
+          default_duration?: string | null
+          default_frequency?: string | null
+          drug_name?: string
+          id?: string
+          instructions?: string | null
+          medication_class?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goods_received_notes: {
         Row: {
           created_at: string
@@ -1243,6 +1285,7 @@ export type Database = {
           created_at: string
           file_path: string | null
           id: string
+          numeric_value: number | null
           order_id: string
           performed_at: string | null
           performed_by: string | null
@@ -1258,6 +1301,7 @@ export type Database = {
           created_at?: string
           file_path?: string | null
           id?: string
+          numeric_value?: number | null
           order_id: string
           performed_at?: string | null
           performed_by?: string | null
@@ -1273,6 +1317,7 @@ export type Database = {
           created_at?: string
           file_path?: string | null
           id?: string
+          numeric_value?: number | null
           order_id?: string
           performed_at?: string | null
           performed_by?: string | null
@@ -1339,9 +1384,13 @@ export type Database = {
           code: string
           container: string | null
           created_at: string
+          critical_high: number | null
+          critical_low: number | null
           id: string
           name: string
           price: number | null
+          reference_high: number | null
+          reference_low: number | null
           reference_range: string | null
           specimen: string | null
           turnaround_hours: number | null
@@ -1353,9 +1402,13 @@ export type Database = {
           code: string
           container?: string | null
           created_at?: string
+          critical_high?: number | null
+          critical_low?: number | null
           id?: string
           name: string
           price?: number | null
+          reference_high?: number | null
+          reference_low?: number | null
           reference_range?: string | null
           specimen?: string | null
           turnaround_hours?: number | null
@@ -1367,9 +1420,13 @@ export type Database = {
           code?: string
           container?: string | null
           created_at?: string
+          critical_high?: number | null
+          critical_low?: number | null
           id?: string
           name?: string
           price?: number | null
+          reference_high?: number | null
+          reference_low?: number | null
           reference_range?: string | null
           specimen?: string | null
           turnaround_hours?: number | null

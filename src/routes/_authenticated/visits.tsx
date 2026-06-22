@@ -56,7 +56,7 @@ function Visits() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { user, hasAnyRole } = useAuth();
-  const canOpen = hasAnyRole(["doctor", "nurse", "admin"]);
+  const canOpen = hasAnyRole(["receptionist", "nurse", "admin"]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
 
