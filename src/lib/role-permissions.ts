@@ -62,9 +62,18 @@ export function canAccess(path: string, roles: AppRole[]): boolean {
   if (ALWAYS_VISIBLE.has(path)) return true;
   if (roles.includes("admin")) return true;
   const allowed = ROUTE_ROLES[path];
-  if (!allowed) return true; // unknown routes default open
-  if (allowed.length === 0) return false; // explicitly admin-only
-  return allowed.some((r) => roles.includes(r));
+  if (allowed) {
+    if (allowed.length === 0) return false; // explicitly admin-only
+    return allowed.some((r) => roles.includes(r));
+  }
+  // Dynamic routes — match by prefix.
+  for (const [prefix, prefixRoles] of Object.entries(ROUTE_PREFIX_ROLES)) {
+    if (path.startsWith(prefix)) {
+      if (prefixRoles.length === 0) return false;
+      return prefixRoles.some((r) => roles.includes(r));
+    }
+  }
+  return false; // deny by default
 }
 
 // Where each role should land after sign-in.
