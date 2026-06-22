@@ -25,10 +25,11 @@ interface QueueEntry { id: string; visit_id: string; queue_type: string; priorit
 interface Visit { id: string; patient_id: string; current_stage: string | null }
 interface Patient { id: string; full_name: string }
 
-const ALL_TYPES = ["triage", "doctor", "lab", "radiology", "pharmacy", "billing"];
+const ALL_TYPES = ["triage", "doctor", "procedure", "lab", "radiology", "pharmacy", "billing"];
 
 const ROLE_QUEUES: Record<string, string[]> = {
   receptionist: ["triage"],
+  nurse: ["triage", "procedure"],
   lab_tech: ["lab"],
   radiologist: ["radiology"],
   pharmacist: ["pharmacy"],

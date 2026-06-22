@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
-interface QueueEntry { id: string; visit_id: string; priority: number; entered_at: string; called_at: string | null }
+interface QueueEntry { id: string; visit_id: string; queue_type: string; priority: number; entered_at: string; called_at: string | null }
 interface Visit { id: string; patient_id: string; reason: string | null; chief_complaint: string | null; triage_level: string | null }
 interface Patient { id: string; full_name: string; date_of_birth: string | null; gender: string | null; allergies: string | null; medical_record_number: string | null }
 interface Doctor { id: string; full_name: string | null; role: string }
+interface ProcedureOrder { id: string; visit_id: string; procedure_name: string; notes: string | null; status: string }
 
 const PRIO_COLOR: Record<number, string> = {
   1: "bg-rose-500/15 text-rose-700 border-rose-500/40",
@@ -39,8 +40,8 @@ export function NurseStation() {
     queryKey: ["nurse-queue"],
     queryFn: async () => {
       const { data, error } = await supabase.from("visit_queue" as never)
-        .select("id, visit_id, priority, entered_at, called_at")
-        .eq("queue_type", "triage").is("served_at", null)
+        .select("id, visit_id, queue_type, priority, entered_at, called_at")
+        .in("queue_type", ["triage", "procedure"] as never).is("served_at", null)
         .order("priority").order("entered_at");
       if (error) throw error;
       return (data as unknown as QueueEntry[]) ?? [];
@@ -80,6 +81,18 @@ export function NurseStation() {
       return ((data as unknown as Doctor[]) ?? []).filter((u) => u.role === "doctor");
     },
   });
+  const procedures = useQuery({
+    queryKey: ["nurse-procedures", visitIds.join(",")],
+    enabled: visitIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("procedure_orders" as never)
+        .select("id, visit_id, procedure_name, notes, status")
+        .in("visit_id", visitIds as never)
+        .neq("status", "completed");
+      if (error) throw error;
+      return (data as unknown as ProcedureOrder[]) ?? [];
+    },
+  });
 
   useEffect(() => {
     const ch = supabase.channel("nurse-queue-live")
@@ -96,6 +109,7 @@ export function NurseStation() {
   const selectedEntry = queue.data?.find((q) => q.id === selectedQid) ?? null;
   const selectedVisit = visits.data?.find((v) => v.id === selectedEntry?.visit_id) ?? null;
   const selectedPatient = patients.data?.find((p) => p.id === selectedVisit?.patient_id) ?? null;
+  const selectedProcedures = (procedures.data ?? []).filter((p) => p.visit_id === selectedVisit?.id);
 
   const [v, setV] = useState({
     temperature_c: "", heart_rate: "", respiratory_rate: "",
@@ -196,6 +210,27 @@ export function NurseStation() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const completeProcedure = useMutation({
+    mutationFn: async (procedureId: string) => {
+      if (!selectedEntry) throw new Error("No queue entry selected");
+      const { error: pe } = await supabase.from("procedure_orders" as never).update({
+        status: "completed", performed_by: user!.id, performed_at: new Date().toISOString(),
+      } as never).eq("id", procedureId);
+      if (pe) throw pe;
+      const { error: qe } = await supabase.from("visit_queue" as never).update({
+        served_at: new Date().toISOString(), served_by: user!.id,
+      } as never).eq("id", selectedEntry.id);
+      if (qe) throw qe;
+    },
+    onSuccess: () => {
+      setSelectedQid(null);
+      qc.invalidateQueries({ queryKey: ["nurse-queue"] });
+      qc.invalidateQueries({ queryKey: ["nurse-procedures"] });
+      toast.success("Procedure completed");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const markEmergency = () => setV((s) => ({ ...s, triage: "emergency" }));
 
   const elapsed = (iso: string) => {
@@ -209,7 +244,7 @@ export function NurseStation() {
       <div className="flex flex-col overflow-hidden rounded-lg border bg-card">
         <div className="flex items-center justify-between border-b p-3">
           <div>
-            <div className="flex items-center gap-2 font-semibold"><UserRound className="h-4 w-4 text-primary" />Triage queue</div>
+            <div className="flex items-center gap-2 font-semibold"><UserRound className="h-4 w-4 text-primary" />Nursing queue</div>
             <div className="text-xs text-muted-foreground">{queue.data?.length ?? 0} waiting</div>
           </div>
         </div>
@@ -237,7 +272,7 @@ export function NurseStation() {
                 <div className="text-xs text-muted-foreground">
                   {ageOf(pat?.date_of_birth ?? null)} · {pat?.gender ?? "—"} · waited {elapsed(q.entered_at)}
                 </div>
-                {vis?.reason && <div className="line-clamp-1 text-xs">{vis.reason}</div>}
+                <div className="line-clamp-1 text-xs">{q.queue_type === "procedure" ? "Procedure order" : vis?.reason}</div>
               </button>
             );
           })}
@@ -269,6 +304,21 @@ export function NurseStation() {
             </div>
 
             <div className="grid gap-4 p-4 lg:grid-cols-2">
+              {selectedEntry?.queue_type === "procedure" && (
+                <section className="space-y-3 rounded-lg border bg-background p-4 lg:col-span-2">
+                  <div className="font-medium">Ordered procedures</div>
+                  {selectedProcedures.length === 0 && <div className="text-sm text-muted-foreground">No open procedure orders for this visit.</div>}
+                  {selectedProcedures.map((po) => (
+                    <div key={po.id} className="flex items-center justify-between gap-3 rounded border p-3 text-sm">
+                      <div>
+                        <div className="font-medium">{po.procedure_name}</div>
+                        {po.notes && <div className="text-xs text-muted-foreground">{po.notes}</div>}
+                      </div>
+                      <Button size="sm" onClick={() => completeProcedure.mutate(po.id)} disabled={completeProcedure.isPending}>Mark done</Button>
+                    </div>
+                  ))}
+                </section>
+              )}
               {/* Vitals */}
               <section className="space-y-3 rounded-lg border bg-background p-4">
                 <div className="flex items-center gap-2 font-medium"><HeartPulse className="h-4 w-4 text-rose-500" />Vital signs</div>
@@ -323,7 +373,7 @@ export function NurseStation() {
               </section>
 
               {/* Triage + assign */}
-              <section className="space-y-3 rounded-lg border bg-background p-4 lg:col-span-2">
+              {selectedEntry?.queue_type === "triage" && <section className="space-y-3 rounded-lg border bg-background p-4 lg:col-span-2">
                 <div className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" />Triage & assignment</div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
@@ -367,7 +417,7 @@ export function NurseStation() {
                     Send to Doctor →
                   </Button>
                 </div>
-              </section>
+              </section>}
             </div>
           </div>
         )}

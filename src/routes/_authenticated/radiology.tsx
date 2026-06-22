@@ -41,7 +41,8 @@ function RadPortal() {
   });
 
   const [openId, setOpenId] = useState<string | null>(null);
-  const [form, setForm] = useState({ findings: "", report: "" });
+  const [form, setForm] = useState({ findings: "", report: "", image_path: "" });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const opening = orders.data?.find((o) => o.id === openId);
 
   const schedule = useMutation({
@@ -57,13 +58,22 @@ function RadPortal() {
   const submitReport = useMutation({
     mutationFn: async () => {
       if (!openId) return;
+      let imagePath = form.image_path || null;
+      if (imageFile) {
+        const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const path = `${openId}/${Date.now()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage.from("imaging-files").upload(path, imageFile, { upsert: true });
+        if (uploadError) throw uploadError;
+        imagePath = path;
+      }
       const { error } = await supabase.from("imaging_orders" as never).update({
         status: "reported", findings: form.findings || null, report: form.report || null,
+        image_path: imagePath,
         performed_at: new Date().toISOString(), performed_by: user!.id,
       } as never).eq("id", openId);
       if (error) throw error;
     },
-    onSuccess: () => { setOpenId(null); setForm({ findings: "", report: "" }); qc.invalidateQueries({ queryKey: ["img-orders"] }); toast.success("Report saved"); },
+    onSuccess: () => { setOpenId(null); setImageFile(null); setForm({ findings: "", report: "", image_path: "" }); qc.invalidateQueries({ queryKey: ["img-orders"] }); toast.success("Report saved"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -94,7 +104,7 @@ function RadPortal() {
                 <div className="col-span-3 flex justify-end gap-1">
                   {canWork && o.status === "ordered" && <Button size="sm" variant="outline" onClick={() => schedule.mutate(o.id)}>Schedule</Button>}
                   {canWork && o.status !== "reported" && (
-                    <Button size="sm" onClick={() => { setOpenId(o.id); setForm({ findings: o.findings ?? "", report: o.report ?? "" }); }}>Report</Button>
+                    <Button size="sm" onClick={() => { setOpenId(o.id); setImageFile(null); setForm({ findings: o.findings ?? "", report: o.report ?? "", image_path: o.image_path ?? "" }); }}>Report</Button>
                   )}
                   {o.report && <span className="text-xs text-muted-foreground">✓ reported</span>}
                 </div>
@@ -111,6 +121,11 @@ function RadPortal() {
           <div className="space-y-2">
             <div><Label>Findings</Label><Textarea rows={4} value={form.findings} onChange={(e) => setForm({ ...form, findings: e.target.value })} /></div>
             <div><Label>Impression / Report</Label><Textarea rows={5} value={form.report} onChange={(e) => setForm({ ...form, report: e.target.value })} /></div>
+            <div>
+              <Label>Report image</Label>
+              <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+              {form.image_path && <div className="mt-1 text-xs text-muted-foreground">Current attachment: {form.image_path}</div>}
+            </div>
           </div>
           <DialogFooter><Button onClick={() => submitReport.mutate()} disabled={submitReport.isPending}>Publish report</Button></DialogFooter>
         </DialogContent>
