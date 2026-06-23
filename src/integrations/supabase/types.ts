@@ -1278,6 +1278,125 @@ export type Database = {
           },
         ]
       }
+      lab_result_templates: {
+        Row: {
+          created_at: string
+          critical_high: number | null
+          critical_low: number | null
+          display_order: number
+          id: string
+          input_type: string
+          parameter_name: string
+          reference_high: number | null
+          reference_low: number | null
+          reference_range: string | null
+          select_options: string | null
+          test_id: string
+          units: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          critical_high?: number | null
+          critical_low?: number | null
+          display_order?: number
+          id?: string
+          input_type?: string
+          parameter_name: string
+          reference_high?: number | null
+          reference_low?: number | null
+          reference_range?: string | null
+          select_options?: string | null
+          test_id: string
+          units?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          critical_high?: number | null
+          critical_low?: number | null
+          display_order?: number
+          id?: string
+          input_type?: string
+          parameter_name?: string
+          reference_high?: number | null
+          reference_low?: number | null
+          reference_range?: string | null
+          select_options?: string | null
+          test_id?: string
+          units?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_result_templates_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "lab_tests_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_result_values: {
+        Row: {
+          abnormal_flag: string | null
+          created_at: string
+          id: string
+          order_id: string
+          parameter_name: string
+          performed_at: string
+          performed_by: string | null
+          reference_range: string | null
+          template_id: string | null
+          units: string | null
+          value_numeric: number | null
+          value_text: string | null
+        }
+        Insert: {
+          abnormal_flag?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          parameter_name: string
+          performed_at?: string
+          performed_by?: string | null
+          reference_range?: string | null
+          template_id?: string | null
+          units?: string | null
+          value_numeric?: number | null
+          value_text?: string | null
+        }
+        Update: {
+          abnormal_flag?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          parameter_name?: string
+          performed_at?: string
+          performed_by?: string | null
+          reference_range?: string | null
+          template_id?: string | null
+          units?: string | null
+          value_numeric?: number | null
+          value_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_result_values_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "lab_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_result_values_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_result_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lab_results: {
         Row: {
           abnormal_flag: string | null
@@ -2147,6 +2266,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sick_off_notes: {
+        Row: {
+          created_at: string
+          days: number
+          diagnosis: string | null
+          doctor_id: string | null
+          end_date: string
+          id: string
+          patient_id: string
+          recommendation: string | null
+          start_date: string
+          visit_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          days?: number
+          diagnosis?: string | null
+          doctor_id?: string | null
+          end_date?: string
+          id?: string
+          patient_id: string
+          recommendation?: string | null
+          start_date?: string
+          visit_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          diagnosis?: string | null
+          doctor_id?: string | null
+          end_date?: string
+          id?: string
+          patient_id?: string
+          recommendation?: string | null
+          start_date?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sick_off_notes_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sick_off_notes_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_batches: {
         Row: {
           batch_no: string | null
@@ -2922,6 +3095,8 @@ export type Database = {
           opened_at: string
           opened_by: string | null
           patient_id: string
+          payment_location: string | null
+          payment_method: string | null
           pharmacy_cleared_at: string | null
           reason: string | null
           status: string
@@ -2942,6 +3117,8 @@ export type Database = {
           opened_at?: string
           opened_by?: string | null
           patient_id: string
+          payment_location?: string | null
+          payment_method?: string | null
           pharmacy_cleared_at?: string | null
           reason?: string | null
           status?: string
@@ -2962,6 +3139,8 @@ export type Database = {
           opened_at?: string
           opened_by?: string | null
           patient_id?: string
+          payment_location?: string | null
+          payment_method?: string | null
           pharmacy_cleared_at?: string | null
           reason?: string | null
           status?: string
