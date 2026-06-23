@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
-import { StockRequestForm } from "@/components/stock-request-form";
 import { WorkflowChip } from "@/components/workflow-chip";
 
 export const Route = createFileRoute("/_authenticated/lab")({ component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
@@ -21,7 +20,8 @@ interface Test { id: string; code: string; name: string; specimen: string | null
 interface Order { id: string; visit_id: string | null; patient_id: string; test_id: string; status: string; priority: string; clinical_notes: string | null; created_at: string }
 interface Patient { id: string; full_name: string }
 interface Sample { id: string; order_id: string; sample_code: string | null; condition: string | null; collected_at: string | null }
-interface Result { id: string; order_id: string; result_value: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; performed_at: string | null; comments: string | null }
+interface Tmpl { id: string; test_id: string; parameter_name: string; units: string | null; reference_range: string | null; reference_low: number | null; reference_high: number | null; input_type: string; select_options: string | null; display_order: number }
+interface ValueRow { id: string; order_id: string; template_id: string | null; parameter_name: string; value_text: string | null; value_numeric: number | null; units: string | null; reference_range: string | null; abnormal_flag: string | null }
 
 function LabPortal() {
   const qc = useQueryClient();
@@ -47,48 +47,10 @@ function LabPortal() {
     const { data, error } = await supabase.from("lab_samples" as never).select("*");
     if (error) throw error; return (data as unknown as Sample[]) ?? [];
   }});
-  const results = useQuery({ queryKey: ["lab-results-all"], queryFn: async () => {
-    const { data, error } = await supabase.from("lab_results" as never).select("*");
-    if (error) throw error; return (data as unknown as Result[]) ?? [];
+  const allValues = useQuery({ queryKey: ["lab-values-all"], queryFn: async () => {
+    const { data, error } = await supabase.from("lab_result_values" as never).select("*");
+    if (error) throw error; return (data as unknown as ValueRow[]) ?? [];
   }});
-
-  const collect = useMutation({
-    mutationFn: async (orderId: string) => {
-      const { error: e1 } = await supabase.from("lab_samples" as never).insert({
-        order_id: orderId, sample_code: `S-${Math.random().toString(36).slice(2,8).toUpperCase()}`,
-        collected_by: user!.id, condition: "good",
-      } as never);
-      if (e1) throw e1;
-      const { error: e2 } = await supabase.from("lab_orders" as never).update({ status: "collected" } as never).eq("id", orderId);
-      if (e2) throw e2;
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["lab-orders"] }); qc.invalidateQueries({ queryKey: ["lab-samples-all"] }); toast.success("Sample collected"); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const [resOpen, setResOpen] = useState<string | null>(null);
-  const [resForm, setResForm] = useState({ result_value: "", units: "", reference_range: "", abnormal_flag: "", comments: "" });
-
-  const submitResult = useMutation({
-    mutationFn: async () => {
-      if (!resOpen) return;
-      const { error: e1 } = await supabase.from("lab_results" as never).insert({
-        order_id: resOpen,
-        result_value: resForm.result_value || null, units: resForm.units || null,
-        reference_range: resForm.reference_range || null, abnormal_flag: resForm.abnormal_flag || null,
-        comments: resForm.comments || null, performed_by: user!.id,
-      } as never);
-      if (e1) throw e1;
-      const { error: e2 } = await supabase.from("lab_orders" as never).update({ status: "resulted" } as never).eq("id", resOpen);
-      if (e2) throw e2;
-    },
-    onSuccess: () => {
-      setResOpen(null); setResForm({ result_value: "", units: "", reference_range: "", abnormal_flag: "", comments: "" });
-      qc.invalidateQueries({ queryKey: ["lab-orders"] }); qc.invalidateQueries({ queryKey: ["lab-results-all"] });
-      toast.success("Result recorded");
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
 
   const testName = (id: string) => tests.data?.find((t) => t.id === id)?.name ?? "—";
   const testInfo = (id: string) => tests.data?.find((t) => t.id === id);
@@ -108,14 +70,90 @@ function LabPortal() {
 
   const selected = filtered.find((o) => o.id === selectedId) ?? filtered[0] ?? null;
   const selSample = selected && samples.data?.find((s) => s.order_id === selected.id);
-  const selResult = selected && results.data?.find((r) => r.order_id === selected.id);
   const selTest = selected && testInfo(selected.test_id);
+  const selValues = (allValues.data ?? []).filter((v) => v.order_id === selected?.id);
+
+  // Per-test template
+  const template = useQuery({
+    queryKey: ["lab-tpl", selected?.test_id],
+    enabled: !!selected?.test_id,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_result_templates" as never)
+        .select("*").eq("test_id", selected!.test_id).order("display_order");
+      if (error) throw error; return (data as unknown as Tmpl[]) ?? [];
+    },
+  });
+
+  const collect = useMutation({
+    mutationFn: async (orderId: string) => {
+      const { error: e1 } = await supabase.from("lab_samples" as never).insert({
+        order_id: orderId, sample_code: `S-${Math.random().toString(36).slice(2,8).toUpperCase()}`,
+        collected_by: user!.id, condition: "good",
+      } as never);
+      if (e1) throw e1;
+      const { error: e2 } = await supabase.from("lab_orders" as never).update({ status: "collected" } as never).eq("id", orderId);
+      if (e2) throw e2;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["lab-orders"] }); qc.invalidateQueries({ queryKey: ["lab-samples-all"] }); toast.success("Sample collected"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Template-driven result entry
+  const [entryOpen, setEntryOpen] = useState(false);
+  const [entryValues, setEntryValues] = useState<Record<string, string>>({});
+  const [entryComments, setEntryComments] = useState("");
+
+  function openEntry() {
+    if (!selected) return;
+    const init: Record<string, string> = {};
+    template.data?.forEach((t) => { init[t.id] = ""; });
+    setEntryValues(init);
+    setEntryComments("");
+    setEntryOpen(true);
+  }
+
+  const submitTemplate = useMutation({
+    mutationFn: async () => {
+      if (!selected) return;
+      const rows = (template.data ?? [])
+        .filter((t) => (entryValues[t.id] ?? "").trim() !== "")
+        .map((t) => {
+          const raw = entryValues[t.id].trim();
+          const num = t.input_type === "numeric" ? Number(raw) : null;
+          return {
+            order_id: selected.id,
+            template_id: t.id,
+            parameter_name: t.parameter_name,
+            value_text: raw,
+            value_numeric: Number.isFinite(num) ? num : null,
+            units: t.units,
+            reference_range: t.reference_range,
+            performed_by: user!.id,
+          };
+        });
+      if (rows.length === 0) throw new Error("Enter at least one parameter value");
+      const { error: e1 } = await supabase.from("lab_result_values" as never).insert(rows as never);
+      if (e1) throw e1;
+      // also keep a one-line summary in lab_results for compatibility
+      const summary = rows.map((r) => `${r.parameter_name}: ${r.value_text}${r.units ? " "+r.units : ""}`).join("; ");
+      await supabase.from("lab_results" as never).insert({
+        order_id: selected.id, result_value: summary, comments: entryComments || null, performed_by: user!.id,
+      } as never);
+      const { error: e3 } = await supabase.from("lab_orders" as never).update({ status: "resulted" } as never).eq("id", selected.id);
+      if (e3) throw e3;
+    },
+    onSuccess: () => {
+      setEntryOpen(false);
+      qc.invalidateQueries({ queryKey: ["lab-orders"] });
+      qc.invalidateQueries({ queryKey: ["lab-values-all"] });
+      toast.success("Results saved");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   return (
     <div className="grid h-[calc(100vh-8rem)] gap-4 lg:grid-cols-[360px_1fr]">
-      {/* LEFT PANEL: queue + filters + stock requests */}
       <div className="flex min-h-0 flex-col gap-4 overflow-hidden">
-        <StockRequestForm department="lab" categoryHint="lab" />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
           <div className="border-b p-3">
             <div className="flex items-center gap-2 font-semibold"><FlaskConical className="h-4 w-4 text-emerald-600" /> Lab queue</div>
@@ -151,7 +189,6 @@ function LabPortal() {
         </div>
       </div>
 
-      {/* RIGHT: selected order details */}
       <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border bg-card">
         {!selected ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">Select a lab order.</div>
@@ -169,8 +206,6 @@ function LabPortal() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <Detail label="Specimen" value={selTest?.specimen ?? "—"} />
                 <Detail label="Container" value={selTest?.container ?? "—"} />
-                <Detail label="Reference range" value={selTest?.reference_range ?? "—"} />
-                <Detail label="Units" value={selTest?.units ?? "—"} />
               </div>
 
               {selected.clinical_notes && (
@@ -188,21 +223,42 @@ function LabPortal() {
                   <div className="text-muted-foreground">{selSample.sample_code} · {selSample.condition}</div>
                 </div>
               )}
-              {selResult && (
-                <div className="rounded border border-emerald-500/40 bg-emerald-500/5 p-3 text-xs">
-                  <div className="font-medium">Result</div>
-                  <div>{selResult.result_value} {selResult.units} {selResult.abnormal_flag && <span className="text-destructive">{selResult.abnormal_flag}</span>}</div>
-                  {selResult.comments && <div className="text-muted-foreground">{selResult.comments}</div>}
-                </div>
-              )}
+
+              {/* Template-loaded parameter table */}
+              <div className="rounded border">
+                <div className="border-b p-2 text-xs font-medium">Parameters {template.data ? `(${template.data.length})` : ""}</div>
+                {(template.data?.length ?? 0) === 0 ? (
+                  <div className="p-3 text-xs text-muted-foreground">
+                    No template defined for this test. Ask an administrator to set parameters at <span className="font-mono">/lab-templates</span>.
+                  </div>
+                ) : (
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/30">
+                      <tr><th className="p-2 text-left">Parameter</th><th className="p-2 text-left">Result</th><th className="p-2 text-left">Units</th><th className="p-2 text-left">Reference</th><th className="p-2 text-left">Flag</th></tr>
+                    </thead>
+                    <tbody>
+                      {template.data?.map((t) => {
+                        const v = selValues.find((x) => x.template_id === t.id);
+                        return (
+                          <tr key={t.id} className="border-t">
+                            <td className="p-2 font-medium">{t.parameter_name}</td>
+                            <td className="p-2">{v?.value_text ?? "—"}</td>
+                            <td className="p-2">{t.units ?? "—"}</td>
+                            <td className="p-2 text-muted-foreground">{t.reference_range ?? (t.reference_low != null || t.reference_high != null ? `${t.reference_low ?? ""}–${t.reference_high ?? ""}` : "—")}</td>
+                            <td className="p-2">{v?.abnormal_flag && <span className={v.abnormal_flag === "normal" ? "text-emerald-600" : "text-destructive"}>{v.abnormal_flag}</span>}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
 
               {canWork && (
                 <div className="flex gap-2">
                   {!selSample && <Button onClick={() => collect.mutate(selected.id)}>Collect sample</Button>}
-                  {selSample && !selResult && (
-                    <Button onClick={() => { setResOpen(selected.id); setResForm({ result_value: "", units: selTest?.units ?? "", reference_range: selTest?.reference_range ?? "", abnormal_flag: "", comments: "" }); }}>
-                      Enter result
-                    </Button>
+                  {selSample && selValues.length === 0 && (template.data?.length ?? 0) > 0 && (
+                    <Button onClick={openEntry}>Enter results</Button>
                   )}
                 </div>
               )}
@@ -211,21 +267,38 @@ function LabPortal() {
         )}
       </div>
 
-      <Dialog open={!!resOpen} onOpenChange={(v) => !v && setResOpen(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Enter result</DialogTitle></DialogHeader>
-          <div className="space-y-2">
-            <div><Label>Result</Label><Input value={resForm.result_value} onChange={(e) => setResForm({ ...resForm, result_value: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div><Label>Units</Label><Input value={resForm.units} onChange={(e) => setResForm({ ...resForm, units: e.target.value })} /></div>
-              <div><Label>Reference range</Label><Input value={resForm.reference_range} onChange={(e) => setResForm({ ...resForm, reference_range: e.target.value })} /></div>
+      <Dialog open={entryOpen} onOpenChange={setEntryOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>Enter results — {selected && testName(selected.test_id)}</DialogTitle></DialogHeader>
+          <div className="max-h-[60vh] space-y-2 overflow-auto">
+            {template.data?.map((t) => (
+              <div key={t.id} className="grid grid-cols-12 items-center gap-2">
+                <Label className="col-span-4 text-xs">{t.parameter_name}{t.units ? ` (${t.units})` : ""}</Label>
+                {t.input_type === "select" ? (
+                  <select className="col-span-5 h-9 rounded border bg-background px-2 text-sm"
+                    value={entryValues[t.id] ?? ""}
+                    onChange={(e) => setEntryValues({ ...entryValues, [t.id]: e.target.value })}>
+                    <option value="">—</option>
+                    {(t.select_options ?? "").split(",").map((s) => s.trim()).filter(Boolean).map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input className="col-span-5" type={t.input_type === "numeric" ? "number" : "text"}
+                    value={entryValues[t.id] ?? ""}
+                    onChange={(e) => setEntryValues({ ...entryValues, [t.id]: e.target.value })} />
+                )}
+                <span className="col-span-3 text-[10px] text-muted-foreground">
+                  Ref {t.reference_range ?? `${t.reference_low ?? ""}–${t.reference_high ?? ""}`}
+                </span>
+              </div>
+            ))}
+            <div className="pt-2">
+              <Label className="text-xs">Comments</Label>
+              <Textarea rows={2} value={entryComments} onChange={(e) => setEntryComments(e.target.value)} />
             </div>
-            <div className="rounded border bg-muted/30 p-2 text-xs text-muted-foreground">
-              The reference range and abnormal flag are applied automatically when the result is saved.
-            </div>
-            <div><Label>Comments</Label><Textarea rows={2} value={resForm.comments} onChange={(e) => setResForm({ ...resForm, comments: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button onClick={() => submitResult.mutate()} disabled={submitResult.isPending}>Save result</Button></DialogFooter>
+          <DialogFooter><Button onClick={() => submitTemplate.mutate()} disabled={submitTemplate.isPending}>Save results</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

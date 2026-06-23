@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
-import { StockRequestForm } from "@/components/stock-request-form";
+// Stock requests moved to global navigation under Orders (/orders/stock-requests).
 import { WorkflowChip } from "@/components/workflow-chip";
 
 export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
@@ -109,7 +109,7 @@ function PharmacyPortal() {
             <div className="flex items-center gap-1 font-medium"><AlertTriangle className="h-3 w-3 text-amber-600" /> {lowStock.length} low-stock alerts</div>
           </div>
         )}
-        <StockRequestForm department="pharmacy" categoryHint="pharmacy" />
+        {/* Stock requests now live in the global Orders area */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
           <div className="border-b p-3">
             <div className="flex items-center gap-2 font-semibold"><Pill className="h-4 w-4 text-rose-500" /> Prescription queue</div>
