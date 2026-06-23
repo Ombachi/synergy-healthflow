@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, CalendarClock, FileText, HeartPulse, Receipt, Plus } from "lucide-react";
+import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,10 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { exportSickOffPDF } from "@/lib/sick-off-pdf";
 
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
 
-interface Patient { id: string; full_name: string }
+const money = (cents: number) => `KES ${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+interface Patient { id: string; full_name: string; medical_record_number: string | null }
 interface Visit { id: string; opened_at: string; closed_at: string | null; status: string; reason: string | null; notes: string | null; triage_level: string | null }
 interface Vital { id: string; visit_id: string; captured_at: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null }
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null }
@@ -25,6 +28,11 @@ interface Appointment { id: string; scheduled_at: string; status: string; reason
 interface Invoice { id: string; visit_id: string | null; total_cents: number; paid_cents: number; status: string; created_at: string }
 interface InvoiceItem { id: string; invoice_id: string; description: string; qty: number; unit_price_cents: number; amount_cents: number; kind: string }
 interface Doctor { id: string; full_name: string | null; role: string }
+interface LabOrderRow { id: string; test_id: string; created_at: string; status: string; visit_id: string | null }
+interface LabResultRow { id: string; order_id: string; result_value: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; performed_at: string | null; comments: string | null }
+interface LabValueRow { id: string; order_id: string; parameter_name: string; value_text: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null }
+interface LabTestRow { id: string; name: string; code: string }
+interface SickRow { id: string; created_at: string; days: number; start_date: string; end_date: string; diagnosis: string | null; recommendation: string | null; doctor_id: string | null; patient_id: string }
 
 const RANGES_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365, all: 100000 };
 
@@ -36,7 +44,7 @@ function PatientTimeline() {
   const patient = useQuery({
     queryKey: ["my-patient", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("patients" as never).select("id, full_name").eq("user_id", user!.id).maybeSingle();
+      const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number").eq("user_id", user!.id).maybeSingle();
       if (error) throw error; return data as unknown as Patient | null;
     },
   });
