@@ -93,6 +93,50 @@ function PatientTimeline() {
     },
   });
 
+  // Lab results owned by this patient
+  const labOrders = useQuery({
+    queryKey: ["my-lab-orders", pid], enabled: !!pid,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_orders" as never)
+        .select("id, test_id, created_at, status, visit_id").eq("patient_id", pid!).order("created_at", { ascending: false });
+      if (error) throw error; return (data as unknown as LabOrderRow[]) ?? [];
+    },
+  });
+  const labOrderIds = (labOrders.data ?? []).map((o) => o.id);
+  const labResults = useQuery({
+    queryKey: ["my-lab-results", labOrderIds.join(",")], enabled: labOrderIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_results" as never).select("*").in("order_id", labOrderIds as never);
+      if (error) throw error; return (data as unknown as LabResultRow[]) ?? [];
+    },
+  });
+  const labValues = useQuery({
+    queryKey: ["my-lab-values", labOrderIds.join(",")], enabled: labOrderIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lab_result_values" as never).select("*").in("order_id", labOrderIds as never);
+      if (error) throw error; return (data as unknown as LabValueRow[]) ?? [];
+    },
+  });
+  const labTestIds = Array.from(new Set((labOrders.data ?? []).map((o) => o.test_id)));
+  const labTests = useQuery({
+    queryKey: ["my-lab-tests", labTestIds.join(",")], enabled: labTestIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("lab_tests_catalog" as never).select("id, name, code").in("id", labTestIds as never);
+      return (data as unknown as LabTestRow[]) ?? [];
+    },
+  });
+  const testName = (id: string) => labTests.data?.find((t) => t.id === id)?.name ?? "Test";
+
+  // Sick-off notes
+  const sickoffs = useQuery({
+    queryKey: ["my-sickoffs", pid], enabled: !!pid,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("sick_off_notes" as never)
+        .select("*").eq("patient_id", pid!).order("created_at", { ascending: false });
+      if (error) throw error; return (data as unknown as SickRow[]) ?? [];
+    },
+  });
+
   const [bookOpen, setBookOpen] = useState(false);
   const [bookForm, setBookForm] = useState({ doctor_id: "", scheduled_at: "", reason: "" });
   const book = useMutation({
