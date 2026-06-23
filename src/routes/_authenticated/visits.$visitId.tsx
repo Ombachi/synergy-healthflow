@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { exportVisitPDF } from "@/lib/visit-pdf";
+import { exportSickOffPDF } from "@/lib/sick-off-pdf";
 import { IcdPicker } from "@/components/icd-picker";
 import { AssignVisit } from "@/components/assign-visit";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
 
@@ -284,6 +286,7 @@ function VisitDetail() {
         </div>
         <div className="flex items-center gap-2">
           <AssignVisit visitId={v.id} assignedDoctorId={v.assigned_doctor_id} assignedNurseId={v.assigned_nurse_id} />
+          {canClose && p && <SickOffButton visitId={v.id} patientId={v.patient_id} patientName={p.full_name} mrn={p.medical_record_number} primaryDx={diagnoses.data?.find((d)=>d.is_primary)?.diagnosis ?? diagnoses.data?.[0]?.diagnosis ?? null} userId={user?.id ?? null} />}
           <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4" /> Export PDF</Button>
         </div>
       </div>
@@ -537,5 +540,67 @@ function NotesEditor({ initial, onSave, disabled }: { initial: string; onSave: (
       <Textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} />
       <div className="flex justify-end"><Button size="sm" variant="secondary" onClick={() => onSave(text)} disabled={disabled}>Save notes</Button></div>
     </div>
+  );
+}
+
+function SickOffButton({ visitId, patientId, patientName, mrn, primaryDx, userId }: {
+  visitId: string; patientId: string; patientName: string; mrn: string | null; primaryDx: string | null; userId: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    days: 3,
+    start_date: new Date().toISOString().slice(0,10),
+    diagnosis: primaryDx ?? "",
+    recommendation: "Rest and review if symptoms persist.",
+  });
+  const endDate = (() => {
+    const d = new Date(form.start_date);
+    d.setDate(d.getDate() + Math.max(0, form.days - 1));
+    return d.toISOString().slice(0,10);
+  })();
+
+  async function save(downloadAfter: boolean) {
+    if (!form.diagnosis.trim()) return toast.error("Diagnosis required");
+    if (form.days < 1) return toast.error("At least 1 day required");
+    const { data, error } = await supabase.from("sick_off_notes" as never).insert({
+      visit_id: visitId, patient_id: patientId, doctor_id: userId,
+      diagnosis: form.diagnosis, recommendation: form.recommendation,
+      days: form.days, start_date: form.start_date, end_date: endDate,
+    } as never).select().single();
+    if (error) return toast.error(error.message);
+    toast.success("Sick-off sent to patient portal");
+    setOpen(false);
+    if (downloadAfter && data) {
+      const s = data as { id: string; created_at: string };
+      exportSickOffPDF({
+        id: s.id, patient_name: patientName, mrn, diagnosis: form.diagnosis,
+        recommendation: form.recommendation, days: form.days,
+        start_date: form.start_date, end_date: endDate, created_at: s.created_at,
+      });
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline"><FileText className="h-4 w-4" /> Sick-off</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Issue sick-off certificate</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>Start date</Label><Input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} /></div>
+            <div><Label>Days</Label><Input type="number" min={1} value={form.days} onChange={(e) => setForm({ ...form, days: Number(e.target.value) })} /></div>
+          </div>
+          <div className="rounded border bg-muted/30 p-2 text-xs">End date: <span className="font-medium">{endDate}</span></div>
+          <div><Label>Diagnosis</Label><Input value={form.diagnosis} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} /></div>
+          <div><Label>Recommendation</Label><Textarea rows={3} value={form.recommendation} onChange={(e) => setForm({ ...form, recommendation: e.target.value })} /></div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => save(false)}>Save & send to patient</Button>
+          <Button onClick={() => save(true)}>Save & download PDF</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
