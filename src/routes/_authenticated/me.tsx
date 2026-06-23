@@ -199,6 +199,8 @@ function PatientTimeline() {
         <TabsList>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsTrigger value="lab">Lab results</TabsTrigger>
+          <TabsTrigger value="sickoff">Sick-off</TabsTrigger>
           <TabsTrigger value="bills">Bills</TabsTrigger>
         </TabsList>
 
@@ -308,6 +310,82 @@ function PatientTimeline() {
           </div>
         </TabsContent>
 
+        <TabsContent value="lab" className="mt-4 space-y-3">
+          <h2 className="flex items-center gap-2 font-medium"><FlaskConical className="h-4 w-4 text-primary" /> My lab results</h2>
+          {(labOrders.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No lab orders yet.</p>}
+          {labOrders.data?.map((o) => {
+            const summary = labResults.data?.find((r) => r.order_id === o.id);
+            const params = (labValues.data ?? []).filter((v) => v.order_id === o.id);
+            const downloadable = !!summary || params.length > 0;
+            function downloadCsv() {
+              const rows = params.length
+                ? params.map((p) => [p.parameter_name, p.value_text ?? "", p.units ?? "", p.reference_range ?? "", p.abnormal_flag ?? ""])
+                : [[testName(o.test_id), summary?.result_value ?? "", summary?.units ?? "", summary?.reference_range ?? "", summary?.abnormal_flag ?? ""]];
+              const csv = ["Parameter,Result,Units,Reference,Flag", ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(","))].join("\n");
+              const blob = new Blob([csv], { type: "text/csv" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url; a.download = `${testName(o.test_id).replace(/\s+/g, "_")}-${o.id.slice(0,8)}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }
+            return (
+              <div key={o.id} className="rounded-lg border bg-card">
+                <div className="flex items-center justify-between border-b p-3 text-sm">
+                  <div>
+                    <div className="font-medium">{testName(o.test_id)}</div>
+                    <div className="text-xs text-muted-foreground">Ordered {new Date(o.created_at).toLocaleString()} · Status: {o.status}</div>
+                  </div>
+                  {downloadable && (
+                    <Button size="sm" variant="outline" onClick={downloadCsv}><Download className="h-4 w-4" /> Download</Button>
+                  )}
+                </div>
+                {params.length > 0 ? (
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/30"><tr><th className="p-2 text-left">Parameter</th><th className="p-2 text-left">Result</th><th className="p-2 text-left">Units</th><th className="p-2 text-left">Reference</th><th className="p-2 text-left">Flag</th></tr></thead>
+                    <tbody>
+                      {params.map((p) => (
+                        <tr key={p.id} className="border-t">
+                          <td className="p-2 font-medium">{p.parameter_name}</td>
+                          <td className="p-2">{p.value_text ?? "—"}</td>
+                          <td className="p-2">{p.units ?? "—"}</td>
+                          <td className="p-2 text-muted-foreground">{p.reference_range ?? "—"}</td>
+                          <td className="p-2">{p.abnormal_flag && <span className={p.abnormal_flag === "normal" ? "text-emerald-600" : "text-destructive"}>{p.abnormal_flag}</span>}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : summary ? (
+                  <div className="p-3 text-sm">
+                    <div>{summary.result_value} {summary.units} {summary.abnormal_flag && <span className="ml-1 text-destructive">{summary.abnormal_flag}</span>}</div>
+                    {summary.comments && <div className="text-xs text-muted-foreground">{summary.comments}</div>}
+                  </div>
+                ) : (
+                  <div className="p-3 text-xs text-muted-foreground">Results pending.</div>
+                )}
+              </div>
+            );
+          })}
+        </TabsContent>
+
+        <TabsContent value="sickoff" className="mt-4 space-y-3">
+          <h2 className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 text-primary" /> Sick-off certificates</h2>
+          {(sickoffs.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No sick-off certificates yet.</p>}
+          {sickoffs.data?.map((s) => (
+            <div key={s.id} className="flex items-center justify-between rounded-lg border bg-card p-3 text-sm">
+              <div>
+                <div className="font-medium">{s.days} day(s) — {s.start_date} to {s.end_date}</div>
+                <div className="text-xs text-muted-foreground">Issued {new Date(s.created_at).toLocaleDateString()}{s.diagnosis ? ` · ${s.diagnosis}` : ""}</div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => exportSickOffPDF({
+                id: s.id, patient_name: patient.data!.full_name, mrn: patient.data!.medical_record_number,
+                diagnosis: s.diagnosis, recommendation: s.recommendation, days: s.days,
+                start_date: s.start_date, end_date: s.end_date, created_at: s.created_at,
+              })}><Download className="h-4 w-4" /> Download PDF</Button>
+            </div>
+          ))}
+        </TabsContent>
+
         <TabsContent value="bills" className="mt-4 space-y-3">
           <h2 className="flex items-center gap-2 font-medium"><Receipt className="h-4 w-4 text-primary" /> My bills</h2>
           {(invoices.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No bills yet.</p>}
@@ -322,16 +400,16 @@ function PatientTimeline() {
                     <div className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold">${(inv.total_cents / 100).toFixed(2)}</div>
+                    <div className="font-semibold">{money(inv.total_cents)}</div>
                     <span className={`rounded px-2 py-0.5 text-xs ${inv.status === "paid" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{inv.status}</span>
-                    {due > 0 && <div className="mt-0.5 text-xs text-destructive">Due ${(due / 100).toFixed(2)}</div>}
+                    {due > 0 && <div className="mt-0.5 text-xs text-destructive">Due {money(due)}</div>}
                   </div>
                 </div>
                 <ul className="divide-y text-xs">
                   {items.map((it) => (
                     <li key={it.id} className="flex justify-between p-2">
                       <span>{it.description} <span className="text-muted-foreground">× {it.qty}</span></span>
-                      <span className="font-mono">${(it.amount_cents / 100).toFixed(2)}</span>
+                      <span className="font-mono">{money(it.amount_cents)}</span>
                     </li>
                   ))}
                 </ul>
