@@ -1,0 +1,59 @@
+import jsPDF from "jspdf";
+
+export interface SickOff {
+  id: string;
+  patient_name: string;
+  mrn: string | null;
+  doctor_name?: string | null;
+  diagnosis: string | null;
+  recommendation: string | null;
+  days: number;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+}
+
+export function exportSickOffPDF(s: SickOff) {
+  const doc = new jsPDF();
+  const w = doc.internal.pageSize.getWidth();
+  let y = 24;
+
+  doc.setFontSize(18).setFont("helvetica", "bold");
+  doc.text("Medical Sick-Off Certificate", w / 2, y, { align: "center" });
+  y += 10;
+  doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(120);
+  doc.text(`Issued ${new Date(s.created_at).toLocaleString()}  ·  Ref ${s.id.slice(0, 8)}`, w / 2, y, { align: "center" });
+  y += 12;
+  doc.setTextColor(0);
+
+  doc.setFontSize(11).setFont("helvetica", "bold").text("Patient", 14, y); y += 6;
+  doc.setFontSize(10).setFont("helvetica", "normal");
+  doc.text(`Name: ${s.patient_name}`, 14, y); y += 5;
+  if (s.mrn) { doc.text(`MRN: ${s.mrn}`, 14, y); y += 5; }
+  y += 4;
+
+  doc.setFontSize(11).setFont("helvetica", "bold").text("Recommendation", 14, y); y += 6;
+  doc.setFontSize(10).setFont("helvetica", "normal");
+  doc.text(`This patient is medically unfit to attend work / school for ${s.days} day(s).`, 14, y); y += 6;
+  doc.text(`From: ${s.start_date}    To: ${s.end_date}`, 14, y); y += 8;
+
+  if (s.diagnosis) {
+    doc.setFont("helvetica", "bold").text("Diagnosis:", 14, y); y += 5;
+    doc.setFont("helvetica", "normal");
+    const lines = doc.splitTextToSize(s.diagnosis, w - 28);
+    doc.text(lines, 14, y); y += lines.length * 5 + 4;
+  }
+  if (s.recommendation) {
+    doc.setFont("helvetica", "bold").text("Clinical recommendation:", 14, y); y += 5;
+    doc.setFont("helvetica", "normal");
+    const lines = doc.splitTextToSize(s.recommendation, w - 28);
+    doc.text(lines, 14, y); y += lines.length * 5 + 4;
+  }
+
+  y = Math.max(y + 24, 200);
+  doc.line(14, y, 90, y);
+  doc.setFontSize(9).text("Attending physician", 14, y + 5);
+  if (s.doctor_name) doc.text(s.doctor_name, 14, y + 11);
+
+  doc.save(`sick-off-${s.patient_name.replace(/\s+/g, "_")}-${s.id.slice(0, 8)}.pdf`);
+}
