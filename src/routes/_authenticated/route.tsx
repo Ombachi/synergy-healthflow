@@ -55,6 +55,8 @@ const items: Item[] = [
   { title: "Inventory", url: "/inventory", icon: Package, badge: undefined, dept: "inventory" },
   { title: "Store", url: "/store", icon: Warehouse, badge: undefined, dept: "store" },
   { title: "Procurement", url: "/procurement", icon: ShoppingCart, badge: undefined, dept: "procurement" },
+  { title: "Stock requests", url: "/orders/stock-requests", icon: ShoppingCart, badge: undefined },
+  { title: "Lab templates", url: "/lab-templates", icon: FlaskConical, badge: undefined },
   { title: "Inventory audit", url: "/audit-inventory", icon: BarChart3, badge: undefined },
   { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
   { title: "User management", url: "/users", icon: ShieldCheck, badge: undefined },

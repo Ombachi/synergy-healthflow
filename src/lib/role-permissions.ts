@@ -42,12 +42,17 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/users": [],
   "/team": [],
   "/department": [], // admin-only analytics (and /department/$dept)
+  "/lab-templates": [], // admin-only
+
+  // Orders (stock requests live globally for lab/pharmacy/store)
+  "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper"],
 };
 
 // Prefix-based rules for dynamic routes (path starts with key).
 export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
   "/visits/": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
   "/department/": [], // admin only
+  "/orders/": ["lab_tech", "pharmacist", "store_keeper"],
 };
 
 // Always visible to all signed-in users.

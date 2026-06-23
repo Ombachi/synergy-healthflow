@@ -29,6 +29,7 @@ import { Route as AuthenticatedNutritionRouteImport } from './routes/_authentica
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as AuthenticatedLabTemplatesRouteImport } from './routes/_authenticated/lab-templates'
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
@@ -39,6 +40,7 @@ import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authe
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
+import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_authenticated/orders.stock-requests'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 
 const AuthRoute = AuthRouteImport.update({
@@ -143,6 +145,12 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   path: '/me',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLabTemplatesRoute =
+  AuthenticatedLabTemplatesRouteImport.update({
+    id: '/lab-templates',
+    path: '/lab-templates',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLabRoute = AuthenticatedLabRouteImport.update({
   id: '/lab',
   path: '/lab',
@@ -196,6 +204,12 @@ const AuthenticatedVisitsVisitIdRoute =
     path: '/$visitId',
     getParentRoute: () => AuthenticatedVisitsRoute,
   } as any)
+const AuthenticatedOrdersStockRequestsRoute =
+  AuthenticatedOrdersStockRequestsRouteImport.update({
+    id: '/orders/stock-requests',
+    path: '/orders/stock-requests',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDepartmentDeptRoute =
   AuthenticatedDepartmentDeptRouteImport.update({
     id: '/department/$dept',
@@ -215,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
+  '/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -233,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRoutesByTo {
@@ -247,6 +263,7 @@ export interface FileRoutesByTo {
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
+  '/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -265,6 +282,7 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRoutesById {
@@ -281,6 +299,7 @@ export interface FileRoutesById {
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
+  '/_authenticated/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
@@ -299,6 +318,7 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/_authenticated/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
 export interface FileRouteTypes {
@@ -315,6 +335,7 @@ export interface FileRouteTypes {
     | '/insurance'
     | '/inventory'
     | '/lab'
+    | '/lab-templates'
     | '/me'
     | '/medical'
     | '/messages'
@@ -333,6 +354,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/visits'
     | '/department/$dept'
+    | '/orders/stock-requests'
     | '/visits/$visitId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -347,6 +369,7 @@ export interface FileRouteTypes {
     | '/insurance'
     | '/inventory'
     | '/lab'
+    | '/lab-templates'
     | '/me'
     | '/medical'
     | '/messages'
@@ -365,6 +388,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/visits'
     | '/department/$dept'
+    | '/orders/stock-requests'
     | '/visits/$visitId'
   id:
     | '__root__'
@@ -380,6 +404,7 @@ export interface FileRouteTypes {
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
+    | '/_authenticated/lab-templates'
     | '/_authenticated/me'
     | '/_authenticated/medical'
     | '/_authenticated/messages'
@@ -398,6 +423,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/visits'
     | '/_authenticated/department/$dept'
+    | '/_authenticated/orders/stock-requests'
     | '/_authenticated/visits/$visitId'
   fileRoutesById: FileRoutesById
 }
@@ -549,6 +575,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/lab-templates': {
+      id: '/_authenticated/lab-templates'
+      path: '/lab-templates'
+      fullPath: '/lab-templates'
+      preLoaderRoute: typeof AuthenticatedLabTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lab': {
       id: '/_authenticated/lab'
       path: '/lab'
@@ -619,6 +652,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVisitsVisitIdRouteImport
       parentRoute: typeof AuthenticatedVisitsRoute
     }
+    '/_authenticated/orders/stock-requests': {
+      id: '/_authenticated/orders/stock-requests'
+      path: '/orders/stock-requests'
+      fullPath: '/orders/stock-requests'
+      preLoaderRoute: typeof AuthenticatedOrdersStockRequestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/department/$dept': {
       id: '/_authenticated/department/$dept'
       path: '/department/$dept'
@@ -650,6 +690,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
+  AuthenticatedLabTemplatesRoute: typeof AuthenticatedLabTemplatesRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
@@ -668,6 +709,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
+  AuthenticatedOrdersStockRequestsRoute: typeof AuthenticatedOrdersStockRequestsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -680,6 +722,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,
+  AuthenticatedLabTemplatesRoute: AuthenticatedLabTemplatesRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
@@ -698,6 +741,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
+  AuthenticatedOrdersStockRequestsRoute: AuthenticatedOrdersStockRequestsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -711,13 +755,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
