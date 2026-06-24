@@ -20,7 +20,7 @@ interface Request { id: string; department: string | null; status: string; creat
 
 function ProcurementDashboard() {
   const { hasRole, user } = useAuth();
-  const allowed = hasRole("admin");
+  const allowed = hasRole("admin") || hasRole("procurement");
   const qc = useQueryClient();
   const [openSupplier, setOpenSupplier] = useState(false);
   const [openPO, setOpenPO] = useState(false);
