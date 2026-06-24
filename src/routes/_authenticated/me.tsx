@@ -318,17 +318,32 @@ function PatientTimeline() {
             const summary = labResults.data?.find((r) => r.order_id === o.id);
             const params = (labValues.data ?? []).filter((v) => v.order_id === o.id);
             const downloadable = !!summary || params.length > 0;
-            function downloadCsv() {
+            function downloadPdf() {
               const rows = params.length
-                ? params.map((p) => [p.parameter_name, p.value_text ?? "", p.units ?? "", p.reference_range ?? "", p.abnormal_flag ?? ""])
-                : [[testName(o.test_id), summary?.result_value ?? "", summary?.units ?? "", summary?.reference_range ?? "", summary?.abnormal_flag ?? ""]];
-              const csv = ["Parameter,Result,Units,Reference,Flag", ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(","))].join("\n");
-              const blob = new Blob([csv], { type: "text/csv" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url; a.download = `${testName(o.test_id).replace(/\s+/g, "_")}-${o.id.slice(0,8)}.csv`;
-              a.click();
-              URL.revokeObjectURL(url);
+                ? params.map((p) => ({
+                    parameter_name: p.parameter_name,
+                    value_text: p.value_text,
+                    units: p.units,
+                    reference_range: p.reference_range,
+                    abnormal_flag: p.abnormal_flag,
+                  }))
+                : [{
+                    parameter_name: testName(o.test_id),
+                    value_text: summary?.result_value ?? null,
+                    units: summary?.units ?? null,
+                    reference_range: summary?.reference_range ?? null,
+                    abnormal_flag: summary?.abnormal_flag ?? null,
+                  }];
+              exportLabReportPDF({
+                test_name: testName(o.test_id),
+                order_id: o.id,
+                ordered_at: o.created_at,
+                performed_at: summary?.performed_at ?? null,
+                patient_name: patient.data!.full_name,
+                mrn: patient.data!.medical_record_number,
+                parameters: rows,
+                comments: summary?.comments ?? null,
+              });
             }
             return (
               <div key={o.id} className="rounded-lg border bg-card">
@@ -338,7 +353,7 @@ function PatientTimeline() {
                     <div className="text-xs text-muted-foreground">Ordered {new Date(o.created_at).toLocaleString()} · Status: {o.status}</div>
                   </div>
                   {downloadable && (
-                    <Button size="sm" variant="outline" onClick={downloadCsv}><Download className="h-4 w-4" /> Download</Button>
+                    <Button size="sm" variant="outline" onClick={downloadPdf}><Download className="h-4 w-4" /> Download PDF</Button>
                   )}
                 </div>
                 {params.length > 0 ? (
