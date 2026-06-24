@@ -259,6 +259,54 @@ export type Database = {
         }
         Relationships: []
       }
+      claim_lines: {
+        Row: {
+          approved_cents: number | null
+          billed_cents: number
+          claim_id: string
+          created_at: string
+          description: string
+          id: string
+          invoice_item_id: string | null
+          rejection_reason: string | null
+        }
+        Insert: {
+          approved_cents?: number | null
+          billed_cents?: number
+          claim_id: string
+          created_at?: string
+          description: string
+          id?: string
+          invoice_item_id?: string | null
+          rejection_reason?: string | null
+        }
+        Update: {
+          approved_cents?: number | null
+          billed_cents?: number
+          claim_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_item_id?: string | null
+          rejection_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_lines_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_lines_invoice_item_id_fkey"
+            columns: ["invoice_item_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clearance_records: {
         Row: {
           athlete_id: string
@@ -858,6 +906,45 @@ export type Database = {
           },
         ]
       }
+      insurance_payers: {
+        Row: {
+          active: boolean
+          category: string | null
+          claims_portal_url: string | null
+          code: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          claims_portal_url?: string | null
+          code: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          claims_portal_url?: string | null
+          code?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       insurance_policies: {
         Row: {
           active: boolean
@@ -866,6 +953,7 @@ export type Database = {
           insurer: string
           member_number: string
           patient_id: string
+          payer_id: string | null
           scheme: string | null
           updated_at: string
           valid_from: string | null
@@ -878,6 +966,7 @@ export type Database = {
           insurer: string
           member_number: string
           patient_id: string
+          payer_id?: string | null
           scheme?: string | null
           updated_at?: string
           valid_from?: string | null
@@ -890,6 +979,7 @@ export type Database = {
           insurer?: string
           member_number?: string
           patient_id?: string
+          payer_id?: string | null
           scheme?: string | null
           updated_at?: string
           valid_from?: string | null
@@ -901,6 +991,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_policies_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_payers"
             referencedColumns: ["id"]
           },
         ]
