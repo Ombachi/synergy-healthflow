@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportSickOffPDF } from "@/lib/sick-off-pdf";
+import { exportLabReportPDF } from "@/lib/lab-report-pdf";
 
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
 
