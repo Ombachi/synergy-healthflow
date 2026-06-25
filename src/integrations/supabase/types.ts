@@ -307,6 +307,53 @@ export type Database = {
           },
         ]
       }
+      claim_submissions: {
+        Row: {
+          claim_id: string
+          created_at: string
+          external_ref: string | null
+          id: string
+          last_event_at: string
+          payer_code: string | null
+          raw: Json | null
+          status: string
+          submitted_at: string
+          submitted_by: string | null
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          last_event_at?: string
+          payer_code?: string | null
+          raw?: Json | null
+          status?: string
+          submitted_at?: string
+          submitted_by?: string | null
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          last_event_at?: string
+          payer_code?: string | null
+          raw?: Json | null
+          status?: string
+          submitted_at?: string
+          submitted_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_submissions_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clearance_records: {
         Row: {
           athlete_id: string
@@ -1834,6 +1881,45 @@ export type Database = {
           },
         ]
       }
+      outbox_events: {
+        Row: {
+          aggregate_id: string
+          aggregate_type: string
+          attempts: number
+          created_at: string
+          event_type: string
+          id: string
+          last_error: string | null
+          payload: Json
+          processed_at: string | null
+          status: string
+        }
+        Insert: {
+          aggregate_id: string
+          aggregate_type: string
+          attempts?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          processed_at?: string | null
+          status?: string
+        }
+        Update: {
+          aggregate_id?: string
+          aggregate_type?: string
+          attempts?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          processed_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           address: string | null
@@ -2329,6 +2415,116 @@ export type Database = {
             columns: ["treatment_plan_id"]
             isOneToOne: false
             referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remittance_batches: {
+        Row: {
+          created_at: string
+          filename: string | null
+          id: string
+          imported_by: string | null
+          payer_code: string | null
+          payer_id: string | null
+          rows_matched: number
+          rows_total: number
+          rows_unmatched: number
+          total_paid_cents: number
+        }
+        Insert: {
+          created_at?: string
+          filename?: string | null
+          id?: string
+          imported_by?: string | null
+          payer_code?: string | null
+          payer_id?: string | null
+          rows_matched?: number
+          rows_total?: number
+          rows_unmatched?: number
+          total_paid_cents?: number
+        }
+        Update: {
+          created_at?: string
+          filename?: string | null
+          id?: string
+          imported_by?: string | null
+          payer_code?: string | null
+          payer_id?: string | null
+          rows_matched?: number
+          rows_total?: number
+          rows_unmatched?: number
+          total_paid_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remittance_batches_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_payers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remittance_lines: {
+        Row: {
+          approved_cents: number | null
+          batch_id: string
+          claim_id: string | null
+          created_at: string
+          external_claim_ref: string | null
+          id: string
+          invoice_no: string | null
+          matched: boolean
+          member_number: string | null
+          paid_at: string | null
+          paid_cents: number
+          reason: string | null
+          status: string | null
+        }
+        Insert: {
+          approved_cents?: number | null
+          batch_id: string
+          claim_id?: string | null
+          created_at?: string
+          external_claim_ref?: string | null
+          id?: string
+          invoice_no?: string | null
+          matched?: boolean
+          member_number?: string | null
+          paid_at?: string | null
+          paid_cents?: number
+          reason?: string | null
+          status?: string | null
+        }
+        Update: {
+          approved_cents?: number | null
+          batch_id?: string
+          claim_id?: string | null
+          created_at?: string
+          external_claim_ref?: string | null
+          id?: string
+          invoice_no?: string | null
+          matched?: boolean
+          member_number?: string | null
+          paid_at?: string | null
+          paid_cents?: number
+          reason?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remittance_lines_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "remittance_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remittance_lines_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_claims"
             referencedColumns: ["id"]
           },
         ]
@@ -3384,6 +3580,15 @@ export type Database = {
       can_discharge: { Args: { _visit: string }; Returns: boolean }
       catalog_price: { Args: { _category: string }; Returns: number }
       compute_patient_initials: { Args: { _name: string }; Returns: string }
+      emit_outbox: {
+        Args: {
+          _agg_id: string
+          _agg_type: string
+          _event: string
+          _payload: Json
+        }
+        Returns: undefined
+      }
       ensure_open_invoice: { Args: { _visit: string }; Returns: string }
       has_role: {
         Args: {

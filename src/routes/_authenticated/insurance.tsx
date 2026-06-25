@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Shield, Plus, Download, FileDown } from "lucide-react";
+import { Shield, Plus, Download, FileDown, Send, Upload, FileJson, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,17 +14,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { exportClaimPDF, exportClaimsBatchCSV } from "@/lib/claim-pdf";
+import { toFhirClaim, downloadFhir } from "@/lib/fhir";
 
 export const Route = createFileRoute("/_authenticated/insurance")({ component: InsurancePage });
 
-interface Payer { id: string; code: string; name: string; category: string | null; active: boolean }
+interface Payer { id: string; code: string; name: string; category: string | null; active: boolean; claims_portal_url?: string | null }
 interface Policy { id: string; patient_id: string; insurer: string; member_number: string; scheme: string | null; payer_id: string | null; valid_from: string | null; valid_to: string | null; active: boolean }
 interface Claim { id: string; invoice_id: string; policy_id: string | null; preauth_code: string | null; status: string; approved_amount_cents: number | null; notes: string | null; created_at: string }
 interface Invoice { id: string; patient_id: string; total_cents: number; status: string }
 interface InvoiceItem { id: string; invoice_id: string; description: string; amount_cents: number }
 interface Patient { id: string; full_name: string; medical_record_number: string | null }
+interface Submission { id: string; claim_id: string; payer_code: string | null; external_ref: string | null; status: string; submitted_at: string; last_event_at: string }
+interface Batch { id: string; payer_code: string | null; filename: string | null; rows_total: number; rows_matched: number; rows_unmatched: number; total_paid_cents: number; created_at: string }
 
 const money = (c: number | null) => c == null ? "—" : `KES ${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+function parseRemittanceCsv(text: string): Array<Record<string, string>> {
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/\s+/g, "_"));
+  return lines.slice(1).map((ln) => {
+    const cells = ln.split(",");
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => { row[h] = (cells[i] ?? "").trim(); });
+    return row;
+  });
+}
 
 function InsurancePage() {
   const qc = useQueryClient();
@@ -33,6 +48,23 @@ function InsurancePage() {
   const [polForm, setPolForm] = useState({ patient_id: "", payer_id: "", member_number: "", scheme: "", valid_from: "", valid_to: "" });
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimForm, setClaimForm] = useState({ invoice_id: "", policy_id: "", preauth_code: "", notes: "" });
+  const [remitOpen, setRemitOpen] = useState(false);
+  const [remitFile, setRemitFile] = useState<File | null>(null);
+  const [remitPayer, setRemitPayer] = useState("");
+
+  // Real-time updates from payer status changes
+  useEffect(() => {
+    const ch = supabase
+      .channel("insurance-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "insurance_claims" }, () => {
+        qc.invalidateQueries({ queryKey: ["claims"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "claim_submissions" }, () => {
+        qc.invalidateQueries({ queryKey: ["claim-submissions"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const payers = useQuery({
     queryKey: ["payers"],
@@ -89,6 +121,26 @@ function InsurancePage() {
       const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number").order("full_name");
       if (error) throw error;
       return (data as unknown as Patient[]) ?? [];
+    },
+  });
+  const submissions = useQuery({
+    queryKey: ["claim-submissions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("claim_submissions" as never)
+        .select("id, claim_id, payer_code, external_ref, status, submitted_at, last_event_at")
+        .order("last_event_at", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as Submission[]) ?? [];
+    },
+  });
+  const batches = useQuery({
+    queryKey: ["remit-batches"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("remittance_batches" as never)
+        .select("id, payer_code, filename, rows_total, rows_matched, rows_unmatched, total_paid_cents, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as Batch[]) ?? [];
     },
   });
 
@@ -159,6 +211,131 @@ function InsurancePage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["claims"] }); toast.success("Claim updated"); },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  // ---- Automated submission to selected Kenyan payer ----
+  const submitToPayer = useMutation({
+    mutationFn: async (c: Claim) => {
+      const pol = c.policy_id ? policies.data?.find((p) => p.id === c.policy_id) : undefined;
+      const payer = pol?.payer_id ? payers.data?.find((p) => p.id === pol.payer_id) : undefined;
+      const payerCode = payer?.code ?? "UNKNOWN";
+      const externalRef = `${payerCode}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+      // Simulated payer gateway call (replace with real EDI/REST per payer)
+      const { error: subErr } = await supabase.from("claim_submissions" as never).insert({
+        claim_id: c.id,
+        payer_code: payerCode,
+        external_ref: externalRef,
+        status: "submitted",
+        submitted_by: user!.id,
+        raw: { simulated: true, channel: payer?.claims_portal_url ?? "manual" },
+      } as never);
+      if (subErr) throw subErr;
+      const { error: updErr } = await supabase.from("insurance_claims" as never)
+        .update({ status: "submitted", processed_by: user!.id, notes: `${c.notes ?? ""}\n[Submitted ${externalRef}]`.trim() } as never)
+        .eq("id", c.id);
+      if (updErr) throw updErr;
+      // Simulate payer acknowledgement and async processing events
+      setTimeout(async () => {
+        await supabase.from("claim_submissions" as never).insert({
+          claim_id: c.id, payer_code: payerCode, external_ref: externalRef,
+          status: "acknowledged", submitted_by: user!.id, raw: { ack: true },
+        } as never);
+      }, 1500);
+      return externalRef;
+    },
+    onSuccess: (ref) => {
+      qc.invalidateQueries({ queryKey: ["claims"] });
+      qc.invalidateQueries({ queryKey: ["claim-submissions"] });
+      toast.success(`Sent to payer — ref ${ref}`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // ---- Remittance import + reconciliation ----
+  const importRemittance = useMutation({
+    mutationFn: async () => {
+      if (!remitFile) throw new Error("Choose a CSV file");
+      if (!remitPayer) throw new Error("Pick the payer");
+      const text = await remitFile.text();
+      const rows = parseRemittanceCsv(text);
+      if (rows.length === 0) throw new Error("Empty CSV");
+      const payer = payers.data?.find((p) => p.id === remitPayer);
+      const { data: batch, error: bErr } = await supabase.from("remittance_batches" as never).insert({
+        payer_id: remitPayer, payer_code: payer?.code ?? null, filename: remitFile.name,
+        rows_total: rows.length, imported_by: user!.id,
+      } as never).select("id").single();
+      if (bErr) throw bErr;
+      const batchId = (batch as { id: string }).id;
+
+      // Pre-fetch submissions for this payer to match external refs
+      const subsForPayer = (submissions.data ?? []).filter((s) => !payer?.code || s.payer_code === payer.code);
+      const claimsById = new Map((claims.data ?? []).map((c) => [c.id, c]));
+
+      let matched = 0, totalPaid = 0;
+      const linePayloads: Array<Record<string, unknown>> = [];
+      const claimUpdates: Array<{ id: string; paid: number; approved: number; status: string }> = [];
+
+      for (const r of rows) {
+        const ref = r.claim_ref ?? r.external_ref ?? r.reference ?? "";
+        const paid = Math.round(parseFloat(r.paid_amount ?? r.amount_paid ?? r.paid ?? "0") * 100) || 0;
+        const approved = Math.round(parseFloat(r.approved_amount ?? r.approved ?? r.paid_amount ?? "0") * 100) || paid;
+        const status = (r.status ?? (paid > 0 ? "paid" : "rejected")).toLowerCase();
+        const sub = subsForPayer.find((s) => s.external_ref === ref);
+        const claimId = sub?.claim_id ?? null;
+        const matchedRow = !!claimId && claimsById.has(claimId);
+        if (matchedRow) { matched++; totalPaid += paid; }
+        linePayloads.push({
+          batch_id: batchId, claim_id: claimId, external_claim_ref: ref,
+          invoice_no: r.invoice_no ?? null, member_number: r.member_number ?? null,
+          paid_cents: paid, approved_cents: approved, status, paid_at: r.paid_date || null,
+          reason: r.reason ?? null, matched: matchedRow,
+        });
+        if (matchedRow && claimId) {
+          claimUpdates.push({ id: claimId, paid, approved, status: status === "rejected" ? "rejected" : "paid" });
+        }
+      }
+
+      if (linePayloads.length) await supabase.from("remittance_lines" as never).insert(linePayloads as never);
+      await supabase.from("remittance_batches" as never).update({
+        rows_matched: matched, rows_unmatched: rows.length - matched, total_paid_cents: totalPaid,
+      } as never).eq("id", batchId);
+
+      // Apply matched payments to claims + invoices
+      for (const u of claimUpdates) {
+        await supabase.from("insurance_claims" as never).update({
+          status: u.status, approved_amount_cents: u.approved, processed_by: user!.id,
+        } as never).eq("id", u.id);
+        const c = claimsById.get(u.id);
+        if (c?.invoice_id && u.status === "paid") {
+          const inv = invoiceById(c.invoice_id);
+          if (inv) {
+            const newPaid = Math.min(inv.total_cents, u.paid);
+            await supabase.from("invoices" as never).update({
+              paid_cents: newPaid,
+              status: newPaid >= inv.total_cents ? "paid" : "partial",
+            } as never).eq("id", c.invoice_id);
+            await supabase.from("payments" as never).insert({
+              invoice_id: c.invoice_id, amount_cents: u.paid, method: "insurance",
+              reference: `REMIT-${batchId.slice(0, 8)}`,
+            } as never);
+          }
+        }
+        await supabase.from("claim_submissions" as never).insert({
+          claim_id: u.id, payer_code: payer?.code ?? null, external_ref: null,
+          status: u.status, submitted_by: user!.id, raw: { source: "remittance", batch_id: batchId },
+        } as never);
+      }
+      return { total: rows.length, matched };
+    },
+    onSuccess: (r) => {
+      setRemitOpen(false); setRemitFile(null); setRemitPayer("");
+      qc.invalidateQueries({ queryKey: ["remit-batches"] });
+      qc.invalidateQueries({ queryKey: ["claims"] });
+      qc.invalidateQueries({ queryKey: ["ins-all-invoices"] });
+      toast.success(`Imported ${r.total} rows · matched ${r.matched}`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const patientById = (id: string) => patients.data?.find((p) => p.id === id);
   const policyById = (id: string | null) => id ? policies.data?.find((p) => p.id === id) : undefined;
@@ -243,6 +420,8 @@ function InsurancePage() {
       <Tabs defaultValue="claims">
         <TabsList>
           <TabsTrigger value="claims">Claims</TabsTrigger>
+          <TabsTrigger value="submissions"><Radio className="mr-1 h-3 w-3" /> Live submissions</TabsTrigger>
+          <TabsTrigger value="remittances">Remittances</TabsTrigger>
           <TabsTrigger value="policies">Member policies</TabsTrigger>
           <TabsTrigger value="payers">Payers</TabsTrigger>
         </TabsList>
@@ -302,17 +481,33 @@ function InsurancePage() {
                         "bg-amber-500/10 text-amber-700"
                       }`}>{c.status}</span>
                       <Button size="sm" variant="outline" onClick={() => downloadClaim(c)}><Download className="h-4 w-4" /> PDF</Button>
-                      {(c.status === "pending" || c.status === "submitted") && (
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="outline" onClick={() => {
-                            const a = prompt("Approved amount (KES)?", String(((inv?.total_cents ?? 0) / 100).toFixed(2)));
-                            if (a) updateClaim.mutate({ id: c.id, status: "approved", amount: Math.round(parseFloat(a) * 100) });
-                          }}>Approve</Button>
-                          <Button size="sm" variant="ghost" onClick={() => {
-                            const reason = prompt("Rejection reason?");
-                            if (reason) updateClaim.mutate({ id: c.id, status: "rejected", note: reason });
-                          }}>Reject</Button>
-                        </div>
+                      <Button size="sm" variant="ghost" title="Download FHIR R4" onClick={async () => {
+                        const { data: lns } = await supabase.from("claim_lines" as never).select("*").eq("claim_id", c.id);
+                        const lines = ((lns as unknown as Array<{ description: string; billed_cents: number; approved_cents: number | null }>) ?? []);
+                        downloadFhir(`claim-${c.id.slice(0, 8)}.fhir.json`, toFhirClaim({
+                          id: c.id, patient_id: inv?.patient_id ?? "", insurer: pol?.insurer ?? null,
+                          member_number: pol?.member_number ?? null, preauth_code: c.preauth_code,
+                          status: c.status, created_at: c.created_at, total_cents: inv?.total_cents ?? 0,
+                          approved_cents: c.approved_amount_cents,
+                          lines: lines.length ? lines : [{ description: `Invoice ${c.invoice_id.slice(0,8)}`, billed_cents: inv?.total_cents ?? 0, approved_cents: c.approved_amount_cents }],
+                        }));
+                      }}><FileJson className="h-4 w-4" /></Button>
+                      {(c.status === "pending" || c.status === "submitted" || c.status === "draft") && (
+                        <>
+                          <Button size="sm" onClick={() => submitToPayer.mutate(c)} disabled={submitToPayer.isPending}>
+                            <Send className="h-4 w-4" /> Send to payer
+                          </Button>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="outline" onClick={() => {
+                              const a = prompt("Approved amount (KES)?", String(((inv?.total_cents ?? 0) / 100).toFixed(2)));
+                              if (a) updateClaim.mutate({ id: c.id, status: "approved", amount: Math.round(parseFloat(a) * 100) });
+                            }}>Approve</Button>
+                            <Button size="sm" variant="ghost" onClick={() => {
+                              const reason = prompt("Rejection reason?");
+                              if (reason) updateClaim.mutate({ id: c.id, status: "rejected", note: reason });
+                            }}>Reject</Button>
+                          </div>
+                        </>
                       )}
                       {c.status === "approved" && (
                         <Button size="sm" variant="outline" onClick={() => updateClaim.mutate({ id: c.id, status: "paid" })}>Mark paid</Button>
@@ -324,6 +519,74 @@ function InsurancePage() {
             </div>
           </div>
         </TabsContent>
+
+        <TabsContent value="submissions" className="space-y-2">
+          <p className="text-xs text-muted-foreground">Real-time status updates as payers acknowledge, process and adjudicate submitted claims.</p>
+          <div className="rounded-lg border bg-card divide-y">
+            {(submissions.data ?? []).length === 0 && <div className="p-4 text-sm text-muted-foreground">No submissions yet.</div>}
+            {submissions.data?.map((s) => {
+              const c = claims.data?.find((cl) => cl.id === s.claim_id);
+              const inv = c ? invoiceById(c.invoice_id) : undefined;
+              const pat = inv ? patientById(inv.patient_id) : undefined;
+              return (
+                <div key={s.id} className="flex items-center justify-between p-3 text-sm">
+                  <div>
+                    <div className="font-medium">{pat?.full_name ?? "—"} <span className="text-xs text-muted-foreground">· {s.payer_code ?? "—"} · ref {s.external_ref ?? "—"}</span></div>
+                    <div className="text-xs text-muted-foreground">{new Date(s.last_event_at).toLocaleString()}</div>
+                  </div>
+                  <span className={`rounded px-2 py-0.5 text-xs ${
+                    s.status === "paid" ? "bg-blue-500/10 text-blue-700" :
+                    s.status === "approved" ? "bg-emerald-500/10 text-emerald-700" :
+                    s.status === "rejected" ? "bg-rose-500/10 text-rose-700" :
+                    "bg-amber-500/10 text-amber-700"
+                  }`}>{s.status}</span>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="remittances" className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Upload a payer remittance CSV (columns: <code>claim_ref, paid_amount, approved_amount, status, paid_date, reason</code>). The system auto-matches by external reference and updates billed/approved/paid KPIs.</p>
+            <Dialog open={remitOpen} onOpenChange={setRemitOpen}>
+              <DialogTrigger asChild><Button><Upload className="h-4 w-4" /> Import remittance</Button></DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Import payer remittance</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label>Payer</Label>
+                    <Select value={remitPayer} onValueChange={setRemitPayer}>
+                      <SelectTrigger><SelectValue placeholder="Select payer" /></SelectTrigger>
+                      <SelectContent>{payers.data?.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>CSV file</Label>
+                    <Input type="file" accept=".csv,text/csv" onChange={(e) => setRemitFile(e.target.files?.[0] ?? null)} />
+                  </div>
+                </div>
+                <DialogFooter><Button onClick={() => importRemittance.mutate()} disabled={importRemittance.isPending}>Reconcile</Button></DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="rounded-lg border bg-card divide-y">
+            {(batches.data ?? []).length === 0 && <div className="p-4 text-sm text-muted-foreground">No remittance batches imported.</div>}
+            {batches.data?.map((b) => (
+              <div key={b.id} className="flex items-center justify-between p-3 text-sm">
+                <div>
+                  <div className="font-medium">{b.filename ?? "remittance"} <span className="text-xs text-muted-foreground">· {b.payer_code ?? "—"}</span></div>
+                  <div className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleString()} · {b.rows_total} rows · {b.rows_matched} matched · {b.rows_unmatched} unmatched</div>
+                </div>
+                <div className="text-right text-xs">
+                  <div className="font-semibold text-blue-700">{money(b.total_paid_cents)} paid</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
+
 
         <TabsContent value="policies" className="space-y-3">
           <div className="flex justify-end">
