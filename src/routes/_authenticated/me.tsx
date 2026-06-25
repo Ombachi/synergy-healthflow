@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportSickOffPDF } from "@/lib/sick-off-pdf";
 import { exportLabReportPDF } from "@/lib/lab-report-pdf";
+import { exportImagingReportPDF } from "@/lib/imaging-report-pdf";
 
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
 
@@ -34,6 +35,7 @@ interface LabResultRow { id: string; order_id: string; result_value: string | nu
 interface LabValueRow { id: string; order_id: string; parameter_name: string; value_text: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null }
 interface LabTestRow { id: string; name: string; code: string }
 interface SickRow { id: string; created_at: string; days: number; start_date: string; end_date: string; diagnosis: string | null; recommendation: string | null; doctor_id: string | null; patient_id: string }
+interface ImagingRow { id: string; modality: string; status: string; findings: string | null; report: string | null; image_path: string | null; created_at: string; visit_id: string | null }
 
 const RANGES_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365, all: 100000 };
 
@@ -138,6 +140,47 @@ function PatientTimeline() {
     },
   });
 
+  // Imaging studies & reports
+  const imaging = useQuery({
+    queryKey: ["my-imaging", pid], enabled: !!pid,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("imaging_orders" as never)
+        .select("id, modality, status, findings, report, image_path, created_at, visit_id")
+        .eq("patient_id", pid!).order("created_at", { ascending: false });
+      if (error) throw error; return (data as unknown as ImagingRow[]) ?? [];
+    },
+  });
+  const [viewImg, setViewImg] = useState<{ row: ImagingRow; url: string | null } | null>(null);
+  async function openImaging(row: ImagingRow) {
+    let url: string | null = null;
+    if (row.image_path) {
+      const { data } = await supabase.storage.from("imaging-files").createSignedUrl(row.image_path, 600);
+      url = data?.signedUrl ?? null;
+    }
+    setViewImg({ row, url });
+  }
+  async function downloadImagingPdf(row: ImagingRow) {
+    let dataUrl: string | null = null;
+    if (row.image_path) {
+      const { data } = await supabase.storage.from("imaging-files").download(row.image_path);
+      if (data) {
+        dataUrl = await new Promise<string>((res) => {
+          const fr = new FileReader();
+          fr.onload = () => res(fr.result as string);
+          fr.readAsDataURL(data);
+        });
+      }
+    }
+    exportImagingReportPDF({
+      order_id: row.id, modality: row.modality, ordered_at: row.created_at,
+      findings: row.findings, report: row.report,
+      patient_name: patient.data!.full_name, mrn: patient.data!.medical_record_number,
+      image_data_url: dataUrl,
+    });
+  }
+
+
+
   const [bookOpen, setBookOpen] = useState(false);
   const [bookForm, setBookForm] = useState({ doctor_id: "", scheduled_at: "", reason: "" });
   const book = useMutation({
@@ -201,6 +244,7 @@ function PatientTimeline() {
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="appointments">Appointments</TabsTrigger>
           <TabsTrigger value="lab">Lab results</TabsTrigger>
+          <TabsTrigger value="imaging">Imaging</TabsTrigger>
           <TabsTrigger value="sickoff">Sick-off</TabsTrigger>
           <TabsTrigger value="bills">Bills</TabsTrigger>
         </TabsList>
@@ -382,6 +426,45 @@ function PatientTimeline() {
               </div>
             );
           })}
+        </TabsContent>
+
+        <TabsContent value="imaging" className="mt-4 space-y-3">
+          <h2 className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 text-primary" /> Imaging studies</h2>
+          {(imaging.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No imaging studies yet.</p>}
+          {imaging.data?.map((r) => {
+            const reported = !!(r.report || r.findings);
+            return (
+              <div key={r.id} className="rounded-lg border bg-card">
+                <div className="flex items-center justify-between border-b p-3 text-sm">
+                  <div>
+                    <div className="font-medium">{r.modality}</div>
+                    <div className="text-xs text-muted-foreground">Ordered {new Date(r.created_at).toLocaleString()} · Status: {r.status}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    {reported && <Button size="sm" variant="outline" onClick={() => openImaging(r)}>View</Button>}
+                    {reported && <Button size="sm" variant="outline" onClick={() => downloadImagingPdf(r)}><Download className="h-4 w-4" /> PDF</Button>}
+                  </div>
+                </div>
+                {reported ? (
+                  <div className="p-3 text-sm whitespace-pre-wrap">{r.report ?? r.findings}</div>
+                ) : (
+                  <div className="p-3 text-xs text-muted-foreground">Report pending.</div>
+                )}
+              </div>
+            );
+          })}
+          <Dialog open={!!viewImg} onOpenChange={(o) => !o && setViewImg(null)}>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader><DialogTitle>{viewImg?.row.modality} report</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                {viewImg?.url && <img src={viewImg.url} alt="study" className="max-h-[60vh] w-full rounded border object-contain" />}
+                <div className="whitespace-pre-wrap rounded border bg-muted/30 p-3 text-sm">{viewImg?.row.report ?? viewImg?.row.findings ?? "—"}</div>
+              </div>
+              <DialogFooter>
+                {viewImg && <Button variant="outline" onClick={() => downloadImagingPdf(viewImg.row)}><Download className="h-4 w-4" /> Download PDF</Button>}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="sickoff" className="mt-4 space-y-3">
