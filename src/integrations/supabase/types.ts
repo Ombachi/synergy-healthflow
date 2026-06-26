@@ -14,6 +14,73 @@ export type Database = {
   }
   public: {
     Tables: {
+      admissions: {
+        Row: {
+          admission_reason: string | null
+          admitted_at: string
+          admitted_by: string | null
+          bed_id: string | null
+          created_at: string
+          discharged_at: string | null
+          discharged_by: string | null
+          id: string
+          patient_id: string
+          status: string
+          updated_at: string
+          visit_id: string | null
+        }
+        Insert: {
+          admission_reason?: string | null
+          admitted_at?: string
+          admitted_by?: string | null
+          bed_id?: string | null
+          created_at?: string
+          discharged_at?: string | null
+          discharged_by?: string | null
+          id?: string
+          patient_id: string
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Update: {
+          admission_reason?: string | null
+          admitted_at?: string
+          admitted_by?: string | null
+          bed_id?: string | null
+          created_at?: string
+          discharged_at?: string | null
+          discharged_by?: string | null
+          id?: string
+          patient_id?: string
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admissions_bed_id_fkey"
+            columns: ["bed_id"]
+            isOneToOne: false
+            referencedRelation: "beds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admissions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admissions_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           created_at: string
@@ -258,6 +325,106 @@ export type Database = {
           visit_id?: string | null
         }
         Relationships: []
+      }
+      bed_transfers: {
+        Row: {
+          admission_id: string
+          created_at: string
+          from_bed_id: string | null
+          id: string
+          reason: string | null
+          to_bed_id: string
+          transferred_at: string
+          transferred_by: string | null
+        }
+        Insert: {
+          admission_id: string
+          created_at?: string
+          from_bed_id?: string | null
+          id?: string
+          reason?: string | null
+          to_bed_id: string
+          transferred_at?: string
+          transferred_by?: string | null
+        }
+        Update: {
+          admission_id?: string
+          created_at?: string
+          from_bed_id?: string | null
+          id?: string
+          reason?: string | null
+          to_bed_id?: string
+          transferred_at?: string
+          transferred_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bed_transfers_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_transfers_from_bed_id_fkey"
+            columns: ["from_bed_id"]
+            isOneToOne: false
+            referencedRelation: "beds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_transfers_to_bed_id_fkey"
+            columns: ["to_bed_id"]
+            isOneToOne: false
+            referencedRelation: "beds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      beds: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+          ward_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          ward_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          ward_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beds_ward_id_fkey"
+            columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "mv_kpi_occupancy"
+            referencedColumns: ["ward_id"]
+          },
+          {
+            foreignKeyName: "beds_ward_id_fkey"
+            columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "wards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       claim_lines: {
         Row: {
@@ -964,6 +1131,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          requires_preauth: boolean
           updated_at: string
         }
         Insert: {
@@ -976,6 +1144,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          requires_preauth?: boolean
           updated_at?: string
         }
         Update: {
@@ -988,6 +1157,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          requires_preauth?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -1698,6 +1868,48 @@ export type Database = {
         }
         Relationships: []
       }
+      leave_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          ends_at: string
+          id: string
+          kind: string
+          reason: string | null
+          starts_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          ends_at: string
+          id?: string
+          kind?: string
+          reason?: string | null
+          starts_at: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          ends_at?: string
+          id?: string
+          kind?: string
+          reason?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       message_attachments: {
         Row: {
           created_at: string
@@ -2135,6 +2347,101 @@ export type Database = {
           },
         ]
       }
+      preauth_requests: {
+        Row: {
+          approved_amount_cents: number | null
+          clinical_justification: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          estimated_cost_cents: number | null
+          expires_at: string | null
+          id: string
+          patient_id: string
+          payer_id: string | null
+          policy_id: string | null
+          procedure_code: string | null
+          procedure_name: string
+          reference_number: string | null
+          requested_by: string | null
+          status: string
+          updated_at: string
+          visit_id: string | null
+        }
+        Insert: {
+          approved_amount_cents?: number | null
+          clinical_justification?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          estimated_cost_cents?: number | null
+          expires_at?: string | null
+          id?: string
+          patient_id: string
+          payer_id?: string | null
+          policy_id?: string | null
+          procedure_code?: string | null
+          procedure_name: string
+          reference_number?: string | null
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Update: {
+          approved_amount_cents?: number | null
+          clinical_justification?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          estimated_cost_cents?: number | null
+          expires_at?: string | null
+          id?: string
+          patient_id?: string
+          payer_id?: string | null
+          policy_id?: string | null
+          procedure_code?: string | null
+          procedure_name?: string
+          reference_number?: string | null
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preauth_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preauth_requests_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_payers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preauth_requests_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preauth_requests_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescriptions: {
         Row: {
           created_at: string
@@ -2191,7 +2498,9 @@ export type Database = {
           ordered_by: string | null
           performed_at: string | null
           performed_by: string | null
+          preauth_id: string | null
           procedure_name: string
+          requires_preauth: boolean
           status: string
           updated_at: string
           visit_id: string
@@ -2204,7 +2513,9 @@ export type Database = {
           ordered_by?: string | null
           performed_at?: string | null
           performed_by?: string | null
+          preauth_id?: string | null
           procedure_name: string
+          requires_preauth?: boolean
           status?: string
           updated_at?: string
           visit_id: string
@@ -2217,12 +2528,21 @@ export type Database = {
           ordered_by?: string | null
           performed_at?: string | null
           performed_by?: string | null
+          preauth_id?: string | null
           procedure_name?: string
+          requires_preauth?: boolean
           status?: string
           updated_at?: string
           visit_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "procedure_orders_preauth_fk"
+            columns: ["preauth_id"]
+            isOneToOne: false
+            referencedRelation: "preauth_requests"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "procedure_orders_visit_id_fkey"
             columns: ["visit_id"]
@@ -2556,6 +2876,83 @@ export type Database = {
           id?: string
           name?: string
           unit_price_cents?: number
+        }
+        Relationships: []
+      }
+      shift_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          role: string | null
+          shift_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          role?: string | null
+          shift_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          role?: string | null
+          shift_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_assignments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shifts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department: string | null
+          ends_at: string
+          id: string
+          name: string
+          notes: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          ends_at: string
+          id?: string
+          name: string
+          notes?: string | null
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          ends_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          starts_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -3525,6 +3922,36 @@ export type Database = {
           },
         ]
       }
+      wards: {
+        Row: {
+          code: string | null
+          created_at: string
+          department: string | null
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       writeoffs: {
         Row: {
           approved_by: string | null
@@ -3562,7 +3989,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mv_kpi_alos: {
+        Row: {
+          alos_days: number | null
+          discharges_30d: number | null
+        }
+        Relationships: []
+      }
+      mv_kpi_denial: {
+        Row: {
+          decided_count: number | null
+          denial_pct: number | null
+          denied_count: number | null
+        }
+        Relationships: []
+      }
+      mv_kpi_lab_tat: {
+        Row: {
+          samples_30d: number | null
+          tat_minutes: number | null
+        }
+        Relationships: []
+      }
+      mv_kpi_occupancy: {
+        Row: {
+          blocked: number | null
+          cleaning: number | null
+          free: number | null
+          occupancy_pct: number | null
+          occupied: number | null
+          total_beds: number | null
+          ward: string | null
+          ward_id: string | null
+        }
+        Relationships: []
+      }
+      mv_kpi_revenue_by_dept: {
+        Row: {
+          day: string | null
+          dept: string | null
+          line_count: number | null
+          revenue_cents: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_invoice_line: {
@@ -3590,6 +4060,17 @@ export type Database = {
         Returns: undefined
       }
       ensure_open_invoice: { Args: { _visit: string }; Returns: string }
+      find_duplicate_patients: {
+        Args: { _dob: string; _name: string; _phone: string }
+        Returns: {
+          date_of_birth: string
+          full_name: string
+          id: string
+          medical_record_number: string
+          phone: string
+          score: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3621,6 +4102,19 @@ export type Database = {
         }
         Returns: undefined
       }
+      refresh_admin_kpis: { Args: never; Returns: undefined }
+      roster_conflicts: {
+        Args: { _ends: string; _starts: string; _user: string }
+        Returns: {
+          ends_at: string
+          kind: string
+          label: string
+          ref_id: string
+          starts_at: string
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role:
