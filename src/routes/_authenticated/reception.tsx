@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { DuplicatePatientCheck } from "@/components/duplicate-patient-check";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/reception")({ component: ReceptionPage });
@@ -215,6 +216,7 @@ function ReceptionPage() {
                   {PAYMENT_METHODS.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
                 </select>
               </div>
+              <DuplicatePatientCheck name={walkForm.full_name} phone={walkForm.phone} />
             </div>
             <DialogFooter><Button onClick={() => walkIn.mutate()} disabled={walkIn.isPending}>Register & queue</Button></DialogFooter>
           </DialogContent>

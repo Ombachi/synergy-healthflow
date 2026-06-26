@@ -43,6 +43,10 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/team": [],
   "/department": [], // admin-only analytics (and /department/$dept)
   "/lab-templates": [], // admin-only
+  "/admin-kpi": [], // admin-only KPI command center
+  "/roster": [], // admin-only rostering
+  "/beds": ["doctor", "nurse"], // admin always allowed; doctors/nurses can use
+  "/preauth": ["doctor", "insurance_officer", "billing_officer"],
 
   // Orders (stock requests live globally for lab/pharmacy/store)
   "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper"],
