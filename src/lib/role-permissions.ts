@@ -50,7 +50,31 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
   // Orders (stock requests live globally for lab/pharmacy/store)
   "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper"],
+
+  // HR / Employee Self-Service — visible to every signed-in user (their own data)
+  "/hr/me": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","patient","athlete","hr_officer","hr_manager","dept_manager",
+  ],
+  "/hr/leave": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","patient","athlete","hr_officer","hr_manager","dept_manager",
+  ],
+  "/hr/payslips": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","hr_officer","hr_manager","dept_manager",
+  ],
+  "/hr/documents": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","hr_officer","hr_manager","dept_manager",
+  ],
+  "/hr/admin": ["hr_officer","hr_manager"],
 };
+
 
 // Prefix-based rules for dynamic routes (path starts with key).
 export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {

@@ -7,7 +7,8 @@ export type AppRole =
   | "lab_tech" | "pharmacist" | "radiologist"
   | "receptionist" | "cashier" | "insurance_officer"
   | "physio" | "nutritionist" | "team_manager"
-  | "store_keeper" | "procurement" | "billing_officer";
+  | "store_keeper" | "procurement" | "billing_officer"
+  | "hr_officer" | "hr_manager" | "dept_manager";
 
 export const ALL_ROLES: AppRole[] = [
   "admin", "doctor", "nurse", "coach",
@@ -15,8 +16,10 @@ export const ALL_ROLES: AppRole[] = [
   "receptionist", "cashier", "billing_officer", "insurance_officer",
   "physio", "nutritionist", "team_manager",
   "store_keeper", "procurement",
+  "hr_officer", "hr_manager", "dept_manager",
   "patient", "athlete",
 ];
+
 
 export interface Profile {
   id: string;

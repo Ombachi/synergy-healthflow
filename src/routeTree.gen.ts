@@ -45,6 +45,11 @@ import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminKpiRouteImport } from './routes/_authenticated/admin-kpi'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_authenticated/orders.stock-requests'
+import { Route as AuthenticatedHrPayslipsRouteImport } from './routes/_authenticated/hr.payslips'
+import { Route as AuthenticatedHrMeRouteImport } from './routes/_authenticated/hr.me'
+import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticated/hr.leave'
+import { Route as AuthenticatedHrDocumentsRouteImport } from './routes/_authenticated/hr.documents'
+import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticated/hr.admin'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 
 const AuthRoute = AuthRouteImport.update({
@@ -234,6 +239,32 @@ const AuthenticatedOrdersStockRequestsRoute =
     path: '/orders/stock-requests',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrPayslipsRoute = AuthenticatedHrPayslipsRouteImport.update({
+  id: '/hr/payslips',
+  path: '/hr/payslips',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrMeRoute = AuthenticatedHrMeRouteImport.update({
+  id: '/hr/me',
+  path: '/hr/me',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrLeaveRoute = AuthenticatedHrLeaveRouteImport.update({
+  id: '/hr/leave',
+  path: '/hr/leave',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrDocumentsRoute =
+  AuthenticatedHrDocumentsRouteImport.update({
+    id: '/hr/documents',
+    path: '/hr/documents',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHrAdminRoute = AuthenticatedHrAdminRouteImport.update({
+  id: '/hr/admin',
+  path: '/hr/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDepartmentDeptRoute =
   AuthenticatedDepartmentDeptRouteImport.update({
     id: '/department/$dept',
@@ -276,6 +307,11 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/hr/admin': typeof AuthenticatedHrAdminRoute
+  '/hr/documents': typeof AuthenticatedHrDocumentsRoute
+  '/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/hr/me': typeof AuthenticatedHrMeRoute
+  '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
@@ -314,6 +350,11 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/hr/admin': typeof AuthenticatedHrAdminRoute
+  '/hr/documents': typeof AuthenticatedHrDocumentsRoute
+  '/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/hr/me': typeof AuthenticatedHrMeRoute
+  '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
@@ -354,6 +395,11 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/_authenticated/hr/admin': typeof AuthenticatedHrAdminRoute
+  '/_authenticated/hr/documents': typeof AuthenticatedHrDocumentsRoute
+  '/_authenticated/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/_authenticated/hr/me': typeof AuthenticatedHrMeRoute
+  '/_authenticated/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/_authenticated/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
 }
@@ -394,6 +440,11 @@ export interface FileRouteTypes {
     | '/users'
     | '/visits'
     | '/department/$dept'
+    | '/hr/admin'
+    | '/hr/documents'
+    | '/hr/leave'
+    | '/hr/me'
+    | '/hr/payslips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
   fileRoutesByTo: FileRoutesByTo
@@ -432,6 +483,11 @@ export interface FileRouteTypes {
     | '/users'
     | '/visits'
     | '/department/$dept'
+    | '/hr/admin'
+    | '/hr/documents'
+    | '/hr/leave'
+    | '/hr/me'
+    | '/hr/payslips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
   id:
@@ -471,6 +527,11 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/visits'
     | '/_authenticated/department/$dept'
+    | '/_authenticated/hr/admin'
+    | '/_authenticated/hr/documents'
+    | '/_authenticated/hr/leave'
+    | '/_authenticated/hr/me'
+    | '/_authenticated/hr/payslips'
     | '/_authenticated/orders/stock-requests'
     | '/_authenticated/visits/$visitId'
   fileRoutesById: FileRoutesById
@@ -735,6 +796,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersStockRequestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/payslips': {
+      id: '/_authenticated/hr/payslips'
+      path: '/hr/payslips'
+      fullPath: '/hr/payslips'
+      preLoaderRoute: typeof AuthenticatedHrPayslipsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/me': {
+      id: '/_authenticated/hr/me'
+      path: '/hr/me'
+      fullPath: '/hr/me'
+      preLoaderRoute: typeof AuthenticatedHrMeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/leave': {
+      id: '/_authenticated/hr/leave'
+      path: '/hr/leave'
+      fullPath: '/hr/leave'
+      preLoaderRoute: typeof AuthenticatedHrLeaveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/documents': {
+      id: '/_authenticated/hr/documents'
+      path: '/hr/documents'
+      fullPath: '/hr/documents'
+      preLoaderRoute: typeof AuthenticatedHrDocumentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/admin': {
+      id: '/_authenticated/hr/admin'
+      path: '/hr/admin'
+      fullPath: '/hr/admin'
+      preLoaderRoute: typeof AuthenticatedHrAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/department/$dept': {
       id: '/_authenticated/department/$dept'
       path: '/department/$dept'
@@ -789,6 +885,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
+  AuthenticatedHrAdminRoute: typeof AuthenticatedHrAdminRoute
+  AuthenticatedHrDocumentsRoute: typeof AuthenticatedHrDocumentsRoute
+  AuthenticatedHrLeaveRoute: typeof AuthenticatedHrLeaveRoute
+  AuthenticatedHrMeRoute: typeof AuthenticatedHrMeRoute
+  AuthenticatedHrPayslipsRoute: typeof AuthenticatedHrPayslipsRoute
   AuthenticatedOrdersStockRequestsRoute: typeof AuthenticatedOrdersStockRequestsRoute
 }
 
@@ -825,6 +926,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
+  AuthenticatedHrAdminRoute: AuthenticatedHrAdminRoute,
+  AuthenticatedHrDocumentsRoute: AuthenticatedHrDocumentsRoute,
+  AuthenticatedHrLeaveRoute: AuthenticatedHrLeaveRoute,
+  AuthenticatedHrMeRoute: AuthenticatedHrMeRoute,
+  AuthenticatedHrPayslipsRoute: AuthenticatedHrPayslipsRoute,
   AuthenticatedOrdersStockRequestsRoute: AuthenticatedOrdersStockRequestsRoute,
 }
 
@@ -839,13 +945,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

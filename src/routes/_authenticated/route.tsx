@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Apple, Bandage, BarChart3, BedDouble, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Dumbbell, FlaskConical, Gauge, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Trophy, Warehouse } from "lucide-react";
+import { Activity, Apple, Bandage, BarChart3, BedDouble, Briefcase, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Dumbbell, FileText, FlaskConical, Gauge, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Trophy, User, Users, Warehouse, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -64,6 +64,14 @@ const items: Item[] = [
   { title: "Rostering", url: "/roster", icon: CalendarDays, badge: undefined },
   { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
   { title: "User management", url: "/users", icon: ShieldCheck, badge: undefined },
+
+  // HR / Employee Self-Service — visible to every signed-in staff member
+  { title: "My HR profile", url: "/hr/me", icon: User, badge: undefined },
+  { title: "Leave", url: "/hr/leave", icon: CalendarDays, badge: undefined },
+  { title: "Payslips", url: "/hr/payslips", icon: Wallet, badge: undefined },
+  { title: "SOPs & Policies", url: "/hr/documents", icon: FileText, badge: undefined },
+  { title: "HR administration", url: "/hr/admin", icon: Briefcase, badge: undefined },
+
 ];
 
 
