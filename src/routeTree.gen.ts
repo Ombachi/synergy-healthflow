@@ -48,6 +48,7 @@ import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_
 import { Route as AuthenticatedHrPayslipsRouteImport } from './routes/_authenticated/hr.payslips'
 import { Route as AuthenticatedHrMeRouteImport } from './routes/_authenticated/hr.me'
 import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticated/hr.leave'
+import { Route as AuthenticatedHrDocumentsRouteImport } from './routes/_authenticated/hr.documents'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 
 const AuthRoute = AuthRouteImport.update({
@@ -252,6 +253,12 @@ const AuthenticatedHrLeaveRoute = AuthenticatedHrLeaveRouteImport.update({
   path: '/hr/leave',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHrDocumentsRoute =
+  AuthenticatedHrDocumentsRouteImport.update({
+    id: '/hr/documents',
+    path: '/hr/documents',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDepartmentDeptRoute =
   AuthenticatedDepartmentDeptRouteImport.update({
     id: '/department/$dept',
@@ -294,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/hr/documents': typeof AuthenticatedHrDocumentsRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
@@ -335,6 +343,7 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/hr/documents': typeof AuthenticatedHrDocumentsRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
@@ -378,6 +387,7 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/_authenticated/hr/documents': typeof AuthenticatedHrDocumentsRoute
   '/_authenticated/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/_authenticated/hr/me': typeof AuthenticatedHrMeRoute
   '/_authenticated/hr/payslips': typeof AuthenticatedHrPayslipsRoute
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/visits'
     | '/department/$dept'
+    | '/hr/documents'
     | '/hr/leave'
     | '/hr/me'
     | '/hr/payslips'
@@ -462,6 +473,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/visits'
     | '/department/$dept'
+    | '/hr/documents'
     | '/hr/leave'
     | '/hr/me'
     | '/hr/payslips'
@@ -504,6 +516,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/visits'
     | '/_authenticated/department/$dept'
+    | '/_authenticated/hr/documents'
     | '/_authenticated/hr/leave'
     | '/_authenticated/hr/me'
     | '/_authenticated/hr/payslips'
@@ -792,6 +805,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHrLeaveRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/documents': {
+      id: '/_authenticated/hr/documents'
+      path: '/hr/documents'
+      fullPath: '/hr/documents'
+      preLoaderRoute: typeof AuthenticatedHrDocumentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/department/$dept': {
       id: '/_authenticated/department/$dept'
       path: '/department/$dept'
@@ -846,6 +866,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
+  AuthenticatedHrDocumentsRoute: typeof AuthenticatedHrDocumentsRoute
   AuthenticatedHrLeaveRoute: typeof AuthenticatedHrLeaveRoute
   AuthenticatedHrMeRoute: typeof AuthenticatedHrMeRoute
   AuthenticatedHrPayslipsRoute: typeof AuthenticatedHrPayslipsRoute
@@ -885,6 +906,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
+  AuthenticatedHrDocumentsRoute: AuthenticatedHrDocumentsRoute,
   AuthenticatedHrLeaveRoute: AuthenticatedHrLeaveRoute,
   AuthenticatedHrMeRoute: AuthenticatedHrMeRoute,
   AuthenticatedHrPayslipsRoute: AuthenticatedHrPayslipsRoute,
