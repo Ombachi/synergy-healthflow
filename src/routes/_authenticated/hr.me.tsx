@@ -87,7 +87,8 @@ function HrMePage() {
       emergency_contact_name: emp.emergency_contact_name, emergency_contact_phone: emp.emergency_contact_phone,
       bank_name: emp.bank_name, bank_branch: emp.bank_branch, bank_account: emp.bank_account,
       qualifications: emp.qualifications, licenses: emp.licenses, professional_memberships: emp.professional_memberships,
-    }).eq("id", user.id);
+    } as never).eq("id", user.id);
+
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Profile saved");
