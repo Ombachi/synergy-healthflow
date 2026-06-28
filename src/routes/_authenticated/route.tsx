@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Apple, Bandage, BarChart3, BedDouble, Briefcase, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Dumbbell, FileText, FlaskConical, Gauge, Heart, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Trophy, User, Users, Warehouse, Wallet } from "lucide-react";
+import { Activity, Apple, Bandage, BarChart3, BedDouble, Bell, Briefcase, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Clock, Dumbbell, FileText, FlaskConical, Gauge, Gavel, Heart, Inbox, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Ticket, Trophy, User, Users, Warehouse, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -72,6 +72,12 @@ const items: Item[] = [
   { title: "SOPs & Policies", url: "/hr/documents", icon: FileText, badge: undefined },
   { title: "HR administration", url: "/hr/admin", icon: Briefcase, badge: undefined },
 
+  // Workplace
+  { title: "Internal requests", url: "/requests", icon: Ticket, badge: undefined },
+  { title: "Attendance", url: "/attendance", icon: Clock, badge: undefined },
+  { title: "Leave inbox", url: "/leave-inbox", icon: InboxIcon, badge: undefined },
+  { title: "Tenders & bids", url: "/tenders", icon: Gavel, badge: undefined },
+  { title: "Announcements", url: "/announcements", icon: Bell, badge: undefined },
 ];
 
 
