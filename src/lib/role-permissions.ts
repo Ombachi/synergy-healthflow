@@ -73,6 +73,29 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
     "store_keeper","procurement","hr_officer","hr_manager","dept_manager",
   ],
   "/hr/admin": ["hr_officer","hr_manager"],
+
+  // New workplace modules — open to all signed-in staff
+  "/requests": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","hr_officer","hr_manager","dept_manager",
+  ],
+  "/attendance": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","hr_officer","hr_manager","dept_manager",
+  ],
+  "/leave-inbox": ["hr_officer","hr_manager","dept_manager"],
+  "/tenders": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","hr_officer","hr_manager","dept_manager","patient",
+  ],
+  "/announcements": [
+    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
+    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
+    "store_keeper","procurement","hr_officer","hr_manager","dept_manager","patient","athlete",
+  ],
 };
 
 

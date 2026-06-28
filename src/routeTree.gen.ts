@@ -14,12 +14,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedTendersRouteImport } from './routes/_authenticated/tenders'
 import { Route as AuthenticatedTeamManagerRouteImport } from './routes/_authenticated/team-manager'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
 import { Route as AuthenticatedServiceCatalogRouteImport } from './routes/_authenticated/service-catalog'
 import { Route as AuthenticatedRosterRouteImport } from './routes/_authenticated/roster'
+import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedReceptionRouteImport } from './routes/_authenticated/reception'
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
@@ -31,6 +33,7 @@ import { Route as AuthenticatedNutritionRouteImport } from './routes/_authentica
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as AuthenticatedLeaveInboxRouteImport } from './routes/_authenticated/leave-inbox'
 import { Route as AuthenticatedLabTemplatesRouteImport } from './routes/_authenticated/lab-templates'
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
@@ -41,7 +44,9 @@ import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/beds'
 import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authenticated/audit-inventory'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
+import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
+import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminKpiRouteImport } from './routes/_authenticated/admin-kpi'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_authenticated/orders.stock-requests'
@@ -76,6 +81,11 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTendersRoute = AuthenticatedTendersRouteImport.update({
+  id: '/tenders',
+  path: '/tenders',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTeamManagerRoute =
   AuthenticatedTeamManagerRouteImport.update({
     id: '/team-manager',
@@ -106,6 +116,11 @@ const AuthenticatedServiceCatalogRoute =
 const AuthenticatedRosterRoute = AuthenticatedRosterRouteImport.update({
   id: '/roster',
   path: '/roster',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRequestsRoute = AuthenticatedRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReceptionRoute = AuthenticatedReceptionRouteImport.update({
@@ -164,6 +179,11 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   path: '/me',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLeaveInboxRoute = AuthenticatedLeaveInboxRouteImport.update({
+  id: '/leave-inbox',
+  path: '/leave-inbox',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLabTemplatesRoute =
   AuthenticatedLabTemplatesRouteImport.update({
     id: '/lab-templates',
@@ -216,10 +236,21 @@ const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAppointmentsRoute =
   AuthenticatedAppointmentsRouteImport.update({
     id: '/appointments',
     path: '/appointments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAnnouncementsRoute =
+  AuthenticatedAnnouncementsRouteImport.update({
+    id: '/announcements',
+    path: '/announcements',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminKpiRoute = AuthenticatedAdminKpiRouteImport.update({
@@ -276,7 +307,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
+  '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
+  '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/beds': typeof AuthenticatedBedsRoute
@@ -287,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
   '/lab-templates': typeof AuthenticatedLabTemplatesRoute
+  '/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -298,12 +332,14 @@ export interface FileRoutesByFullPath {
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
+  '/requests': typeof AuthenticatedRequestsRoute
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
+  '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -319,7 +355,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
+  '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
+  '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/beds': typeof AuthenticatedBedsRoute
@@ -330,6 +368,7 @@ export interface FileRoutesByTo {
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
   '/lab-templates': typeof AuthenticatedLabTemplatesRoute
+  '/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -341,12 +380,14 @@ export interface FileRoutesByTo {
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
+  '/requests': typeof AuthenticatedRequestsRoute
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
+  '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -364,7 +405,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin-kpi': typeof AuthenticatedAdminKpiRoute
+  '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
+  '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/_authenticated/beds': typeof AuthenticatedBedsRoute
@@ -375,6 +418,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
   '/_authenticated/lab-templates': typeof AuthenticatedLabTemplatesRoute
+  '/_authenticated/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
@@ -386,12 +430,14 @@ export interface FileRoutesById {
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
   '/_authenticated/reception': typeof AuthenticatedReceptionRoute
+  '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/roster': typeof AuthenticatedRosterRoute
   '/_authenticated/service-catalog': typeof AuthenticatedServiceCatalogRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
   '/_authenticated/store': typeof AuthenticatedStoreRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
+  '/_authenticated/tenders': typeof AuthenticatedTendersRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -409,7 +455,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin-kpi'
+    | '/announcements'
     | '/appointments'
+    | '/attendance'
     | '/audit'
     | '/audit-inventory'
     | '/beds'
@@ -420,6 +468,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/lab'
     | '/lab-templates'
+    | '/leave-inbox'
     | '/me'
     | '/medical'
     | '/messages'
@@ -431,12 +480,14 @@ export interface FileRouteTypes {
     | '/queue'
     | '/radiology'
     | '/reception'
+    | '/requests'
     | '/roster'
     | '/service-catalog'
     | '/sports'
     | '/store'
     | '/team'
     | '/team-manager'
+    | '/tenders'
     | '/users'
     | '/visits'
     | '/department/$dept'
@@ -452,7 +503,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin-kpi'
+    | '/announcements'
     | '/appointments'
+    | '/attendance'
     | '/audit'
     | '/audit-inventory'
     | '/beds'
@@ -463,6 +516,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/lab'
     | '/lab-templates'
+    | '/leave-inbox'
     | '/me'
     | '/medical'
     | '/messages'
@@ -474,12 +528,14 @@ export interface FileRouteTypes {
     | '/queue'
     | '/radiology'
     | '/reception'
+    | '/requests'
     | '/roster'
     | '/service-catalog'
     | '/sports'
     | '/store'
     | '/team'
     | '/team-manager'
+    | '/tenders'
     | '/users'
     | '/visits'
     | '/department/$dept'
@@ -496,7 +552,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin-kpi'
+    | '/_authenticated/announcements'
     | '/_authenticated/appointments'
+    | '/_authenticated/attendance'
     | '/_authenticated/audit'
     | '/_authenticated/audit-inventory'
     | '/_authenticated/beds'
@@ -507,6 +565,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
     | '/_authenticated/lab-templates'
+    | '/_authenticated/leave-inbox'
     | '/_authenticated/me'
     | '/_authenticated/medical'
     | '/_authenticated/messages'
@@ -518,12 +577,14 @@ export interface FileRouteTypes {
     | '/_authenticated/queue'
     | '/_authenticated/radiology'
     | '/_authenticated/reception'
+    | '/_authenticated/requests'
     | '/_authenticated/roster'
     | '/_authenticated/service-catalog'
     | '/_authenticated/sports'
     | '/_authenticated/store'
     | '/_authenticated/team'
     | '/_authenticated/team-manager'
+    | '/_authenticated/tenders'
     | '/_authenticated/users'
     | '/_authenticated/visits'
     | '/_authenticated/department/$dept'
@@ -579,6 +640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tenders': {
+      id: '/_authenticated/tenders'
+      path: '/tenders'
+      fullPath: '/tenders'
+      preLoaderRoute: typeof AuthenticatedTendersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/team-manager': {
       id: '/_authenticated/team-manager'
       path: '/team-manager'
@@ -619,6 +687,13 @@ declare module '@tanstack/react-router' {
       path: '/roster'
       fullPath: '/roster'
       preLoaderRoute: typeof AuthenticatedRosterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/requests': {
+      id: '/_authenticated/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof AuthenticatedRequestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reception': {
@@ -698,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/leave-inbox': {
+      id: '/_authenticated/leave-inbox'
+      path: '/leave-inbox'
+      fullPath: '/leave-inbox'
+      preLoaderRoute: typeof AuthenticatedLeaveInboxRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lab-templates': {
       id: '/_authenticated/lab-templates'
       path: '/lab-templates'
@@ -768,11 +850,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/attendance': {
+      id: '/_authenticated/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AuthenticatedAttendanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/appointments': {
       id: '/_authenticated/appointments'
       path: '/appointments'
       fullPath: '/appointments'
       preLoaderRoute: typeof AuthenticatedAppointmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/announcements': {
+      id: '/_authenticated/announcements'
+      path: '/announcements'
+      fullPath: '/announcements'
+      preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-kpi': {
@@ -854,7 +950,9 @@ const AuthenticatedVisitsRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminKpiRoute: typeof AuthenticatedAdminKpiRoute
+  AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
+  AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedAuditInventoryRoute: typeof AuthenticatedAuditInventoryRoute
   AuthenticatedBedsRoute: typeof AuthenticatedBedsRoute
@@ -865,6 +963,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
   AuthenticatedLabTemplatesRoute: typeof AuthenticatedLabTemplatesRoute
+  AuthenticatedLeaveInboxRoute: typeof AuthenticatedLeaveInboxRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
@@ -876,12 +975,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
   AuthenticatedReceptionRoute: typeof AuthenticatedReceptionRoute
+  AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
   AuthenticatedRosterRoute: typeof AuthenticatedRosterRoute
   AuthenticatedServiceCatalogRoute: typeof AuthenticatedServiceCatalogRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
+  AuthenticatedTendersRoute: typeof AuthenticatedTendersRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
@@ -895,7 +996,9 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminKpiRoute: AuthenticatedAdminKpiRoute,
+  AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
+  AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedAuditInventoryRoute: AuthenticatedAuditInventoryRoute,
   AuthenticatedBedsRoute: AuthenticatedBedsRoute,
@@ -906,6 +1009,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,
   AuthenticatedLabTemplatesRoute: AuthenticatedLabTemplatesRoute,
+  AuthenticatedLeaveInboxRoute: AuthenticatedLeaveInboxRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
@@ -917,12 +1021,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
   AuthenticatedReceptionRoute: AuthenticatedReceptionRoute,
+  AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
   AuthenticatedRosterRoute: AuthenticatedRosterRoute,
   AuthenticatedServiceCatalogRoute: AuthenticatedServiceCatalogRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
   AuthenticatedStoreRoute: AuthenticatedStoreRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,
+  AuthenticatedTendersRoute: AuthenticatedTendersRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,

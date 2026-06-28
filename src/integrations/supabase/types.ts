@@ -81,6 +81,48 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          audience: string
+          audience_role: Database["public"]["Enums"]["app_role"] | null
+          body: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          pinned: boolean
+          published_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          audience_role?: Database["public"]["Enums"]["app_role"] | null
+          body: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          audience_role?: Database["public"]["Enums"]["app_role"] | null
+          body?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           created_at: string
@@ -251,27 +293,42 @@ export type Database = {
       attendance: {
         Row: {
           athlete_id: string
+          clock_in: string | null
+          clock_out: string | null
+          department: string | null
           id: string
+          notes: string | null
           recorded_at: string
           recorded_by: string | null
           session_id: string
           status: string
+          user_id: string | null
         }
         Insert: {
           athlete_id: string
+          clock_in?: string | null
+          clock_out?: string | null
+          department?: string | null
           id?: string
+          notes?: string | null
           recorded_at?: string
           recorded_by?: string | null
           session_id: string
           status?: string
+          user_id?: string | null
         }
         Update: {
           athlete_id?: string
+          clock_in?: string | null
+          clock_out?: string | null
+          department?: string | null
           id?: string
+          notes?: string | null
           recorded_at?: string
           recorded_by?: string | null
           session_id?: string
           status?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1526,6 +1583,57 @@ export type Database = {
           },
         ]
       }
+      internal_requests: {
+        Row: {
+          assignee_id: string | null
+          category: Database["public"]["Enums"]["internal_request_category"]
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          description: string | null
+          id: string
+          metadata: Json
+          priority: string
+          requester_id: string
+          status: Database["public"]["Enums"]["internal_request_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          category: Database["public"]["Enums"]["internal_request_category"]
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          priority?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["internal_request_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          category?: Database["public"]["Enums"]["internal_request_category"]
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          priority?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["internal_request_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inventory_adjustments: {
         Row: {
           approved_by: string | null
@@ -2162,8 +2270,11 @@ export type Database = {
       }
       leave_requests: {
         Row: {
+          approver_comment: string | null
           created_at: string
           days: number
+          decided_at: string | null
+          decided_by: string | null
           employee_id: string
           end_date: string
           hr_decision_at: string | null
@@ -2181,8 +2292,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approver_comment?: string | null
           created_at?: string
           days: number
+          decided_at?: string | null
+          decided_by?: string | null
           employee_id: string
           end_date: string
           hr_decision_at?: string | null
@@ -2200,8 +2314,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approver_comment?: string | null
           created_at?: string
           days?: number
+          decided_at?: string | null
+          decided_by?: string | null
           employee_id?: string
           end_date?: string
           hr_decision_at?: string | null
@@ -2358,6 +2475,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_preferences: {
+        Row: {
+          email_address: string | null
+          email_enabled: boolean
+          mute_categories: string[]
+          phone_number: string | null
+          sms_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          email_address?: string | null
+          email_enabled?: boolean
+          mute_categories?: string[]
+          phone_number?: string | null
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          email_address?: string | null
+          email_enabled?: boolean
+          mute_categories?: string[]
+          phone_number?: string | null
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -3864,6 +4011,113 @@ export type Database = {
         }
         Relationships: []
       }
+      tender_bids: {
+        Row: {
+          amount_cents: number
+          attachment_url: string | null
+          bidder_email: string | null
+          bidder_id: string
+          bidder_name: string
+          bidder_phone: string | null
+          created_at: string
+          delivery_days: number | null
+          id: string
+          proposal: string | null
+          review_notes: string | null
+          status: Database["public"]["Enums"]["bid_status"]
+          tender_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          attachment_url?: string | null
+          bidder_email?: string | null
+          bidder_id: string
+          bidder_name: string
+          bidder_phone?: string | null
+          created_at?: string
+          delivery_days?: number | null
+          id?: string
+          proposal?: string | null
+          review_notes?: string | null
+          status?: Database["public"]["Enums"]["bid_status"]
+          tender_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          attachment_url?: string | null
+          bidder_email?: string | null
+          bidder_id?: string
+          bidder_name?: string
+          bidder_phone?: string | null
+          created_at?: string
+          delivery_days?: number | null
+          id?: string
+          proposal?: string | null
+          review_notes?: string | null
+          status?: Database["public"]["Enums"]["bid_status"]
+          tender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tender_bids_tender_id_fkey"
+            columns: ["tender_id"]
+            isOneToOne: false
+            referencedRelation: "tenders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenders: {
+        Row: {
+          awarded_bid_id: string | null
+          budget_cents: number | null
+          category: string | null
+          closes_at: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          opens_at: string
+          reference: string
+          status: Database["public"]["Enums"]["tender_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          awarded_bid_id?: string | null
+          budget_cents?: number | null
+          category?: string | null
+          closes_at: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          opens_at?: string
+          reference?: string
+          status?: Database["public"]["Enums"]["tender_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          awarded_bid_id?: string | null
+          budget_cents?: number | null
+          category?: string | null
+          closes_at?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          opens_at?: string
+          reference?: string
+          status?: Database["public"]["Enums"]["tender_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       thread_participants: {
         Row: {
           last_read_at: string | null
@@ -4634,6 +4888,27 @@ export type Database = {
         | "hr_officer"
         | "hr_manager"
         | "dept_manager"
+      bid_status:
+        | "submitted"
+        | "shortlisted"
+        | "rejected"
+        | "awarded"
+        | "withdrawn"
+      internal_request_category:
+        | "equipment"
+        | "it_support"
+        | "hr"
+        | "procurement"
+        | "maintenance"
+      internal_request_status:
+        | "submitted"
+        | "in_review"
+        | "clarification"
+        | "approved"
+        | "rejected"
+        | "fulfilled"
+        | "cancelled"
+      tender_status: "draft" | "open" | "closed" | "awarded" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4784,6 +5059,30 @@ export const Constants = {
         "hr_manager",
         "dept_manager",
       ],
+      bid_status: [
+        "submitted",
+        "shortlisted",
+        "rejected",
+        "awarded",
+        "withdrawn",
+      ],
+      internal_request_category: [
+        "equipment",
+        "it_support",
+        "hr",
+        "procurement",
+        "maintenance",
+      ],
+      internal_request_status: [
+        "submitted",
+        "in_review",
+        "clarification",
+        "approved",
+        "rejected",
+        "fulfilled",
+        "cancelled",
+      ],
+      tender_status: ["draft", "open", "closed", "awarded", "cancelled"],
     },
   },
 } as const
