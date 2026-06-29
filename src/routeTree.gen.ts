@@ -18,6 +18,7 @@ import { Route as AuthenticatedTendersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTeamManagerRouteImport } from './routes/_authenticated/team-manager'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
+import { Route as AuthenticatedSportsMedicineRouteImport } from './routes/_authenticated/sports-medicine'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
 import { Route as AuthenticatedServiceCatalogRouteImport } from './routes/_authenticated/service-catalog'
 import { Route as AuthenticatedRosterRouteImport } from './routes/_authenticated/roster'
@@ -45,7 +46,9 @@ import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/b
 import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authenticated/audit-inventory'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
+import { Route as AuthenticatedAssessmentsRouteImport } from './routes/_authenticated/assessments'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
+import { Route as AuthenticatedAntiDopingRouteImport } from './routes/_authenticated/anti-doping'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminKpiRouteImport } from './routes/_authenticated/admin-kpi'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
@@ -102,6 +105,12 @@ const AuthenticatedStoreRoute = AuthenticatedStoreRouteImport.update({
   path: '/store',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSportsMedicineRoute =
+  AuthenticatedSportsMedicineRouteImport.update({
+    id: '/sports-medicine',
+    path: '/sports-medicine',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSportsRoute = AuthenticatedSportsRouteImport.update({
   id: '/sports',
   path: '/sports',
@@ -241,12 +250,23 @@ const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAssessmentsRoute =
+  AuthenticatedAssessmentsRouteImport.update({
+    id: '/assessments',
+    path: '/assessments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppointmentsRoute =
   AuthenticatedAppointmentsRouteImport.update({
     id: '/appointments',
     path: '/appointments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAntiDopingRoute = AuthenticatedAntiDopingRouteImport.update({
+  id: '/anti-doping',
+  path: '/anti-doping',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAnnouncementsRoute =
   AuthenticatedAnnouncementsRouteImport.update({
     id: '/announcements',
@@ -308,7 +328,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
+  '/assessments': typeof AuthenticatedAssessmentsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
@@ -336,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
   '/sports': typeof AuthenticatedSportsRoute
+  '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
@@ -356,7 +379,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
+  '/assessments': typeof AuthenticatedAssessmentsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
@@ -384,6 +409,7 @@ export interface FileRoutesByTo {
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
   '/sports': typeof AuthenticatedSportsRoute
+  '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
   '/team': typeof AuthenticatedTeamRoute
   '/team-manager': typeof AuthenticatedTeamManagerRoute
@@ -406,7 +432,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/_authenticated/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
+  '/_authenticated/assessments': typeof AuthenticatedAssessmentsRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/audit-inventory': typeof AuthenticatedAuditInventoryRoute
@@ -434,6 +462,7 @@ export interface FileRoutesById {
   '/_authenticated/roster': typeof AuthenticatedRosterRoute
   '/_authenticated/service-catalog': typeof AuthenticatedServiceCatalogRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
+  '/_authenticated/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/_authenticated/store': typeof AuthenticatedStoreRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
@@ -456,7 +485,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin-kpi'
     | '/announcements'
+    | '/anti-doping'
     | '/appointments'
+    | '/assessments'
     | '/attendance'
     | '/audit'
     | '/audit-inventory'
@@ -484,6 +515,7 @@ export interface FileRouteTypes {
     | '/roster'
     | '/service-catalog'
     | '/sports'
+    | '/sports-medicine'
     | '/store'
     | '/team'
     | '/team-manager'
@@ -504,7 +536,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin-kpi'
     | '/announcements'
+    | '/anti-doping'
     | '/appointments'
+    | '/assessments'
     | '/attendance'
     | '/audit'
     | '/audit-inventory'
@@ -532,6 +566,7 @@ export interface FileRouteTypes {
     | '/roster'
     | '/service-catalog'
     | '/sports'
+    | '/sports-medicine'
     | '/store'
     | '/team'
     | '/team-manager'
@@ -553,7 +588,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin-kpi'
     | '/_authenticated/announcements'
+    | '/_authenticated/anti-doping'
     | '/_authenticated/appointments'
+    | '/_authenticated/assessments'
     | '/_authenticated/attendance'
     | '/_authenticated/audit'
     | '/_authenticated/audit-inventory'
@@ -581,6 +618,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roster'
     | '/_authenticated/service-catalog'
     | '/_authenticated/sports'
+    | '/_authenticated/sports-medicine'
     | '/_authenticated/store'
     | '/_authenticated/team'
     | '/_authenticated/team-manager'
@@ -666,6 +704,13 @@ declare module '@tanstack/react-router' {
       path: '/store'
       fullPath: '/store'
       preLoaderRoute: typeof AuthenticatedStoreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sports-medicine': {
+      id: '/_authenticated/sports-medicine'
+      path: '/sports-medicine'
+      fullPath: '/sports-medicine'
+      preLoaderRoute: typeof AuthenticatedSportsMedicineRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sports': {
@@ -857,11 +902,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAttendanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/assessments': {
+      id: '/_authenticated/assessments'
+      path: '/assessments'
+      fullPath: '/assessments'
+      preLoaderRoute: typeof AuthenticatedAssessmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/appointments': {
       id: '/_authenticated/appointments'
       path: '/appointments'
       fullPath: '/appointments'
       preLoaderRoute: typeof AuthenticatedAppointmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/anti-doping': {
+      id: '/_authenticated/anti-doping'
+      path: '/anti-doping'
+      fullPath: '/anti-doping'
+      preLoaderRoute: typeof AuthenticatedAntiDopingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/announcements': {
@@ -951,7 +1010,9 @@ const AuthenticatedVisitsRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminKpiRoute: typeof AuthenticatedAdminKpiRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
+  AuthenticatedAntiDopingRoute: typeof AuthenticatedAntiDopingRoute
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
+  AuthenticatedAssessmentsRoute: typeof AuthenticatedAssessmentsRoute
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedAuditInventoryRoute: typeof AuthenticatedAuditInventoryRoute
@@ -979,6 +1040,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRosterRoute: typeof AuthenticatedRosterRoute
   AuthenticatedServiceCatalogRoute: typeof AuthenticatedServiceCatalogRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
+  AuthenticatedSportsMedicineRoute: typeof AuthenticatedSportsMedicineRoute
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
@@ -997,7 +1059,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminKpiRoute: AuthenticatedAdminKpiRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
+  AuthenticatedAntiDopingRoute: AuthenticatedAntiDopingRoute,
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
+  AuthenticatedAssessmentsRoute: AuthenticatedAssessmentsRoute,
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedAuditInventoryRoute: AuthenticatedAuditInventoryRoute,
@@ -1025,6 +1089,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRosterRoute: AuthenticatedRosterRoute,
   AuthenticatedServiceCatalogRoute: AuthenticatedServiceCatalogRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
+  AuthenticatedSportsMedicineRoute: AuthenticatedSportsMedicineRoute,
   AuthenticatedStoreRoute: AuthenticatedStoreRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,

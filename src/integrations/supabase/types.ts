@@ -14,6 +14,148 @@ export type Database = {
   }
   public: {
     Tables: {
+      abp_alerts: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          id: string
+          marker: string | null
+          message: string
+          resolved: boolean | null
+          severity: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          id?: string
+          marker?: string | null
+          message: string
+          resolved?: boolean | null
+          severity?: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          marker?: string | null
+          message?: string
+          resolved?: boolean | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abp_alerts_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      abp_biomarkers: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          flag: string | null
+          id: string
+          marker: string
+          measured_at: string
+          reference_high: number | null
+          reference_low: number | null
+          sample_id: string
+          units: string | null
+          value: number
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          flag?: string | null
+          id?: string
+          marker: string
+          measured_at?: string
+          reference_high?: number | null
+          reference_low?: number | null
+          sample_id: string
+          units?: string | null
+          value: number
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          flag?: string | null
+          id?: string
+          marker?: string
+          measured_at?: string
+          reference_high?: number | null
+          reference_low?: number | null
+          sample_id?: string
+          units?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abp_biomarkers_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abp_biomarkers_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "abp_samples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      abp_samples: {
+        Row: {
+          athlete_id: string
+          collected_at: string
+          collection_site: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          in_competition: boolean | null
+          lab_reference: string | null
+          notes: string | null
+          sample_type: string
+        }
+        Insert: {
+          athlete_id: string
+          collected_at?: string
+          collection_site?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          in_competition?: boolean | null
+          lab_reference?: string | null
+          notes?: string | null
+          sample_type: string
+        }
+        Update: {
+          athlete_id?: string
+          collected_at?: string
+          collection_site?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          in_competition?: boolean | null
+          lab_reference?: string | null
+          notes?: string | null
+          sample_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abp_samples_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admissions: {
         Row: {
           admission_reason: string | null
@@ -185,6 +327,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      assessment_responses: {
+        Row: {
+          alert: boolean | null
+          answers: Json
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string | null
+          score: number | null
+          severity: string | null
+          template_code: string
+          user_id: string
+        }
+        Insert: {
+          alert?: boolean | null
+          answers?: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          score?: number | null
+          severity?: string | null
+          template_code: string
+          user_id: string
+        }
+        Update: {
+          alert?: boolean | null
+          answers?: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          score?: number | null
+          severity?: string | null
+          template_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_responses_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_responses_template_code_fkey"
+            columns: ["template_code"]
+            isOneToOne: false
+            referencedRelation: "assessment_templates"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      assessment_templates: {
+        Row: {
+          active: boolean | null
+          category: string
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          questions: Json
+          scoring: Json
+        }
+        Insert: {
+          active?: boolean | null
+          category: string
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          questions?: Json
+          scoring?: Json
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          questions?: Json
+          scoring?: Json
+        }
+        Relationships: []
       }
       assessments: {
         Row: {
@@ -841,6 +1073,59 @@ export type Database = {
           years_experience?: number | null
         }
         Relationships: []
+      }
+      doping_tests: {
+        Row: {
+          athlete_id: string
+          collecting_authority: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          in_competition: boolean | null
+          notes: string | null
+          result: string | null
+          substances_detected: string | null
+          test_type: string
+          tested_at: string
+          wada_code: string | null
+        }
+        Insert: {
+          athlete_id: string
+          collecting_authority?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          in_competition?: boolean | null
+          notes?: string | null
+          result?: string | null
+          substances_detected?: string | null
+          test_type: string
+          tested_at?: string
+          wada_code?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          collecting_authority?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          in_competition?: boolean | null
+          notes?: string | null
+          result?: string | null
+          substances_detected?: string | null
+          test_type?: string
+          tested_at?: string
+          wada_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doping_tests_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       drug_catalog: {
         Row: {
@@ -3646,6 +3931,83 @@ export type Database = {
           },
         ]
       }
+      sports_physiology: {
+        Row: {
+          athlete_id: string
+          body_fat_pct: number | null
+          created_at: string
+          grip_strength_kg: number | null
+          height_cm: number | null
+          hrv_rmssd: number | null
+          id: string
+          lactate_threshold: number | null
+          lean_mass_kg: number | null
+          max_hr: number | null
+          measured_at: string
+          notes: string | null
+          recorded_by: string | null
+          recovery_score: number | null
+          resting_hr: number | null
+          sleep_hours: number | null
+          vertical_jump_cm: number | null
+          vo2_max: number | null
+          weight_kg: number | null
+          wellness_score: number | null
+        }
+        Insert: {
+          athlete_id: string
+          body_fat_pct?: number | null
+          created_at?: string
+          grip_strength_kg?: number | null
+          height_cm?: number | null
+          hrv_rmssd?: number | null
+          id?: string
+          lactate_threshold?: number | null
+          lean_mass_kg?: number | null
+          max_hr?: number | null
+          measured_at?: string
+          notes?: string | null
+          recorded_by?: string | null
+          recovery_score?: number | null
+          resting_hr?: number | null
+          sleep_hours?: number | null
+          vertical_jump_cm?: number | null
+          vo2_max?: number | null
+          weight_kg?: number | null
+          wellness_score?: number | null
+        }
+        Update: {
+          athlete_id?: string
+          body_fat_pct?: number | null
+          created_at?: string
+          grip_strength_kg?: number | null
+          height_cm?: number | null
+          hrv_rmssd?: number | null
+          id?: string
+          lactate_threshold?: number | null
+          lean_mass_kg?: number | null
+          max_hr?: number | null
+          measured_at?: string
+          notes?: string | null
+          recorded_by?: string | null
+          recovery_score?: number | null
+          resting_hr?: number | null
+          sleep_hours?: number | null
+          vertical_jump_cm?: number | null
+          vo2_max?: number | null
+          weight_kg?: number | null
+          wellness_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sports_physiology_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_batches: {
         Row: {
           batch_no: string | null
@@ -4324,6 +4686,62 @@ export type Database = {
             columns: ["visit_id"]
             isOneToOne: false
             referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tue_requests: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reference: string | null
+          diagnosis: string | null
+          id: string
+          justification: string | null
+          requested_by: string | null
+          status: string
+          substance: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reference?: string | null
+          diagnosis?: string | null
+          id?: string
+          justification?: string | null
+          requested_by?: string | null
+          status?: string
+          substance: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reference?: string | null
+          diagnosis?: string | null
+          id?: string
+          justification?: string | null
+          requested_by?: string | null
+          status?: string
+          substance?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tue_requests_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
             referencedColumns: ["id"]
           },
         ]
