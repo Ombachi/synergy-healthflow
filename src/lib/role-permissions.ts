@@ -94,11 +94,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/announcements": [
     "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
     "billing_officer","insurance_officer","physio","nutritionist","team_manager",
-  "/announcements": [
-    "doctor","nurse","coach","lab_tech","pharmacist","radiologist","receptionist","cashier",
-    "billing_officer","insurance_officer","physio","nutritionist","team_manager",
     "store_keeper","procurement","hr_officer","hr_manager","dept_manager","patient","athlete",
   ],
+
 
   // Sports Medicine / ABP / Anti-Doping
   "/sports-medicine": ["doctor","physio","coach","lab_tech","nutritionist","team_manager"],
