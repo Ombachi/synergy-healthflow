@@ -47,6 +47,7 @@ import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authe
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
+import { Route as AuthenticatedAntiDopingRouteImport } from './routes/_authenticated/anti-doping'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminKpiRouteImport } from './routes/_authenticated/admin-kpi'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
@@ -254,6 +255,11 @@ const AuthenticatedAppointmentsRoute =
     path: '/appointments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAntiDopingRoute = AuthenticatedAntiDopingRouteImport.update({
+  id: '/anti-doping',
+  path: '/anti-doping',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAnnouncementsRoute =
   AuthenticatedAnnouncementsRouteImport.update({
     id: '/announcements',
@@ -315,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
@@ -364,6 +371,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
@@ -415,6 +423,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/_authenticated/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
@@ -466,6 +475,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin-kpi'
     | '/announcements'
+    | '/anti-doping'
     | '/appointments'
     | '/attendance'
     | '/audit'
@@ -515,6 +525,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin-kpi'
     | '/announcements'
+    | '/anti-doping'
     | '/appointments'
     | '/attendance'
     | '/audit'
@@ -565,6 +576,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin-kpi'
     | '/_authenticated/announcements'
+    | '/_authenticated/anti-doping'
     | '/_authenticated/appointments'
     | '/_authenticated/attendance'
     | '/_authenticated/audit'
@@ -884,6 +896,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/anti-doping': {
+      id: '/_authenticated/anti-doping'
+      path: '/anti-doping'
+      fullPath: '/anti-doping'
+      preLoaderRoute: typeof AuthenticatedAntiDopingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/announcements': {
       id: '/_authenticated/announcements'
       path: '/announcements'
@@ -971,6 +990,7 @@ const AuthenticatedVisitsRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminKpiRoute: typeof AuthenticatedAdminKpiRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
+  AuthenticatedAntiDopingRoute: typeof AuthenticatedAntiDopingRoute
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
@@ -1018,6 +1038,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminKpiRoute: AuthenticatedAdminKpiRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
+  AuthenticatedAntiDopingRoute: AuthenticatedAntiDopingRoute,
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
