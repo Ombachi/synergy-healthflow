@@ -46,6 +46,7 @@ import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/b
 import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authenticated/audit-inventory'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
+import { Route as AuthenticatedAssessmentsRouteImport } from './routes/_authenticated/assessments'
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
 import { Route as AuthenticatedAntiDopingRouteImport } from './routes/_authenticated/anti-doping'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
@@ -249,6 +250,12 @@ const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAssessmentsRoute =
+  AuthenticatedAssessmentsRouteImport.update({
+    id: '/assessments',
+    path: '/assessments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppointmentsRoute =
   AuthenticatedAppointmentsRouteImport.update({
     id: '/appointments',
@@ -323,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
+  '/assessments': typeof AuthenticatedAssessmentsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
@@ -373,6 +381,7 @@ export interface FileRoutesByTo {
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
+  '/assessments': typeof AuthenticatedAssessmentsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
@@ -425,6 +434,7 @@ export interface FileRoutesById {
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
+  '/_authenticated/assessments': typeof AuthenticatedAssessmentsRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/audit-inventory': typeof AuthenticatedAuditInventoryRoute
@@ -477,6 +487,7 @@ export interface FileRouteTypes {
     | '/announcements'
     | '/anti-doping'
     | '/appointments'
+    | '/assessments'
     | '/attendance'
     | '/audit'
     | '/audit-inventory'
@@ -527,6 +538,7 @@ export interface FileRouteTypes {
     | '/announcements'
     | '/anti-doping'
     | '/appointments'
+    | '/assessments'
     | '/attendance'
     | '/audit'
     | '/audit-inventory'
@@ -578,6 +590,7 @@ export interface FileRouteTypes {
     | '/_authenticated/announcements'
     | '/_authenticated/anti-doping'
     | '/_authenticated/appointments'
+    | '/_authenticated/assessments'
     | '/_authenticated/attendance'
     | '/_authenticated/audit'
     | '/_authenticated/audit-inventory'
@@ -889,6 +902,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAttendanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/assessments': {
+      id: '/_authenticated/assessments'
+      path: '/assessments'
+      fullPath: '/assessments'
+      preLoaderRoute: typeof AuthenticatedAssessmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/appointments': {
       id: '/_authenticated/appointments'
       path: '/appointments'
@@ -992,6 +1012,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedAntiDopingRoute: typeof AuthenticatedAntiDopingRoute
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
+  AuthenticatedAssessmentsRoute: typeof AuthenticatedAssessmentsRoute
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedAuditInventoryRoute: typeof AuthenticatedAuditInventoryRoute
@@ -1040,6 +1061,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedAntiDopingRoute: AuthenticatedAntiDopingRoute,
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
+  AuthenticatedAssessmentsRoute: AuthenticatedAssessmentsRoute,
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedAuditInventoryRoute: AuthenticatedAuditInventoryRoute,
