@@ -79,6 +79,13 @@ const items: Item[] = [
   { title: "Leave inbox", url: "/leave-inbox", icon: InboxIcon, badge: undefined },
   { title: "Tenders & bids", url: "/tenders", icon: Gavel, badge: undefined },
   { title: "Announcements", url: "/announcements", icon: Bell, badge: undefined },
+
+  // Sports Medicine / ABP / Anti-Doping
+  { title: "Sports Medicine", url: "/sports-medicine", icon: HeartPulse, badge: undefined },
+  { title: "Anti-Doping", url: "/anti-doping", icon: ShieldAlert, badge: undefined },
+
+  // Patient self-service assessments
+  { title: "Assessments", url: "/assessments", icon: ClipboardList, badge: undefined },
 ];
 
 
