@@ -16,9 +16,11 @@ export const Route = createFileRoute("/_authenticated/anti-doping")({
   component: AntiDopingPage,
 });
 
-interface Athlete { id: string; full_name: string }
+interface Athlete { id: string; full_name: string; sport?: string | null; date_of_birth?: string | null }
 interface Test { id: string; athlete_id: string; test_type: string; in_competition: boolean; tested_at: string; wada_code: string | null; collecting_authority: string | null; result: string; substances_detected: string | null; notes: string | null }
 interface TUE { id: string; athlete_id: string; substance: string; diagnosis: string | null; status: string; decision_reference: string | null; valid_from: string | null; valid_to: string | null; created_at: string }
+interface Biomarker { athlete_id: string; marker: string; value: number; units: string | null; measured_at: string; flag: string | null }
+interface Baseline { athlete_id: string; marker: string; personal_low: number | null; personal_high: number | null; mean_value: number | null; status: string }
 
 function AntiDopingPage() {
   const { hasAnyRole } = useAuth();
