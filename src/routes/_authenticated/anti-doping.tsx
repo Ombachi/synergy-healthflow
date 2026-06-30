@@ -129,9 +129,24 @@ function AntiDopingPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-semibold"><Shield className="h-6 w-6 text-primary" /> Anti-Doping</h1>
-        <p className="text-sm text-muted-foreground">WADA-compliant testing register, Therapeutic Use Exemptions and longitudinal monitoring.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold"><Shield className="h-6 w-6 text-primary" /> Anti-Doping</h1>
+          <p className="text-sm text-muted-foreground">WADA-compliant testing register, Therapeutic Use Exemptions and longitudinal monitoring.</p>
+        </div>
+        <div className="flex items-end gap-2">
+          <div>
+            <Label className="text-xs">WADA report</Label>
+            <select className="h-9 w-56 rounded border bg-background px-2 text-sm"
+              value={reportAthlete} onChange={(e) => setReportAthlete(e.target.value)}>
+              <option value="">— Select athlete —</option>
+              {athletes.data?.map((a) => <option key={a.id} value={a.id}>{a.full_name}</option>)}
+            </select>
+          </div>
+          <Button variant="outline" onClick={exportReport} disabled={!reportAthlete}>
+            <Download className="h-4 w-4" /> Download PDF
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="tests" className="space-y-4">
