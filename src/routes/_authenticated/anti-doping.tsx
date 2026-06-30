@@ -30,10 +30,49 @@ function AntiDopingPage() {
   const athletes = useQuery({
     queryKey: ["ad-athletes"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("athletes").select("id, full_name").order("full_name");
+      const { data, error } = await supabase.from("athletes").select("id, full_name, sport, date_of_birth").order("full_name");
       if (error) throw error; return (data as Athlete[]) ?? [];
     },
   });
+
+  // WADA report export
+  const [reportAthlete, setReportAthlete] = useState<string>("");
+  const exportReport = async () => {
+    if (!reportAthlete) { toast.error("Pick an athlete"); return; }
+    const a = (athletes.data ?? []).find((x) => x.id === reportAthlete);
+    if (!a) return;
+    const [tt, uu, bm, bl] = await Promise.all([
+      supabase.from("doping_tests" as never).select("*").eq("athlete_id", reportAthlete).order("tested_at", { ascending: false }),
+      supabase.from("tue_requests" as never).select("*").eq("athlete_id", reportAthlete).order("created_at", { ascending: false }),
+      supabase.from("abp_biomarkers" as never).select("athlete_id,marker,value,units,measured_at,flag").eq("athlete_id", reportAthlete).order("measured_at"),
+      supabase.from("abp_baselines" as never).select("athlete_id,marker,personal_low,personal_high,mean_value,status").eq("athlete_id", reportAthlete),
+    ]);
+    if (tt.error || uu.error || bm.error || bl.error) { toast.error("Failed to gather data"); return; }
+    const markers = Array.from(new Set(((bm.data ?? []) as unknown as Biomarker[]).map((b) => b.marker)));
+    const trends: WadaTrend[] = markers.map((m) => {
+      const pts = ((bm.data ?? []) as unknown as Biomarker[])
+        .filter((b) => b.marker === m)
+        .map((b) => ({ measured_at: b.measured_at, value: Number(b.value), flag: b.flag }));
+      const base = ((bl.data ?? []) as unknown as Baseline[]).find((x) => x.marker === m && x.status === "approved");
+      return {
+        marker: m,
+        units: pts[0]?.flag !== undefined ? (((bm.data ?? []) as unknown as Biomarker[]).find((b) => b.marker === m)?.units ?? null) : null,
+        points: pts,
+        baseline: base ? { personal_low: base.personal_low, personal_high: base.personal_high, mean: base.mean_value } : null,
+      };
+    });
+    exportWadaReportPDF({
+      athlete_name: a.full_name,
+      athlete_sport: a.sport ?? null,
+      dob: a.date_of_birth ?? null,
+      passport_id: a.id.slice(0, 8).toUpperCase(),
+      tests: ((tt.data ?? []) as unknown as Test[]),
+      tues: ((uu.data ?? []) as unknown as TUE[]),
+      trends,
+      passport_url: `${window.location.origin}/sports-medicine`,
+    });
+    toast.success("WADA report generated");
+  };
 
   const tests = useQuery({
     queryKey: ["doping-tests"],
