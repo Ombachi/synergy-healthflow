@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Shield, FilePlus } from "lucide-react";
+import { Shield, FilePlus, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { exportWadaReportPDF, type WadaTrend } from "@/lib/wada-report-pdf";
 
 export const Route = createFileRoute("/_authenticated/anti-doping")({
   component: AntiDopingPage,
 });
 
-interface Athlete { id: string; full_name: string }
+interface Athlete { id: string; full_name: string; sport?: string | null; date_of_birth?: string | null }
 interface Test { id: string; athlete_id: string; test_type: string; in_competition: boolean; tested_at: string; wada_code: string | null; collecting_authority: string | null; result: string; substances_detected: string | null; notes: string | null }
 interface TUE { id: string; athlete_id: string; substance: string; diagnosis: string | null; status: string; decision_reference: string | null; valid_from: string | null; valid_to: string | null; created_at: string }
+interface Biomarker { athlete_id: string; marker: string; value: number; units: string | null; measured_at: string; flag: string | null }
+interface Baseline { athlete_id: string; marker: string; personal_low: number | null; personal_high: number | null; mean_value: number | null; status: string }
 
 function AntiDopingPage() {
   const { hasAnyRole } = useAuth();
@@ -27,10 +30,49 @@ function AntiDopingPage() {
   const athletes = useQuery({
     queryKey: ["ad-athletes"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("athletes").select("id, full_name").order("full_name");
+      const { data, error } = await supabase.from("athletes").select("id, full_name, sport, date_of_birth").order("full_name");
       if (error) throw error; return (data as Athlete[]) ?? [];
     },
   });
+
+  // WADA report export
+  const [reportAthlete, setReportAthlete] = useState<string>("");
+  const exportReport = async () => {
+    if (!reportAthlete) { toast.error("Pick an athlete"); return; }
+    const a = (athletes.data ?? []).find((x) => x.id === reportAthlete);
+    if (!a) return;
+    const [tt, uu, bm, bl] = await Promise.all([
+      supabase.from("doping_tests" as never).select("*").eq("athlete_id", reportAthlete).order("tested_at", { ascending: false }),
+      supabase.from("tue_requests" as never).select("*").eq("athlete_id", reportAthlete).order("created_at", { ascending: false }),
+      supabase.from("abp_biomarkers" as never).select("athlete_id,marker,value,units,measured_at,flag").eq("athlete_id", reportAthlete).order("measured_at"),
+      supabase.from("abp_baselines" as never).select("athlete_id,marker,personal_low,personal_high,mean_value,status").eq("athlete_id", reportAthlete),
+    ]);
+    if (tt.error || uu.error || bm.error || bl.error) { toast.error("Failed to gather data"); return; }
+    const markers = Array.from(new Set(((bm.data ?? []) as unknown as Biomarker[]).map((b) => b.marker)));
+    const trends: WadaTrend[] = markers.map((m) => {
+      const pts = ((bm.data ?? []) as unknown as Biomarker[])
+        .filter((b) => b.marker === m)
+        .map((b) => ({ measured_at: b.measured_at, value: Number(b.value), flag: b.flag }));
+      const base = ((bl.data ?? []) as unknown as Baseline[]).find((x) => x.marker === m && x.status === "approved");
+      return {
+        marker: m,
+        units: pts[0]?.flag !== undefined ? (((bm.data ?? []) as unknown as Biomarker[]).find((b) => b.marker === m)?.units ?? null) : null,
+        points: pts,
+        baseline: base ? { personal_low: base.personal_low, personal_high: base.personal_high, mean: base.mean_value } : null,
+      };
+    });
+    exportWadaReportPDF({
+      athlete_name: a.full_name,
+      athlete_sport: a.sport ?? null,
+      dob: a.date_of_birth ?? null,
+      passport_id: a.id.slice(0, 8).toUpperCase(),
+      tests: ((tt.data ?? []) as unknown as Test[]),
+      tues: ((uu.data ?? []) as unknown as TUE[]),
+      trends,
+      passport_url: `${window.location.origin}/sports-medicine`,
+    });
+    toast.success("WADA report generated");
+  };
 
   const tests = useQuery({
     queryKey: ["doping-tests"],
@@ -87,9 +129,24 @@ function AntiDopingPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-semibold"><Shield className="h-6 w-6 text-primary" /> Anti-Doping</h1>
-        <p className="text-sm text-muted-foreground">WADA-compliant testing register, Therapeutic Use Exemptions and longitudinal monitoring.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold"><Shield className="h-6 w-6 text-primary" /> Anti-Doping</h1>
+          <p className="text-sm text-muted-foreground">WADA-compliant testing register, Therapeutic Use Exemptions and longitudinal monitoring.</p>
+        </div>
+        <div className="flex items-end gap-2">
+          <div>
+            <Label className="text-xs">WADA report</Label>
+            <select className="h-9 w-56 rounded border bg-background px-2 text-sm"
+              value={reportAthlete} onChange={(e) => setReportAthlete(e.target.value)}>
+              <option value="">— Select athlete —</option>
+              {athletes.data?.map((a) => <option key={a.id} value={a.id}>{a.full_name}</option>)}
+            </select>
+          </div>
+          <Button variant="outline" onClick={exportReport} disabled={!reportAthlete}>
+            <Download className="h-4 w-4" /> Download PDF
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="tests" className="space-y-4">

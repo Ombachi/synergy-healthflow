@@ -5196,6 +5196,18 @@ export type Database = {
       }
     }
     Functions: {
+      abp_marker_trend: {
+        Args: { _athlete: string; _marker: string }
+        Returns: {
+          first_value: number
+          last_value: number
+          mean_value: number
+          n: number
+          pct_change: number
+          rolling3: number
+          slope_per_day: number
+        }[]
+      }
       add_invoice_line: {
         Args: {
           _desc: string
