@@ -5392,6 +5392,17 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      verify_prescription: {
+        Args: { rx_id: string }
+        Returns: {
+          exists_flag: boolean
+          hash_prefix: string
+          signed: boolean
+          signed_at: string
+          signer_name: string
+          signer_role: string
+        }[]
+      }
     }
     Enums: {
       app_role:
