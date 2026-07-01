@@ -40,6 +40,7 @@ import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/la
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/beds'
@@ -219,6 +220,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedControlledDrugsRoute =
+  AuthenticatedControlledDrugsRouteImport.update({
+    id: '/controlled-drugs',
+    path: '/controlled-drugs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
   id: '/coach',
   path: '/coach',
@@ -337,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -388,6 +396,7 @@ export interface FileRoutesByTo {
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -441,6 +450,7 @@ export interface FileRoutesById {
   '/_authenticated/beds': typeof AuthenticatedBedsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
+  '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
@@ -494,6 +504,7 @@ export interface FileRouteTypes {
     | '/beds'
     | '/billing'
     | '/coach'
+    | '/controlled-drugs'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -545,6 +556,7 @@ export interface FileRouteTypes {
     | '/beds'
     | '/billing'
     | '/coach'
+    | '/controlled-drugs'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -597,6 +609,7 @@ export interface FileRouteTypes {
     | '/_authenticated/beds'
     | '/_authenticated/billing'
     | '/_authenticated/coach'
+    | '/_authenticated/controlled-drugs'
     | '/_authenticated/dashboard'
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
@@ -860,6 +873,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/controlled-drugs': {
+      id: '/_authenticated/controlled-drugs'
+      path: '/controlled-drugs'
+      fullPath: '/controlled-drugs'
+      preLoaderRoute: typeof AuthenticatedControlledDrugsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/coach': {
       id: '/_authenticated/coach'
       path: '/coach'
@@ -1019,6 +1039,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBedsRoute: typeof AuthenticatedBedsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
+  AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
@@ -1068,6 +1089,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBedsRoute: AuthenticatedBedsRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
+  AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
