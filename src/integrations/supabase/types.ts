@@ -991,6 +991,68 @@ export type Database = {
           },
         ]
       }
+      controlled_drug_register: {
+        Row: {
+          balance_after: number | null
+          created_at: string
+          direction: string
+          dispenser_id: string | null
+          drug_name: string
+          id: string
+          notes: string | null
+          patient_id: string | null
+          prescriber_id: string | null
+          qty: number
+          ref_id: string | null
+          ref_table: string | null
+          schedule: string
+          units: string | null
+          witness_id: string | null
+        }
+        Insert: {
+          balance_after?: number | null
+          created_at?: string
+          direction: string
+          dispenser_id?: string | null
+          drug_name: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          prescriber_id?: string | null
+          qty: number
+          ref_id?: string | null
+          ref_table?: string | null
+          schedule: string
+          units?: string | null
+          witness_id?: string | null
+        }
+        Update: {
+          balance_after?: number | null
+          created_at?: string
+          direction?: string
+          dispenser_id?: string | null
+          drug_name?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          prescriber_id?: string | null
+          qty?: number
+          ref_id?: string | null
+          ref_table?: string | null
+          schedule?: string
+          units?: string | null
+          witness_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "controlled_drug_register_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discharge_summaries: {
         Row: {
           created_at: string
@@ -1131,6 +1193,7 @@ export type Database = {
         Row: {
           active: boolean
           contraindications: string | null
+          controlled_schedule: string | null
           created_at: string
           default_dose: string | null
           default_duration: string | null
@@ -1144,6 +1207,7 @@ export type Database = {
         Insert: {
           active?: boolean
           contraindications?: string | null
+          controlled_schedule?: string | null
           created_at?: string
           default_dose?: string | null
           default_duration?: string | null
@@ -1157,6 +1221,7 @@ export type Database = {
         Update: {
           active?: boolean
           contraindications?: string | null
+          controlled_schedule?: string | null
           created_at?: string
           default_dose?: string | null
           default_duration?: string | null
@@ -3931,6 +3996,39 @@ export type Database = {
           },
         ]
       }
+      signatures: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          id: string
+          signature_hash: string
+          signed_at: string
+          signer_id: string
+          signer_name: string
+          signer_role: string | null
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          id?: string
+          signature_hash: string
+          signed_at?: string
+          signer_id: string
+          signer_name: string
+          signer_role?: string | null
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          signature_hash?: string
+          signed_at?: string
+          signer_id?: string
+          signer_name?: string
+          signer_role?: string | null
+        }
+        Relationships: []
+      }
       sports_physiology: {
         Row: {
           athlete_id: string
@@ -5294,6 +5392,17 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      verify_prescription: {
+        Args: { rx_id: string }
+        Returns: {
+          exists_flag: boolean
+          hash_prefix: string
+          signed: boolean
+          signed_at: string
+          signer_name: string
+          signer_role: string
+        }[]
+      }
     }
     Enums: {
       app_role:

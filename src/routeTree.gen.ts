@@ -40,6 +40,7 @@ import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/la
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/beds'
@@ -51,6 +52,7 @@ import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAntiDopingRouteImport } from './routes/_authenticated/anti-doping'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminKpiRouteImport } from './routes/_authenticated/admin-kpi'
+import { Route as VerifyRxRxIdRouteImport } from './routes/verify.rx.$rxId'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_authenticated/orders.stock-requests'
 import { Route as AuthenticatedHrPayslipsRouteImport } from './routes/_authenticated/hr.payslips'
@@ -59,6 +61,10 @@ import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedHrDocumentsRouteImport } from './routes/_authenticated/hr.documents'
 import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticated/hr.admin'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
+import { Route as AuthenticatedPrintWristbandPatientIdRouteImport } from './routes/_authenticated/print.wristband.$patientId'
+import { Route as AuthenticatedPrintSampleSampleIdRouteImport } from './routes/_authenticated/print.sample.$sampleId'
+import { Route as AuthenticatedPrintPrescriptionRxIdRouteImport } from './routes/_authenticated/print.prescription.$rxId'
+import { Route as AuthenticatedPrintDrugBatchIdRouteImport } from './routes/_authenticated/print.drug.$batchId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -219,6 +225,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedControlledDrugsRoute =
+  AuthenticatedControlledDrugsRouteImport.update({
+    id: '/controlled-drugs',
+    path: '/controlled-drugs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
   id: '/coach',
   path: '/coach',
@@ -278,6 +290,11 @@ const AuthenticatedAdminKpiRoute = AuthenticatedAdminKpiRouteImport.update({
   path: '/admin-kpi',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const VerifyRxRxIdRoute = VerifyRxRxIdRouteImport.update({
+  id: '/verify/rx/$rxId',
+  path: '/verify/rx/$rxId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedVisitsVisitIdRoute =
   AuthenticatedVisitsVisitIdRouteImport.update({
     id: '/$visitId',
@@ -322,6 +339,30 @@ const AuthenticatedDepartmentDeptRoute =
     path: '/department/$dept',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPrintWristbandPatientIdRoute =
+  AuthenticatedPrintWristbandPatientIdRouteImport.update({
+    id: '/print/wristband/$patientId',
+    path: '/print/wristband/$patientId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPrintSampleSampleIdRoute =
+  AuthenticatedPrintSampleSampleIdRouteImport.update({
+    id: '/print/sample/$sampleId',
+    path: '/print/sample/$sampleId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPrintPrescriptionRxIdRoute =
+  AuthenticatedPrintPrescriptionRxIdRouteImport.update({
+    id: '/print/prescription/$rxId',
+    path: '/print/prescription/$rxId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPrintDrugBatchIdRoute =
+  AuthenticatedPrintDrugBatchIdRouteImport.update({
+    id: '/print/drug/$batchId',
+    path: '/print/drug/$batchId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -337,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -373,6 +415,11 @@ export interface FileRoutesByFullPath {
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
+  '/verify/rx/$rxId': typeof VerifyRxRxIdRoute
+  '/print/drug/$batchId': typeof AuthenticatedPrintDrugBatchIdRoute
+  '/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
+  '/print/sample/$sampleId': typeof AuthenticatedPrintSampleSampleIdRoute
+  '/print/wristband/$patientId': typeof AuthenticatedPrintWristbandPatientIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -388,6 +435,7 @@ export interface FileRoutesByTo {
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -424,6 +472,11 @@ export interface FileRoutesByTo {
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
+  '/verify/rx/$rxId': typeof VerifyRxRxIdRoute
+  '/print/drug/$batchId': typeof AuthenticatedPrintDrugBatchIdRoute
+  '/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
+  '/print/sample/$sampleId': typeof AuthenticatedPrintSampleSampleIdRoute
+  '/print/wristband/$patientId': typeof AuthenticatedPrintWristbandPatientIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -441,6 +494,7 @@ export interface FileRoutesById {
   '/_authenticated/beds': typeof AuthenticatedBedsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
+  '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
@@ -477,6 +531,11 @@ export interface FileRoutesById {
   '/_authenticated/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/_authenticated/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
+  '/verify/rx/$rxId': typeof VerifyRxRxIdRoute
+  '/_authenticated/print/drug/$batchId': typeof AuthenticatedPrintDrugBatchIdRoute
+  '/_authenticated/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
+  '/_authenticated/print/sample/$sampleId': typeof AuthenticatedPrintSampleSampleIdRoute
+  '/_authenticated/print/wristband/$patientId': typeof AuthenticatedPrintWristbandPatientIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -494,6 +553,7 @@ export interface FileRouteTypes {
     | '/beds'
     | '/billing'
     | '/coach'
+    | '/controlled-drugs'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -530,6 +590,11 @@ export interface FileRouteTypes {
     | '/hr/payslips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
+    | '/verify/rx/$rxId'
+    | '/print/drug/$batchId'
+    | '/print/prescription/$rxId'
+    | '/print/sample/$sampleId'
+    | '/print/wristband/$patientId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -545,6 +610,7 @@ export interface FileRouteTypes {
     | '/beds'
     | '/billing'
     | '/coach'
+    | '/controlled-drugs'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -581,6 +647,11 @@ export interface FileRouteTypes {
     | '/hr/payslips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
+    | '/verify/rx/$rxId'
+    | '/print/drug/$batchId'
+    | '/print/prescription/$rxId'
+    | '/print/sample/$sampleId'
+    | '/print/wristband/$patientId'
   id:
     | '__root__'
     | '/'
@@ -597,6 +668,7 @@ export interface FileRouteTypes {
     | '/_authenticated/beds'
     | '/_authenticated/billing'
     | '/_authenticated/coach'
+    | '/_authenticated/controlled-drugs'
     | '/_authenticated/dashboard'
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
@@ -633,12 +705,18 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/payslips'
     | '/_authenticated/orders/stock-requests'
     | '/_authenticated/visits/$visitId'
+    | '/verify/rx/$rxId'
+    | '/_authenticated/print/drug/$batchId'
+    | '/_authenticated/print/prescription/$rxId'
+    | '/_authenticated/print/sample/$sampleId'
+    | '/_authenticated/print/wristband/$patientId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  VerifyRxRxIdRoute: typeof VerifyRxRxIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -860,6 +938,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/controlled-drugs': {
+      id: '/_authenticated/controlled-drugs'
+      path: '/controlled-drugs'
+      fullPath: '/controlled-drugs'
+      preLoaderRoute: typeof AuthenticatedControlledDrugsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/coach': {
       id: '/_authenticated/coach'
       path: '/coach'
@@ -937,6 +1022,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKpiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/verify/rx/$rxId': {
+      id: '/verify/rx/$rxId'
+      path: '/verify/rx/$rxId'
+      fullPath: '/verify/rx/$rxId'
+      preLoaderRoute: typeof VerifyRxRxIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/visits/$visitId': {
       id: '/_authenticated/visits/$visitId'
       path: '/$visitId'
@@ -993,6 +1085,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDepartmentDeptRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/print/wristband/$patientId': {
+      id: '/_authenticated/print/wristband/$patientId'
+      path: '/print/wristband/$patientId'
+      fullPath: '/print/wristband/$patientId'
+      preLoaderRoute: typeof AuthenticatedPrintWristbandPatientIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/print/sample/$sampleId': {
+      id: '/_authenticated/print/sample/$sampleId'
+      path: '/print/sample/$sampleId'
+      fullPath: '/print/sample/$sampleId'
+      preLoaderRoute: typeof AuthenticatedPrintSampleSampleIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/print/prescription/$rxId': {
+      id: '/_authenticated/print/prescription/$rxId'
+      path: '/print/prescription/$rxId'
+      fullPath: '/print/prescription/$rxId'
+      preLoaderRoute: typeof AuthenticatedPrintPrescriptionRxIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/print/drug/$batchId': {
+      id: '/_authenticated/print/drug/$batchId'
+      path: '/print/drug/$batchId'
+      fullPath: '/print/drug/$batchId'
+      preLoaderRoute: typeof AuthenticatedPrintDrugBatchIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -1019,6 +1139,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBedsRoute: typeof AuthenticatedBedsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
+  AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
@@ -1054,6 +1175,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrMeRoute: typeof AuthenticatedHrMeRoute
   AuthenticatedHrPayslipsRoute: typeof AuthenticatedHrPayslipsRoute
   AuthenticatedOrdersStockRequestsRoute: typeof AuthenticatedOrdersStockRequestsRoute
+  AuthenticatedPrintDrugBatchIdRoute: typeof AuthenticatedPrintDrugBatchIdRoute
+  AuthenticatedPrintPrescriptionRxIdRoute: typeof AuthenticatedPrintPrescriptionRxIdRoute
+  AuthenticatedPrintSampleSampleIdRoute: typeof AuthenticatedPrintSampleSampleIdRoute
+  AuthenticatedPrintWristbandPatientIdRoute: typeof AuthenticatedPrintWristbandPatientIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1068,6 +1193,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBedsRoute: AuthenticatedBedsRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
+  AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
@@ -1103,6 +1229,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrMeRoute: AuthenticatedHrMeRoute,
   AuthenticatedHrPayslipsRoute: AuthenticatedHrPayslipsRoute,
   AuthenticatedOrdersStockRequestsRoute: AuthenticatedOrdersStockRequestsRoute,
+  AuthenticatedPrintDrugBatchIdRoute: AuthenticatedPrintDrugBatchIdRoute,
+  AuthenticatedPrintPrescriptionRxIdRoute:
+    AuthenticatedPrintPrescriptionRxIdRoute,
+  AuthenticatedPrintSampleSampleIdRoute: AuthenticatedPrintSampleSampleIdRoute,
+  AuthenticatedPrintWristbandPatientIdRoute:
+    AuthenticatedPrintWristbandPatientIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -1112,17 +1244,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  VerifyRxRxIdRoute: VerifyRxRxIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
