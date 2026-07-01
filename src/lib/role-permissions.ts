@@ -106,6 +106,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/assessments": [
     "patient","athlete","doctor","nurse","physio","nutritionist","coach",
   ],
+
+  // Clinical safety additions
+  "/controlled-drugs": ["pharmacist"],
 };
 
 
@@ -115,6 +118,10 @@ export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
   "/visits/": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
   "/department/": [], // admin only
   "/orders/": ["lab_tech", "pharmacist", "store_keeper"],
+  "/print/wristband/": ["receptionist", "nurse", "doctor"],
+  "/print/sample/": ["lab_tech", "nurse", "doctor"],
+  "/print/drug/": ["pharmacist", "store_keeper"],
+  "/print/prescription/": ["doctor", "pharmacist"],
 };
 
 // Always visible to all signed-in users.

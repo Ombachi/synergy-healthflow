@@ -7,53 +7,31 @@ export const Route = createFileRoute("/verify/rx/$rxId")({
   component: VerifyRx,
 });
 
-interface Sig {
-  signer_name: string;
+interface VerifyRow {
+  exists_flag: boolean;
+  signed: boolean;
+  signer_name: string | null;
   signer_role: string | null;
-  signed_at: string;
-  signature_hash: string;
-}
-interface Rx {
-  id: string;
-  medication: string;
-  dosage: string | null;
-  frequency: string | null;
-  duration: string | null;
-  created_at: string;
+  signed_at: string | null;
+  hash_prefix: string | null;
 }
 
 function VerifyRx() {
   const { rxId } = Route.useParams();
 
-  const rx = useQuery({
+  const q = useQuery({
     queryKey: ["verify-rx", rxId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("prescriptions" as never)
-        .select("id, medication, dosage, frequency, duration, created_at")
-        .eq("id", rxId)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("verify_prescription" as never, { rx_id: rxId } as never);
       if (error) throw error;
-      return (data as unknown as Rx) ?? null;
+      const arr = data as unknown as VerifyRow[] | null;
+      return arr?.[0] ?? null;
     },
   });
 
-  const sig = useQuery({
-    queryKey: ["verify-rx-sig", rxId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("signatures" as never)
-        .select("signer_name, signer_role, signed_at, signature_hash")
-        .eq("entity_type", "prescription")
-        .eq("entity_id", rxId)
-        .maybeSingle();
-      if (error) throw error;
-      return (data as unknown as Sig) ?? null;
-    },
-  });
-
-  const loading = rx.isLoading || sig.isLoading;
-  const valid = !!rx.data && !!sig.data;
+  const loading = q.isLoading;
+  const r = q.data;
+  const valid = !!r?.exists_flag && !!r?.signed;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-4 p-6">
@@ -68,36 +46,35 @@ function VerifyRx() {
             <CheckCircle2 className="mx-auto h-12 w-12 text-green-600" />
             <h1 className="mt-2 text-xl font-semibold">Prescription verified</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              This prescription is authentic and signed.
+              This prescription is authentic and signed by a Vitalis clinician.
             </p>
             <div className="mt-4 rounded border bg-muted/30 p-3 text-left text-sm">
-              <div><b>Medication:</b> {rx.data!.medication}</div>
-              <div><b>Dosage:</b> {rx.data!.dosage ?? "—"}</div>
-              <div><b>Frequency:</b> {rx.data!.frequency ?? "—"}</div>
-              <div><b>Duration:</b> {rx.data!.duration ?? "—"}</div>
-              <div className="mt-2 border-t pt-2 text-xs text-muted-foreground">
-                Signed by <b>{sig.data!.signer_name}</b>
-                {sig.data!.signer_role && <> ({sig.data!.signer_role})</>} on{" "}
-                {new Date(sig.data!.signed_at).toLocaleString()}
+              <div>
+                Signed by <b>{r!.signer_name ?? "—"}</b>
+                {r!.signer_role && <> ({r!.signer_role})</>}
               </div>
-              <div className="mt-1 text-[10px] font-mono text-muted-foreground">
-                Hash: {sig.data!.signature_hash.slice(0, 24)}…
+              <div className="mt-1 text-xs text-muted-foreground">
+                {r!.signed_at ? new Date(r!.signed_at).toLocaleString() : ""}
+              </div>
+              <div className="mt-2 text-[10px] font-mono text-muted-foreground">
+                Signature hash: {r!.hash_prefix ?? "—"}…
               </div>
             </div>
+            <p className="mt-3 text-[10px] text-muted-foreground">
+              No patient or medication information is disclosed on this public page.
+            </p>
           </>
         ) : (
           <>
             <XCircle className="mx-auto h-12 w-12 text-destructive" />
             <h1 className="mt-2 text-xl font-semibold">Cannot verify</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {rx.data ? "This prescription exists but has not been signed." : "Prescription not found."}
+              {r?.exists_flag ? "This prescription exists but has not been signed." : "Prescription not found."}
             </p>
           </>
         )}
       </div>
-      <p className="text-[10px] text-muted-foreground">
-        Public verification endpoint · No PHI disclosed
-      </p>
+      <p className="text-[10px] text-muted-foreground">Public verification endpoint</p>
     </div>
   );
 }
