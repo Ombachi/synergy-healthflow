@@ -44,6 +44,7 @@ const items: Item[] = [
   { title: "Messages", url: "/messages", icon: MessageSquare, badge: undefined },
   { title: "Laboratory", url: "/lab", icon: FlaskConical, badge: "lab", dept: "lab" },
   { title: "Pharmacy", url: "/pharmacy", icon: Pill, badge: "pharmacy", dept: "pharmacy" },
+  { title: "Controlled drugs", url: "/controlled-drugs", icon: ShieldAlert, badge: undefined },
   { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology", dept: "radiology" },
   { title: "Billing", url: "/billing", icon: Receipt, badge: undefined, dept: "billing" },
   { title: "Insurance", url: "/insurance", icon: Shield, badge: undefined, dept: "insurance" },
