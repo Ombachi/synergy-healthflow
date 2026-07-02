@@ -109,6 +109,12 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
   // Clinical safety additions
   "/controlled-drugs": ["pharmacist"],
+
+  // Compliance & audit (admin-only)
+  "/admin/soft-deleted": [],
+  "/admin/consent": [],
+  "/admin/breaches": [],
+  "/admin/access-reviews": [],
 };
 
 
