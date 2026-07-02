@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Apple, Bandage, BarChart3, BedDouble, Bell, Briefcase, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Clock, Dumbbell, FileText, FlaskConical, Gauge, Gavel, Heart, Inbox, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Ticket, Trophy, User, Users, Warehouse, Wallet, HeartPulse, ShieldAlert } from "lucide-react";
+import { Activity, Apple, Archive, Bandage, BarChart3, BedDouble, Bell, Briefcase, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Clock, Dumbbell, FileText, FlaskConical, Gauge, Gavel, Heart, Inbox, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Ticket, Trophy, User, Users, Warehouse, Wallet, HeartPulse, ShieldAlert } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -66,6 +66,10 @@ const items: Item[] = [
   { title: "Rostering", url: "/roster", icon: CalendarDays, badge: undefined },
   { title: "Audit log", url: "/audit", icon: Shield, badge: undefined },
   { title: "User management", url: "/users", icon: ShieldCheck, badge: undefined },
+  { title: "Soft-deleted", url: "/admin/soft-deleted", icon: Archive, badge: undefined },
+  { title: "Consent management", url: "/admin/consent", icon: FileText, badge: undefined },
+  { title: "Breach register", url: "/admin/breaches", icon: ShieldAlert, badge: undefined },
+  { title: "Access reviews", url: "/admin/access-reviews", icon: ClipboardCheck, badge: undefined },
 
   // HR / Employee Self-Service — visible to every signed-in staff member
   { title: "My HR profile", url: "/hr/me", icon: User, badge: undefined },

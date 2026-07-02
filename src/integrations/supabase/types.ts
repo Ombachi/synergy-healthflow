@@ -156,6 +156,86 @@ export type Database = {
           },
         ]
       }
+      access_review_items: {
+        Row: {
+          decision: string
+          id: string
+          notes: string | null
+          review_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          decision?: string
+          id?: string
+          notes?: string | null
+          review_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          decision?: string
+          id?: string
+          notes?: string | null
+          review_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_review_items_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "access_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      access_reviews: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opened_by: string | null
+          period_label: string
+          quarter: number
+          status: string
+          year: number
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          period_label: string
+          quarter: number
+          status?: string
+          year: number
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          period_label?: string
+          quarter?: number
+          status?: string
+          year?: number
+        }
+        Relationships: []
+      }
       admissions: {
         Row: {
           admission_reason: string | null
@@ -715,6 +795,104 @@ export type Database = {
           },
         ]
       }
+      breach_incident_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          from_status: string | null
+          id: string
+          incident_id: string
+          note: string | null
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          incident_id: string
+          note?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          incident_id?: string
+          note?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breach_incident_events_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "breach_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      breach_incidents: {
+        Row: {
+          affected_patient_count: number | null
+          closed_at: string | null
+          created_at: string
+          description: string
+          discovered_at: string
+          dpa_reference: string | null
+          id: string
+          notification_channel: string | null
+          notified_at: string | null
+          remediation: string | null
+          reported_by: string | null
+          root_cause: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_patient_count?: number | null
+          closed_at?: string | null
+          created_at?: string
+          description: string
+          discovered_at?: string
+          dpa_reference?: string | null
+          id?: string
+          notification_channel?: string | null
+          notified_at?: string | null
+          remediation?: string | null
+          reported_by?: string | null
+          root_cause?: string | null
+          severity: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_patient_count?: number | null
+          closed_at?: string | null
+          created_at?: string
+          description?: string
+          discovered_at?: string
+          dpa_reference?: string | null
+          id?: string
+          notification_channel?: string | null
+          notified_at?: string | null
+          remediation?: string | null
+          reported_by?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       claim_lines: {
         Row: {
           approved_cents: number | null
@@ -946,6 +1124,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      consent_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string
+          signature_hash: string | null
+          template_code: string
+          template_id: string
+          template_version: number
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          signature_hash?: string | null
+          template_code: string
+          template_id: string
+          template_version: number
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          signature_hash?: string | null
+          template_code?: string
+          template_id?: string
+          template_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consent_events_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "consent_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consent_templates: {
+        Row: {
+          active: boolean
+          body: string
+          code: string
+          created_at: string
+          created_by: string | null
+          id: string
+          title: string
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title: string
+          version?: number
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title?: string
+          version?: number
+        }
+        Relationships: []
       }
       consents: {
         Row: {
@@ -2990,6 +3255,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           date_of_birth: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           diagnosis: string | null
           email: string | null
           emergency_contact_name: string | null
@@ -3013,6 +3281,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date_of_birth?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           diagnosis?: string | null
           email?: string | null
           emergency_contact_name?: string | null
@@ -3036,6 +3307,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date_of_birth?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           diagnosis?: string | null
           email?: string | null
           emergency_contact_name?: string | null
@@ -5038,6 +5312,9 @@ export type Database = {
           closed_at: string | null
           created_at: string
           current_stage: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
           doctor_id: string | null
           id: string
           notes: string | null
@@ -5060,6 +5337,9 @@ export type Database = {
           closed_at?: string | null
           created_at?: string
           current_stage?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           doctor_id?: string | null
           id?: string
           notes?: string | null
@@ -5082,6 +5362,9 @@ export type Database = {
           closed_at?: string | null
           created_at?: string
           current_stage?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
           doctor_id?: string | null
           id?: string
           notes?: string | null
@@ -5292,6 +5575,25 @@ export type Database = {
         }
         Relationships: []
       }
+      v_effective_consent: {
+        Row: {
+          action: string | null
+          actor_id: string | null
+          created_at: string | null
+          patient_id: string | null
+          template_code: string | null
+          template_version: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       abp_marker_trend: {
@@ -5324,6 +5626,7 @@ export type Database = {
       }
       can_discharge: { Args: { _visit: string }; Returns: boolean }
       catalog_price: { Args: { _category: string }; Returns: number }
+      complete_access_review: { Args: { _review: string }; Returns: undefined }
       compute_patient_initials: { Args: { _name: string }; Returns: string }
       emit_outbox: {
         Args: {
@@ -5379,7 +5682,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      open_access_review: {
+        Args: { _quarter: number; _year: number }
+        Returns: string
+      }
       refresh_admin_kpis: { Args: never; Returns: undefined }
+      restore_patient: { Args: { _patient: string }; Returns: undefined }
+      restore_visit: { Args: { _visit: string }; Returns: undefined }
       roster_conflicts: {
         Args: { _ends: string; _starts: string; _user: string }
         Returns: {
@@ -5392,6 +5701,14 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      soft_delete_patient: {
+        Args: { _patient: string; _reason: string }
+        Returns: undefined
+      }
+      soft_delete_visit: {
+        Args: { _reason: string; _visit: string }
+        Returns: undefined
+      }
       verify_prescription: {
         Args: { rx_id: string }
         Returns: {
