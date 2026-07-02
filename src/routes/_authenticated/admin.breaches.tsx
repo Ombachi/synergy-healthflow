@@ -53,7 +53,7 @@ function BreachRegister() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("breach_incident_events" as never)
-        .select("*").eq("incident_id", selected).order("created_at");
+        .select("*").eq("incident_id", selected!).order("created_at");
       if (error) throw error;
       return (data as unknown as any[]) ?? [];
     },

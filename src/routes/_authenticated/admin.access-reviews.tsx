@@ -45,7 +45,7 @@ function AccessReviewsPage() {
       const { data, error } = await supabase
         .from("access_review_items" as never)
         .select("id, user_id, role, decision, reviewed_at, notes")
-        .eq("review_id", selected);
+        .eq("review_id", selected!);
       if (error) throw error;
       const rows = (data as unknown as any[]) ?? [];
       const ids = Array.from(new Set(rows.map((r) => r.user_id)));
