@@ -47,7 +47,10 @@ const items: Item[] = [
   { title: "Controlled drugs", url: "/controlled-drugs", icon: ShieldAlert, badge: undefined },
   { title: "Radiology", url: "/radiology", icon: ScanLine, badge: "radiology", dept: "radiology" },
   { title: "Billing", url: "/billing", icon: Receipt, badge: undefined, dept: "billing" },
+  { title: "Cash reconciliation", url: "/cash-reconciliation", icon: Wallet, badge: undefined },
+  { title: "Credit notes", url: "/credit-notes", icon: Receipt, badge: undefined },
   { title: "Insurance", url: "/insurance", icon: Shield, badge: undefined, dept: "insurance" },
+
   { title: "Service catalog", url: "/service-catalog", icon: Receipt, badge: undefined },
   { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined, dept: "sports" },
   { title: "Coach", url: "/coach", icon: Dumbbell, badge: undefined, dept: "coach" },
