@@ -40,8 +40,10 @@ import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/la
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
+import { Route as AuthenticatedCashReconciliationRouteImport } from './routes/_authenticated/cash-reconciliation'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/beds'
 import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authenticated/audit-inventory'
@@ -229,6 +231,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreditNotesRoute =
+  AuthenticatedCreditNotesRouteImport.update({
+    id: '/credit-notes',
+    path: '/credit-notes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedControlledDrugsRoute =
   AuthenticatedControlledDrugsRouteImport.update({
     id: '/controlled-drugs',
@@ -240,6 +248,12 @@ const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
   path: '/coach',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCashReconciliationRoute =
+  AuthenticatedCashReconciliationRouteImport.update({
+    id: '/cash-reconciliation',
+    path: '/cash-reconciliation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -405,8 +419,10 @@ export interface FileRoutesByFullPath {
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
+  '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -466,8 +482,10 @@ export interface FileRoutesByTo {
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
+  '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -529,8 +547,10 @@ export interface FileRoutesById {
   '/_authenticated/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/_authenticated/beds': typeof AuthenticatedBedsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
+  '/_authenticated/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
+  '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
@@ -592,8 +612,10 @@ export interface FileRouteTypes {
     | '/audit-inventory'
     | '/beds'
     | '/billing'
+    | '/cash-reconciliation'
     | '/coach'
     | '/controlled-drugs'
+    | '/credit-notes'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -653,8 +675,10 @@ export interface FileRouteTypes {
     | '/audit-inventory'
     | '/beds'
     | '/billing'
+    | '/cash-reconciliation'
     | '/coach'
     | '/controlled-drugs'
+    | '/credit-notes'
     | '/dashboard'
     | '/insurance'
     | '/inventory'
@@ -715,8 +739,10 @@ export interface FileRouteTypes {
     | '/_authenticated/audit-inventory'
     | '/_authenticated/beds'
     | '/_authenticated/billing'
+    | '/_authenticated/cash-reconciliation'
     | '/_authenticated/coach'
     | '/_authenticated/controlled-drugs'
+    | '/_authenticated/credit-notes'
     | '/_authenticated/dashboard'
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
@@ -990,6 +1016,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/credit-notes': {
+      id: '/_authenticated/credit-notes'
+      path: '/credit-notes'
+      fullPath: '/credit-notes'
+      preLoaderRoute: typeof AuthenticatedCreditNotesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/controlled-drugs': {
       id: '/_authenticated/controlled-drugs'
       path: '/controlled-drugs'
@@ -1002,6 +1035,13 @@ declare module '@tanstack/react-router' {
       path: '/coach'
       fullPath: '/coach'
       preLoaderRoute: typeof AuthenticatedCoachRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cash-reconciliation': {
+      id: '/_authenticated/cash-reconciliation'
+      path: '/cash-reconciliation'
+      fullPath: '/cash-reconciliation'
+      preLoaderRoute: typeof AuthenticatedCashReconciliationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/billing': {
@@ -1218,8 +1258,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditInventoryRoute: typeof AuthenticatedAuditInventoryRoute
   AuthenticatedBedsRoute: typeof AuthenticatedBedsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
+  AuthenticatedCashReconciliationRoute: typeof AuthenticatedCashReconciliationRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
+  AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
@@ -1276,8 +1318,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditInventoryRoute: AuthenticatedAuditInventoryRoute,
   AuthenticatedBedsRoute: AuthenticatedBedsRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
+  AuthenticatedCashReconciliationRoute: AuthenticatedCashReconciliationRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
+  AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,

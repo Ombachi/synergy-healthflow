@@ -893,6 +893,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_sessions: {
+        Row: {
+          cashier_id: string
+          closed_at: string | null
+          created_at: string
+          declared_cash_cents: number | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opening_float_cents: number
+          status: string
+          system_cash_cents: number | null
+          variance_cents: number | null
+        }
+        Insert: {
+          cashier_id: string
+          closed_at?: string | null
+          created_at?: string
+          declared_cash_cents?: number | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opening_float_cents?: number
+          status?: string
+          system_cash_cents?: number | null
+          variance_cents?: number | null
+        }
+        Update: {
+          cashier_id?: string
+          closed_at?: string | null
+          created_at?: string
+          declared_cash_cents?: number | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opening_float_cents?: number
+          status?: string
+          system_cash_cents?: number | null
+          variance_cents?: number | null
+        }
+        Relationships: []
+      }
       claim_lines: {
         Row: {
           approved_cents: number | null
@@ -1314,6 +1356,62 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_notes: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          created_by: string
+          id: string
+          invoice_id: string
+          patient_id: string
+          reason: string
+          refund_method: string | null
+          refund_reference: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          created_by: string
+          id?: string
+          invoice_id: string
+          patient_id: string
+          reason: string
+          refund_method?: string | null
+          refund_reference?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          invoice_id?: string
+          patient_id?: string
+          reason?: string
+          refund_method?: string | null
+          refund_reference?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_notes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -5620,12 +5718,63 @@ export type Database = {
         }
         Returns: undefined
       }
+      approve_credit_note: {
+        Args: {
+          _credit_note_id: string
+          _notes?: string
+          _refund_method: string
+          _refund_reference?: string
+        }
+        Returns: {
+          amount_cents: number
+          created_at: string
+          created_by: string
+          id: string
+          invoice_id: string
+          patient_id: string
+          reason: string
+          refund_method: string | null
+          refund_reference: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_notes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       calc_leave_days: {
         Args: { _end: string; _start: string }
         Returns: number
       }
       can_discharge: { Args: { _visit: string }; Returns: boolean }
       catalog_price: { Args: { _category: string }; Returns: number }
+      close_cash_session: {
+        Args: { _declared_cents: number; _notes?: string; _session_id: string }
+        Returns: {
+          cashier_id: string
+          closed_at: string | null
+          created_at: string
+          declared_cash_cents: number | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opening_float_cents: number
+          status: string
+          system_cash_cents: number | null
+          variance_cents: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "cash_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       complete_access_review: { Args: { _review: string }; Returns: undefined }
       compute_patient_initials: { Args: { _name: string }; Returns: string }
       emit_outbox: {
@@ -5687,6 +5836,30 @@ export type Database = {
         Returns: string
       }
       refresh_admin_kpis: { Args: never; Returns: undefined }
+      reject_credit_note: {
+        Args: { _credit_note_id: string; _notes: string }
+        Returns: {
+          amount_cents: number
+          created_at: string
+          created_by: string
+          id: string
+          invoice_id: string
+          patient_id: string
+          reason: string
+          refund_method: string | null
+          refund_reference: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_notes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       restore_patient: { Args: { _patient: string }; Returns: undefined }
       restore_visit: { Args: { _visit: string }; Returns: undefined }
       roster_conflicts: {
