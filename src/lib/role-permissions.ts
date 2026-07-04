@@ -119,6 +119,8 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/admin/consent": [],
   "/admin/breaches": [],
   "/admin/access-reviews": [],
+  "/admin/errors": [],
+  "/sla": ["lab_tech", "radiologist", "doctor"],
 };
 
 
