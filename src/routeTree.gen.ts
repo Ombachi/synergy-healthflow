@@ -66,6 +66,7 @@ import { Route as AuthenticatedHrDocumentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticated/hr.admin'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 import { Route as AuthenticatedAdminSoftDeletedRouteImport } from './routes/_authenticated/admin.soft-deleted'
+import { Route as AuthenticatedAdminErrorsRouteImport } from './routes/_authenticated/admin.errors'
 import { Route as AuthenticatedAdminConsentRouteImport } from './routes/_authenticated/admin.consent'
 import { Route as AuthenticatedAdminBreachesRouteImport } from './routes/_authenticated/admin.breaches'
 import { Route as AuthenticatedAdminAccessReviewsRouteImport } from './routes/_authenticated/admin.access-reviews'
@@ -375,6 +376,12 @@ const AuthenticatedAdminSoftDeletedRoute =
     path: '/admin/soft-deleted',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminErrorsRoute =
+  AuthenticatedAdminErrorsRouteImport.update({
+    id: '/admin/errors',
+    path: '/admin/errors',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminConsentRoute =
   AuthenticatedAdminConsentRouteImport.update({
     id: '/admin/consent',
@@ -468,6 +475,7 @@ export interface FileRoutesByFullPath {
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
+  '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
@@ -533,6 +541,7 @@ export interface FileRoutesByTo {
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
+  '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
@@ -600,6 +609,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/_authenticated/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/_authenticated/admin/consent': typeof AuthenticatedAdminConsentRoute
+  '/_authenticated/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/_authenticated/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/_authenticated/hr/admin': typeof AuthenticatedHrAdminRoute
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/admin/access-reviews'
     | '/admin/breaches'
     | '/admin/consent'
+    | '/admin/errors'
     | '/admin/soft-deleted'
     | '/department/$dept'
     | '/hr/admin'
@@ -732,6 +743,7 @@ export interface FileRouteTypes {
     | '/admin/access-reviews'
     | '/admin/breaches'
     | '/admin/consent'
+    | '/admin/errors'
     | '/admin/soft-deleted'
     | '/department/$dept'
     | '/hr/admin'
@@ -798,6 +810,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/access-reviews'
     | '/_authenticated/admin/breaches'
     | '/_authenticated/admin/consent'
+    | '/_authenticated/admin/errors'
     | '/_authenticated/admin/soft-deleted'
     | '/_authenticated/department/$dept'
     | '/_authenticated/hr/admin'
@@ -1223,6 +1236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSoftDeletedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/errors': {
+      id: '/_authenticated/admin/errors'
+      path: '/admin/errors'
+      fullPath: '/admin/errors'
+      preLoaderRoute: typeof AuthenticatedAdminErrorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/consent': {
       id: '/_authenticated/admin/consent'
       path: '/admin/consent'
@@ -1333,6 +1353,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAccessReviewsRoute: typeof AuthenticatedAdminAccessReviewsRoute
   AuthenticatedAdminBreachesRoute: typeof AuthenticatedAdminBreachesRoute
   AuthenticatedAdminConsentRoute: typeof AuthenticatedAdminConsentRoute
+  AuthenticatedAdminErrorsRoute: typeof AuthenticatedAdminErrorsRoute
   AuthenticatedAdminSoftDeletedRoute: typeof AuthenticatedAdminSoftDeletedRoute
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
   AuthenticatedHrAdminRoute: typeof AuthenticatedHrAdminRoute
@@ -1394,6 +1415,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAccessReviewsRoute: AuthenticatedAdminAccessReviewsRoute,
   AuthenticatedAdminBreachesRoute: AuthenticatedAdminBreachesRoute,
   AuthenticatedAdminConsentRoute: AuthenticatedAdminConsentRoute,
+  AuthenticatedAdminErrorsRoute: AuthenticatedAdminErrorsRoute,
   AuthenticatedAdminSoftDeletedRoute: AuthenticatedAdminSoftDeletedRoute,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
   AuthenticatedHrAdminRoute: AuthenticatedHrAdminRoute,
