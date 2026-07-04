@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DisplayQueueRouteImport } from './routes/display.queue'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTendersRouteImport } from './routes/_authenticated/tenders'
@@ -20,6 +21,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
 import { Route as AuthenticatedSportsMedicineRouteImport } from './routes/_authenticated/sports-medicine'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
+import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
 import { Route as AuthenticatedServiceCatalogRouteImport } from './routes/_authenticated/service-catalog'
 import { Route as AuthenticatedRosterRouteImport } from './routes/_authenticated/roster'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
@@ -64,6 +66,7 @@ import { Route as AuthenticatedHrDocumentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticated/hr.admin'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 import { Route as AuthenticatedAdminSoftDeletedRouteImport } from './routes/_authenticated/admin.soft-deleted'
+import { Route as AuthenticatedAdminErrorsRouteImport } from './routes/_authenticated/admin.errors'
 import { Route as AuthenticatedAdminConsentRouteImport } from './routes/_authenticated/admin.consent'
 import { Route as AuthenticatedAdminBreachesRouteImport } from './routes/_authenticated/admin.breaches'
 import { Route as AuthenticatedAdminAccessReviewsRouteImport } from './routes/_authenticated/admin.access-reviews'
@@ -84,6 +87,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisplayQueueRoute = DisplayQueueRouteImport.update({
+  id: '/display/queue',
+  path: '/display/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
@@ -126,6 +134,11 @@ const AuthenticatedSportsMedicineRoute =
 const AuthenticatedSportsRoute = AuthenticatedSportsRouteImport.update({
   id: '/sports',
   path: '/sports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSlaRoute = AuthenticatedSlaRouteImport.update({
+  id: '/sla',
+  path: '/sla',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedServiceCatalogRoute =
@@ -363,6 +376,12 @@ const AuthenticatedAdminSoftDeletedRoute =
     path: '/admin/soft-deleted',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminErrorsRoute =
+  AuthenticatedAdminErrorsRouteImport.update({
+    id: '/admin/errors',
+    path: '/admin/errors',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminConsentRoute =
   AuthenticatedAdminConsentRouteImport.update({
     id: '/admin/consent',
@@ -443,6 +462,7 @@ export interface FileRoutesByFullPath {
   '/requests': typeof AuthenticatedRequestsRoute
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
+  '/sla': typeof AuthenticatedSlaRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
@@ -451,9 +471,11 @@ export interface FileRoutesByFullPath {
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
+  '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
@@ -506,6 +528,7 @@ export interface FileRoutesByTo {
   '/requests': typeof AuthenticatedRequestsRoute
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
+  '/sla': typeof AuthenticatedSlaRoute
   '/sports': typeof AuthenticatedSportsRoute
   '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
@@ -514,9 +537,11 @@ export interface FileRoutesByTo {
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
+  '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
@@ -571,6 +596,7 @@ export interface FileRoutesById {
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/roster': typeof AuthenticatedRosterRoute
   '/_authenticated/service-catalog': typeof AuthenticatedServiceCatalogRoute
+  '/_authenticated/sla': typeof AuthenticatedSlaRoute
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
   '/_authenticated/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/_authenticated/store': typeof AuthenticatedStoreRoute
@@ -579,9 +605,11 @@ export interface FileRoutesById {
   '/_authenticated/tenders': typeof AuthenticatedTendersRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/display/queue': typeof DisplayQueueRoute
   '/_authenticated/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/_authenticated/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/_authenticated/admin/consent': typeof AuthenticatedAdminConsentRoute
+  '/_authenticated/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/_authenticated/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/_authenticated/hr/admin': typeof AuthenticatedHrAdminRoute
@@ -636,6 +664,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/roster'
     | '/service-catalog'
+    | '/sla'
     | '/sports'
     | '/sports-medicine'
     | '/store'
@@ -644,9 +673,11 @@ export interface FileRouteTypes {
     | '/tenders'
     | '/users'
     | '/visits'
+    | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
     | '/admin/consent'
+    | '/admin/errors'
     | '/admin/soft-deleted'
     | '/department/$dept'
     | '/hr/admin'
@@ -699,6 +730,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/roster'
     | '/service-catalog'
+    | '/sla'
     | '/sports'
     | '/sports-medicine'
     | '/store'
@@ -707,9 +739,11 @@ export interface FileRouteTypes {
     | '/tenders'
     | '/users'
     | '/visits'
+    | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
     | '/admin/consent'
+    | '/admin/errors'
     | '/admin/soft-deleted'
     | '/department/$dept'
     | '/hr/admin'
@@ -763,6 +797,7 @@ export interface FileRouteTypes {
     | '/_authenticated/requests'
     | '/_authenticated/roster'
     | '/_authenticated/service-catalog'
+    | '/_authenticated/sla'
     | '/_authenticated/sports'
     | '/_authenticated/sports-medicine'
     | '/_authenticated/store'
@@ -771,9 +806,11 @@ export interface FileRouteTypes {
     | '/_authenticated/tenders'
     | '/_authenticated/users'
     | '/_authenticated/visits'
+    | '/display/queue'
     | '/_authenticated/admin/access-reviews'
     | '/_authenticated/admin/breaches'
     | '/_authenticated/admin/consent'
+    | '/_authenticated/admin/errors'
     | '/_authenticated/admin/soft-deleted'
     | '/_authenticated/department/$dept'
     | '/_authenticated/hr/admin'
@@ -794,6 +831,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DisplayQueueRoute: typeof DisplayQueueRoute
   VerifyRxRxIdRoute: typeof VerifyRxRxIdRoute
 }
 
@@ -818,6 +856,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/display/queue': {
+      id: '/display/queue'
+      path: '/display/queue'
+      fullPath: '/display/queue'
+      preLoaderRoute: typeof DisplayQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/visits': {
@@ -874,6 +919,13 @@ declare module '@tanstack/react-router' {
       path: '/sports'
       fullPath: '/sports'
       preLoaderRoute: typeof AuthenticatedSportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sla': {
+      id: '/_authenticated/sla'
+      path: '/sla'
+      fullPath: '/sla'
+      preLoaderRoute: typeof AuthenticatedSlaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/service-catalog': {
@@ -1184,6 +1236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSoftDeletedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/errors': {
+      id: '/_authenticated/admin/errors'
+      path: '/admin/errors'
+      fullPath: '/admin/errors'
+      preLoaderRoute: typeof AuthenticatedAdminErrorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/consent': {
       id: '/_authenticated/admin/consent'
       path: '/admin/consent'
@@ -1282,6 +1341,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
   AuthenticatedRosterRoute: typeof AuthenticatedRosterRoute
   AuthenticatedServiceCatalogRoute: typeof AuthenticatedServiceCatalogRoute
+  AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
   AuthenticatedSportsMedicineRoute: typeof AuthenticatedSportsMedicineRoute
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
@@ -1293,6 +1353,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAccessReviewsRoute: typeof AuthenticatedAdminAccessReviewsRoute
   AuthenticatedAdminBreachesRoute: typeof AuthenticatedAdminBreachesRoute
   AuthenticatedAdminConsentRoute: typeof AuthenticatedAdminConsentRoute
+  AuthenticatedAdminErrorsRoute: typeof AuthenticatedAdminErrorsRoute
   AuthenticatedAdminSoftDeletedRoute: typeof AuthenticatedAdminSoftDeletedRoute
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
   AuthenticatedHrAdminRoute: typeof AuthenticatedHrAdminRoute
@@ -1342,6 +1403,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
   AuthenticatedRosterRoute: AuthenticatedRosterRoute,
   AuthenticatedServiceCatalogRoute: AuthenticatedServiceCatalogRoute,
+  AuthenticatedSlaRoute: AuthenticatedSlaRoute,
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
   AuthenticatedSportsMedicineRoute: AuthenticatedSportsMedicineRoute,
   AuthenticatedStoreRoute: AuthenticatedStoreRoute,
@@ -1353,6 +1415,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAccessReviewsRoute: AuthenticatedAdminAccessReviewsRoute,
   AuthenticatedAdminBreachesRoute: AuthenticatedAdminBreachesRoute,
   AuthenticatedAdminConsentRoute: AuthenticatedAdminConsentRoute,
+  AuthenticatedAdminErrorsRoute: AuthenticatedAdminErrorsRoute,
   AuthenticatedAdminSoftDeletedRoute: AuthenticatedAdminSoftDeletedRoute,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
   AuthenticatedHrAdminRoute: AuthenticatedHrAdminRoute,
@@ -1376,6 +1439,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DisplayQueueRoute: DisplayQueueRoute,
   VerifyRxRxIdRoute: VerifyRxRxIdRoute,
 }
 export const routeTree = rootRouteImport

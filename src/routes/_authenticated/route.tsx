@@ -73,6 +73,9 @@ const items: Item[] = [
   { title: "Consent management", url: "/admin/consent", icon: FileText, badge: undefined },
   { title: "Breach register", url: "/admin/breaches", icon: ShieldAlert, badge: undefined },
   { title: "Access reviews", url: "/admin/access-reviews", icon: ClipboardCheck, badge: undefined },
+  { title: "Error monitor", url: "/admin/errors", icon: ShieldAlert, badge: undefined },
+  { title: "SLA dashboard", url: "/sla", icon: Gauge, badge: undefined },
+  { title: "Queue display", url: "/display/queue", icon: ListOrdered, badge: undefined },
 
   // HR / Employee Self-Service — visible to every signed-in staff member
   { title: "My HR profile", url: "/hr/me", icon: User, badge: undefined },
