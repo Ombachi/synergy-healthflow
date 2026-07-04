@@ -1736,6 +1736,39 @@ export type Database = {
           },
         ]
       }
+      error_events: {
+        Row: {
+          context: Json | null
+          env: string
+          id: string
+          message: string
+          occurred_at: string
+          route: string | null
+          stack: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          env?: string
+          id?: string
+          message: string
+          occurred_at?: string
+          route?: string | null
+          stack?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          env?: string
+          id?: string
+          message?: string
+          occurred_at?: string
+          route?: string | null
+          stack?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       goods_received_notes: {
         Row: {
           created_at: string
@@ -2768,6 +2801,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "lab_result_values_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_lab_tat"
+            referencedColumns: ["order_id"]
+          },
+          {
             foreignKeyName: "lab_result_values_template_id_fkey"
             columns: ["template_id"]
             isOneToOne: false
@@ -2833,6 +2873,13 @@ export type Database = {
             referencedRelation: "lab_orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lab_results_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_lab_tat"
+            referencedColumns: ["order_id"]
+          },
         ]
       }
       lab_samples: {
@@ -2873,6 +2920,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "lab_orders"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_samples_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_lab_tat"
+            referencedColumns: ["order_id"]
           },
         ]
       }
@@ -5692,6 +5746,78 @@ export type Database = {
           },
         ]
       }
+      v_lab_tat: {
+        Row: {
+          completed_at: string | null
+          minutes_elapsed: number | null
+          order_id: string | null
+          ordered_at: string | null
+          patient_id: string | null
+          priority: string | null
+          sla_status: string | null
+          status: string | null
+          threshold_minutes: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_orders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_radiology_tat: {
+        Row: {
+          minutes_elapsed: number | null
+          modality: string | null
+          order_id: string | null
+          ordered_at: string | null
+          patient_id: string | null
+          performed_at: string | null
+          priority: string | null
+          reported_at: string | null
+          sla_status: string | null
+          status: string | null
+          threshold_minutes: number | null
+        }
+        Insert: {
+          minutes_elapsed?: never
+          modality?: string | null
+          order_id?: string | null
+          ordered_at?: string | null
+          patient_id?: string | null
+          performed_at?: string | null
+          priority?: string | null
+          reported_at?: never
+          sla_status?: never
+          status?: string | null
+          threshold_minutes?: never
+        }
+        Update: {
+          minutes_elapsed?: never
+          modality?: string | null
+          order_id?: string | null
+          ordered_at?: string | null
+          patient_id?: string | null
+          performed_at?: string | null
+          priority?: string | null
+          reported_at?: never
+          sla_status?: never
+          status?: string | null
+          threshold_minutes?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imaging_orders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       abp_marker_trend: {
@@ -5777,6 +5903,7 @@ export type Database = {
       }
       complete_access_review: { Args: { _review: string }; Returns: undefined }
       compute_patient_initials: { Args: { _name: string }; Returns: string }
+      cron_sla_breach_scan: { Args: never; Returns: undefined }
       emit_outbox: {
         Args: {
           _agg_id: string
@@ -5796,6 +5923,16 @@ export type Database = {
           medical_record_number: string
           phone: string
           score: number
+        }[]
+      }
+      get_public_queue: {
+        Args: never
+        Returns: {
+          entered_at: string
+          priority: number
+          queue_type: string
+          status: string
+          ticket: string
         }[]
       }
       has_role: {
@@ -5818,6 +5955,16 @@ export type Database = {
           id: string
           role: Database["public"]["Enums"]["app_role"]
         }[]
+      }
+      log_error: {
+        Args: {
+          _context?: Json
+          _env?: string
+          _message: string
+          _route?: string
+          _stack?: string
+        }
+        Returns: string
       }
       notify_role: {
         Args: {
