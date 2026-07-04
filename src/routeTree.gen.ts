@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DisplayQueueRouteImport } from './routes/display.queue'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTendersRouteImport } from './routes/_authenticated/tenders'
@@ -85,6 +86,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisplayQueueRoute = DisplayQueueRouteImport.update({
+  id: '/display/queue',
+  path: '/display/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
@@ -458,6 +464,7 @@ export interface FileRoutesByFullPath {
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
@@ -522,6 +529,7 @@ export interface FileRoutesByTo {
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
@@ -588,6 +596,7 @@ export interface FileRoutesById {
   '/_authenticated/tenders': typeof AuthenticatedTendersRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/display/queue': typeof DisplayQueueRoute
   '/_authenticated/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/_authenticated/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/_authenticated/admin/consent': typeof AuthenticatedAdminConsentRoute
@@ -654,6 +663,7 @@ export interface FileRouteTypes {
     | '/tenders'
     | '/users'
     | '/visits'
+    | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
     | '/admin/consent'
@@ -718,6 +728,7 @@ export interface FileRouteTypes {
     | '/tenders'
     | '/users'
     | '/visits'
+    | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
     | '/admin/consent'
@@ -783,6 +794,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tenders'
     | '/_authenticated/users'
     | '/_authenticated/visits'
+    | '/display/queue'
     | '/_authenticated/admin/access-reviews'
     | '/_authenticated/admin/breaches'
     | '/_authenticated/admin/consent'
@@ -806,6 +818,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DisplayQueueRoute: typeof DisplayQueueRoute
   VerifyRxRxIdRoute: typeof VerifyRxRxIdRoute
 }
 
@@ -830,6 +843,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/display/queue': {
+      id: '/display/queue'
+      path: '/display/queue'
+      fullPath: '/display/queue'
+      preLoaderRoute: typeof DisplayQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/visits': {
@@ -1397,6 +1417,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DisplayQueueRoute: DisplayQueueRoute,
   VerifyRxRxIdRoute: VerifyRxRxIdRoute,
 }
 export const routeTree = rootRouteImport
