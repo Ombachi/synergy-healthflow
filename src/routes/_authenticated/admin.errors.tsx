@@ -63,9 +63,8 @@ function ErrorsPage() {
             </thead>
             <tbody>
               {(data ?? []).map((r) => (
-                <>
+                <Fragment key={r.id}>
                   <tr
-                    key={r.id}
                     onClick={() => setExpanded(expanded === r.id ? null : r.id)}
                     className="cursor-pointer border-t hover:bg-muted/50"
                   >
@@ -77,7 +76,7 @@ function ErrorsPage() {
                     <td className="p-2">{r.message}</td>
                   </tr>
                   {expanded === r.id && (
-                    <tr key={r.id + "-x"} className="border-t bg-muted/30">
+                    <tr className="border-t bg-muted/30">
                       <td colSpan={4} className="p-3">
                         {r.stack && (
                           <pre className="mb-2 overflow-x-auto rounded bg-background p-2 text-xs">
@@ -92,7 +91,7 @@ function ErrorsPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
