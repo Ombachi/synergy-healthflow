@@ -141,6 +141,7 @@ export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
 export const ALWAYS_VISIBLE = new Set<string>([
   "/dashboard",
   "/messages",
+  "/display/queue",
 ]);
 
 
