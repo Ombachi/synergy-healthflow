@@ -40,7 +40,6 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Admin-only
   "/audit": [],
   "/users": [],
-  "/team": [],
   "/department": [],
   "/lab-templates": [],
   "/admin-kpi": [],
