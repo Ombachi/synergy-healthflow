@@ -3,18 +3,18 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
-  | "admin" | "doctor" | "coach" | "nurse" | "patient" | "athlete"
+  | "admin" | "doctor" | "nurse" | "patient" | "athlete"
   | "lab_tech" | "pharmacist" | "radiologist"
   | "receptionist" | "cashier" | "insurance_officer"
-  | "physio" | "nutritionist" | "team_manager"
+  | "physio" | "nutritionist"
   | "store_keeper" | "procurement" | "billing_officer"
   | "hr_officer" | "hr_manager" | "dept_manager";
 
 export const ALL_ROLES: AppRole[] = [
-  "admin", "doctor", "nurse", "coach",
+  "admin", "doctor", "nurse",
   "lab_tech", "pharmacist", "radiologist",
   "receptionist", "cashier", "billing_officer", "insurance_officer",
-  "physio", "nutritionist", "team_manager",
+  "physio", "nutritionist",
   "store_keeper", "procurement",
   "hr_officer", "hr_manager", "dept_manager",
   "patient", "athlete",

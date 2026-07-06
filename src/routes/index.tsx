@@ -48,8 +48,8 @@ function Landing() {
             One platform. Medical, sports, and supply — connected.
           </h1>
           <p className="mt-6 text-lg text-muted-foreground">
-            A microservice-inspired workspace where doctors, coaches, and admins
-            collaborate around patients, athletes, and inventory in real time.
+            A microservice-inspired workspace where clinicians, athletes, and admins
+            collaborate around patient care, sports medicine, and inventory in real time.
           </p>
           <div className="mt-8 flex justify-center gap-3">
             <Button asChild size="lg">
@@ -86,7 +86,7 @@ function Landing() {
 
         <section className="mt-20 flex items-center justify-center gap-2 text-sm text-muted-foreground">
           <ShieldCheck className="h-4 w-4" />
-          Role-based access control: doctor, coach, admin.
+          Role-based access control across clinical, staff, and operations modules.
         </section>
       </main>
     </div>
