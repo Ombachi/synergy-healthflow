@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Apple, Archive, Bandage, BarChart3, BedDouble, Bell, Briefcase, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Clock, Dumbbell, FileText, FlaskConical, Gauge, Gavel, Heart, Inbox, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Ticket, Trophy, User, Users, Warehouse, Wallet, HeartPulse, ShieldAlert } from "lucide-react";
+import { Activity, Apple, Archive, Bandage, BarChart3, BedDouble, Bell, Briefcase, CalendarClock, CalendarDays, ClipboardCheck, ClipboardList, Clock, FileText, FlaskConical, Gauge, Gavel, Heart, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Package, Pill, Receipt, ScanLine, Shield, ShieldCheck, ShoppingCart, Stethoscope, Ticket, User, Warehouse, Wallet, HeartPulse, ShieldAlert } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -53,8 +53,6 @@ const items: Item[] = [
 
   { title: "Service catalog", url: "/service-catalog", icon: Receipt, badge: undefined },
   { title: "Sports & Athletes", url: "/sports", icon: Activity, badge: undefined, dept: "sports" },
-  { title: "Coach", url: "/coach", icon: Dumbbell, badge: undefined, dept: "coach" },
-  { title: "Team manager", url: "/team-manager", icon: Trophy, badge: undefined, dept: "team-manager" },
   { title: "Physio", url: "/physio", icon: Bandage, badge: undefined, dept: "physio" },
   { title: "Nutrition", url: "/nutrition", icon: Apple, badge: undefined, dept: "nutrition" },
   { title: "Inventory", url: "/inventory", icon: Package, badge: undefined, dept: "inventory" },
