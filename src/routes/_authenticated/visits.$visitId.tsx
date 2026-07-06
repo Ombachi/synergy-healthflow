@@ -13,6 +13,7 @@ import { exportVisitPDF } from "@/lib/visit-pdf";
 import { exportSickOffPDF } from "@/lib/sick-off-pdf";
 import { IcdPicker } from "@/components/icd-picker";
 import { AssignVisit } from "@/components/assign-visit";
+import { AdmitPatientButton } from "@/components/admit-patient";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
@@ -286,6 +287,7 @@ function VisitDetail() {
         </div>
         <div className="flex items-center gap-2">
           <AssignVisit visitId={v.id} assignedDoctorId={v.assigned_doctor_id} assignedNurseId={v.assigned_nurse_id} />
+          {canOrder && p && <AdmitPatientButton visitId={v.id} patientName={p.full_name} disabled={finalized} />}
           {canClose && p && <SickOffButton visitId={v.id} patientId={v.patient_id} patientName={p.full_name} mrn={p.medical_record_number} primaryDx={diagnoses.data?.find((d)=>d.is_primary)?.diagnosis ?? diagnoses.data?.[0]?.diagnosis ?? null} userId={user?.id ?? null} />}
           <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4" /> Export PDF</Button>
         </div>
