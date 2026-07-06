@@ -85,7 +85,7 @@ const PANEL_TEMPLATES: Record<string, { sample_type: "hematological" | "steroida
 function SportsMedicinePage() {
   const { hasAnyRole } = useAuth();
   const qc = useQueryClient();
-  const canWrite = hasAnyRole(["admin", "doctor", "physio", "lab_tech", "coach"]);
+  const canWrite = hasAnyRole(["admin", "doctor", "physio", "lab_tech"]);
   const canBaseline = hasAnyRole(["admin", "doctor", "physio", "lab_tech"]);
   const [athleteId, setAthleteId] = useState<string>("");
 

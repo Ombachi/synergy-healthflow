@@ -16,8 +16,6 @@ import { Route as DisplayQueueRouteImport } from './routes/display.queue'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTendersRouteImport } from './routes/_authenticated/tenders'
-import { Route as AuthenticatedTeamManagerRouteImport } from './routes/_authenticated/team-manager'
-import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
 import { Route as AuthenticatedSportsMedicineRouteImport } from './routes/_authenticated/sports-medicine'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
@@ -44,7 +42,6 @@ import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
-import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedCashReconciliationRouteImport } from './routes/_authenticated/cash-reconciliation'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/beds'
@@ -107,17 +104,6 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
 const AuthenticatedTendersRoute = AuthenticatedTendersRouteImport.update({
   id: '/tenders',
   path: '/tenders',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTeamManagerRoute =
-  AuthenticatedTeamManagerRouteImport.update({
-    id: '/team-manager',
-    path: '/team-manager',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
-  id: '/team',
-  path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedStoreRoute = AuthenticatedStoreRouteImport.update({
@@ -256,11 +242,6 @@ const AuthenticatedControlledDrugsRoute =
     path: '/controlled-drugs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
-  id: '/coach',
-  path: '/coach',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedCashReconciliationRoute =
   AuthenticatedCashReconciliationRouteImport.update({
     id: '/cash-reconciliation',
@@ -439,7 +420,6 @@ export interface FileRoutesByFullPath {
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
-  '/coach': typeof AuthenticatedCoachRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -466,8 +446,6 @@ export interface FileRoutesByFullPath {
   '/sports': typeof AuthenticatedSportsRoute
   '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
-  '/team': typeof AuthenticatedTeamRoute
-  '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
@@ -505,7 +483,6 @@ export interface FileRoutesByTo {
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
-  '/coach': typeof AuthenticatedCoachRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -532,8 +509,6 @@ export interface FileRoutesByTo {
   '/sports': typeof AuthenticatedSportsRoute
   '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
-  '/team': typeof AuthenticatedTeamRoute
-  '/team-manager': typeof AuthenticatedTeamManagerRoute
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
@@ -573,7 +548,6 @@ export interface FileRoutesById {
   '/_authenticated/beds': typeof AuthenticatedBedsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
-  '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -600,8 +574,6 @@ export interface FileRoutesById {
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
   '/_authenticated/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/_authenticated/store': typeof AuthenticatedStoreRoute
-  '/_authenticated/team': typeof AuthenticatedTeamRoute
-  '/_authenticated/team-manager': typeof AuthenticatedTeamManagerRoute
   '/_authenticated/tenders': typeof AuthenticatedTendersRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
@@ -641,7 +613,6 @@ export interface FileRouteTypes {
     | '/beds'
     | '/billing'
     | '/cash-reconciliation'
-    | '/coach'
     | '/controlled-drugs'
     | '/credit-notes'
     | '/dashboard'
@@ -668,8 +639,6 @@ export interface FileRouteTypes {
     | '/sports'
     | '/sports-medicine'
     | '/store'
-    | '/team'
-    | '/team-manager'
     | '/tenders'
     | '/users'
     | '/visits'
@@ -707,7 +676,6 @@ export interface FileRouteTypes {
     | '/beds'
     | '/billing'
     | '/cash-reconciliation'
-    | '/coach'
     | '/controlled-drugs'
     | '/credit-notes'
     | '/dashboard'
@@ -734,8 +702,6 @@ export interface FileRouteTypes {
     | '/sports'
     | '/sports-medicine'
     | '/store'
-    | '/team'
-    | '/team-manager'
     | '/tenders'
     | '/users'
     | '/visits'
@@ -774,7 +740,6 @@ export interface FileRouteTypes {
     | '/_authenticated/beds'
     | '/_authenticated/billing'
     | '/_authenticated/cash-reconciliation'
-    | '/_authenticated/coach'
     | '/_authenticated/controlled-drugs'
     | '/_authenticated/credit-notes'
     | '/_authenticated/dashboard'
@@ -801,8 +766,6 @@ export interface FileRouteTypes {
     | '/_authenticated/sports'
     | '/_authenticated/sports-medicine'
     | '/_authenticated/store'
-    | '/_authenticated/team'
-    | '/_authenticated/team-manager'
     | '/_authenticated/tenders'
     | '/_authenticated/users'
     | '/_authenticated/visits'
@@ -884,20 +847,6 @@ declare module '@tanstack/react-router' {
       path: '/tenders'
       fullPath: '/tenders'
       preLoaderRoute: typeof AuthenticatedTendersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/team-manager': {
-      id: '/_authenticated/team-manager'
-      path: '/team-manager'
-      fullPath: '/team-manager'
-      preLoaderRoute: typeof AuthenticatedTeamManagerRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/team': {
-      id: '/_authenticated/team'
-      path: '/team'
-      fullPath: '/team'
-      preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/store': {
@@ -1080,13 +1029,6 @@ declare module '@tanstack/react-router' {
       path: '/controlled-drugs'
       fullPath: '/controlled-drugs'
       preLoaderRoute: typeof AuthenticatedControlledDrugsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/coach': {
-      id: '/_authenticated/coach'
-      path: '/coach'
-      fullPath: '/coach'
-      preLoaderRoute: typeof AuthenticatedCoachRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cash-reconciliation': {
@@ -1318,7 +1260,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBedsRoute: typeof AuthenticatedBedsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCashReconciliationRoute: typeof AuthenticatedCashReconciliationRoute
-  AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1345,8 +1286,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
   AuthenticatedSportsMedicineRoute: typeof AuthenticatedSportsMedicineRoute
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
-  AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
-  AuthenticatedTeamManagerRoute: typeof AuthenticatedTeamManagerRoute
   AuthenticatedTendersRoute: typeof AuthenticatedTendersRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
@@ -1380,7 +1319,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBedsRoute: AuthenticatedBedsRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCashReconciliationRoute: AuthenticatedCashReconciliationRoute,
-  AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1407,8 +1345,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
   AuthenticatedSportsMedicineRoute: AuthenticatedSportsMedicineRoute,
   AuthenticatedStoreRoute: AuthenticatedStoreRoute,
-  AuthenticatedTeamRoute: AuthenticatedTeamRoute,
-  AuthenticatedTeamManagerRoute: AuthenticatedTeamManagerRoute,
   AuthenticatedTendersRoute: AuthenticatedTendersRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
@@ -1445,13 +1381,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

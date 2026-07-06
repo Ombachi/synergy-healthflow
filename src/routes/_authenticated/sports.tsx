@@ -29,7 +29,8 @@ const STATUSES = ["active", "injured", "recovering"] as const;
 
 function Sports() {
   const { hasAnyRole } = useAuth();
-  const canWrite = hasAnyRole(["coach", "admin"]);
+  const canWrite = hasAnyRole(["admin"]);
+
 
   return (
     <CrudPage<Athlete>

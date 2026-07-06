@@ -6,7 +6,7 @@ const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "doctor@demo.local", full_name: "Dr. Dan Doctor", role: "doctor" },
   { email: "admin@demo.local", full_name: "Ada Admin", role: "admin" },
   { email: "store@demo.local", full_name: "Sam Store Keeper", role: "store_keeper" },
-  { email: "coach@demo.local", full_name: "Casey Coach", role: "coach" },
+  
   { email: "patient@demo.local", full_name: "Pat Patient", role: "patient" },
   { email: "pharmacist@demo.local", full_name: "Phil Pharmacist", role: "pharmacist" },
   { email: "lab@demo.local", full_name: "Lara Lab Scientist", role: "lab_tech" },

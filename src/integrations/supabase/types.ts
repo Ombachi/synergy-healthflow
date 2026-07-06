@@ -1078,42 +1078,6 @@ export type Database = {
           },
         ]
       }
-      coach_profiles: {
-        Row: {
-          bio: string | null
-          certification: string | null
-          created_at: string
-          id: string
-          sport: string | null
-          team: string | null
-          updated_at: string
-          user_id: string
-          years_experience: number | null
-        }
-        Insert: {
-          bio?: string | null
-          certification?: string | null
-          created_at?: string
-          id?: string
-          sport?: string | null
-          team?: string | null
-          updated_at?: string
-          user_id: string
-          years_experience?: number | null
-        }
-        Update: {
-          bio?: string | null
-          certification?: string | null
-          created_at?: string
-          id?: string
-          sport?: string | null
-          team?: string | null
-          updated_at?: string
-          user_id?: string
-          years_experience?: number | null
-        }
-        Relationships: []
-      }
       competitions: {
         Row: {
           created_at: string
@@ -1157,15 +1121,7 @@ export type Database = {
           updated_at?: string
           venue?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "competitions_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       consent_events: {
         Row: {
@@ -4816,87 +4772,6 @@ export type Database = {
         }
         Relationships: []
       }
-      team_members: {
-        Row: {
-          athlete_id: string
-          created_at: string
-          id: string
-          jersey_no: string | null
-          joined_at: string | null
-          left_at: string | null
-          position: string | null
-          team_id: string
-        }
-        Insert: {
-          athlete_id: string
-          created_at?: string
-          id?: string
-          jersey_no?: string | null
-          joined_at?: string | null
-          left_at?: string | null
-          position?: string | null
-          team_id: string
-        }
-        Update: {
-          athlete_id?: string
-          created_at?: string
-          id?: string
-          jersey_no?: string | null
-          joined_at?: string | null
-          left_at?: string | null
-          position?: string | null
-          team_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_members_athlete_id_fkey"
-            columns: ["athlete_id"]
-            isOneToOne: false
-            referencedRelation: "athletes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "team_members_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      teams: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          id: string
-          manager_id: string | null
-          name: string
-          season: string | null
-          sport: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          manager_id?: string | null
-          name: string
-          season?: string | null
-          sport?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          manager_id?: string | null
-          name?: string
-          season?: string | null
-          sport?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       tender_bids: {
         Row: {
           amount_cents: number
@@ -5075,13 +4950,6 @@ export type Database = {
             referencedRelation: "athletes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "training_plans_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
         ]
       }
       training_sessions: {
@@ -5124,13 +4992,6 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "training_plans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_sessions_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -5843,6 +5704,14 @@ export type Database = {
           _visit: string
         }
         Returns: undefined
+      }
+      admit_patient: {
+        Args: { _reason?: string; _visit_id: string; _ward_id: string }
+        Returns: {
+          admission_id: string
+          bed_code: string
+          bed_id: string
+        }[]
       }
       approve_credit_note: {
         Args: {

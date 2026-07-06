@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ClipboardCheck, ClipboardList, FlaskConical, Package, Pill, Receipt, ScanLine, Shield, ShoppingCart, Users, Warehouse, Apple, Bandage, Dumbbell, Trophy, CalendarClock } from "lucide-react";
+import { Activity, ClipboardCheck, ClipboardList, FlaskConical, Package, Pill, Receipt, ScanLine, Shield, ShoppingCart, Users, Warehouse, Apple, Bandage, CalendarClock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { ROLE_HOME } from "@/lib/role-permissions";
@@ -48,8 +48,6 @@ function AdminAnalytics({ name }: { name: string | null }) {
         <DeptLink dept="billing"><BillingCard /></DeptLink>
         <DeptLink dept="insurance"><InsuranceCard /></DeptLink>
         <DeptLink dept="sports"><SportsCard /></DeptLink>
-        <DeptLink dept="coach"><CoachCard /></DeptLink>
-        <DeptLink dept="team-manager"><TeamMgrCard /></DeptLink>
         <DeptLink dept="physio"><PhysioCard /></DeptLink>
         <DeptLink dept="nutrition"><NutritionCard /></DeptLink>
         <DeptLink dept="inventory"><InventoryCard /></DeptLink>
@@ -230,26 +228,6 @@ function SportsCard() {
     <Stat label="Roster" value={athletes.data ?? "—"} />
     <Stat label="Injured" value={injured.data ?? "—"} />
     <Stat label="Cleared" value={cleared.data ?? "—"} />
-  </Card>;
-}
-function CoachCard() {
-  const sessions = useCountRange("training_sessions", "created_at", startOfWeek());
-  const plans = useCountRange("training_plans", "created_at", null);
-  const attendance = useCountRange("attendance", "recorded_at", startOfWeek());
-  return <Card title="Coach" icon={Dumbbell} color="text-orange-500">
-    <Stat label="Sessions/wk" value={sessions.data ?? "—"} />
-    <Stat label="Plans" value={plans.data ?? "—"} />
-    <Stat label="Attendance" value={attendance.data ?? "—"} />
-  </Card>;
-}
-function TeamMgrCard() {
-  const teams = useCountRange("teams", "created_at", null);
-  const members = useCountRange("team_members", "created_at", null);
-  const comps = useCountRange("competitions", "created_at", startOfMonth());
-  return <Card title="Team Manager" icon={Trophy} color="text-yellow-500">
-    <Stat label="Teams" value={teams.data ?? "—"} />
-    <Stat label="Members" value={members.data ?? "—"} />
-    <Stat label="Comps/mo" value={comps.data ?? "—"} />
   </Card>;
 }
 function PhysioCard() {

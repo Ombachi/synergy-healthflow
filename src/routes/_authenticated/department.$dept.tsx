@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/department/$dept")({
 
 type DeptKey =
   | "appointments" | "reception" | "lab" | "pharmacy" | "radiology"
-  | "billing" | "insurance" | "sports" | "coach" | "team-manager"
+  | "billing" | "insurance" | "sports"
   | "physio" | "nutrition" | "inventory" | "store" | "procurement";
 
 const TITLES: Record<DeptKey, string> = {
@@ -23,8 +23,6 @@ const TITLES: Record<DeptKey, string> = {
   billing: "Billing",
   insurance: "Insurance",
   sports: "Sports & Athletes",
-  coach: "Coach",
-  "team-manager": "Team Manager",
   physio: "Physiotherapy",
   nutrition: "Nutrition",
   inventory: "Inventory",
@@ -47,8 +45,6 @@ const SUMMARY: Record<DeptKey, SummaryConfig> = {
   billing: { table: "invoices", dateCol: "created_at", pending: ["draft", "issued", "partial"], approved: ["paid"] },
   insurance: { table: "insurance_claims", dateCol: "created_at", pending: ["submitted"], approved: ["approved"] },
   sports: { table: "athletes", dateCol: "created_at", pending: ["injured"], approved: ["cleared"] },
-  coach: { table: "training_plans", dateCol: "created_at", pending: ["draft"], approved: ["active", "completed"] },
-  "team-manager": { table: "teams", dateCol: "created_at", pending: [], approved: [] },
   physio: { table: "treatment_plans", dateCol: "created_at", pending: [], approved: [] },
   nutrition: { table: "nutrition_plans", dateCol: "created_at", pending: [], approved: [] },
   inventory: { table: "inventory_items", dateCol: "created_at", pending: [], approved: [] },
@@ -154,8 +150,6 @@ function DeptMetrics({ dept }: { dept: DeptKey }) {
     case "appointments": return <AppointmentsMetrics />;
     case "reception": return <ReceptionMetrics />;
     case "sports": return <SportsMetrics />;
-    case "coach": return <CoachMetrics />;
-    case "team-manager": return <TeamMgrMetrics />;
     case "physio": return <PhysioMetrics />;
     case "nutrition": return <NutritionMetrics />;
     case "inventory": return <InventoryMetrics />;
