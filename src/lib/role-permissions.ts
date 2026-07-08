@@ -16,7 +16,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Clinical — reception/nursing open visits; doctors/therapists continue consultations.
   "/visits": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
   "/lab": ["lab_tech"],
+  "/lab-order": ["doctor", "physio", "nurse"],
   "/pharmacy": ["pharmacist"],
+  "/prescribe": ["doctor", "physio", "pharmacist"],
   "/radiology": ["radiologist"],
 
   // Billing & insurance
