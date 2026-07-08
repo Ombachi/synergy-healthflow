@@ -36,6 +36,7 @@ import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLeaveInboxRouteImport } from './routes/_authenticated/leave-inbox'
 import { Route as AuthenticatedLabTemplatesRouteImport } from './routes/_authenticated/lab-templates'
+import { Route as AuthenticatedLabOrderRouteImport } from './routes/_authenticated/lab-order'
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
@@ -210,6 +211,11 @@ const AuthenticatedLabTemplatesRoute =
     path: '/lab-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLabOrderRoute = AuthenticatedLabOrderRouteImport.update({
+  id: '/lab-order',
+  path: '/lab-order',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLabRoute = AuthenticatedLabRouteImport.update({
   id: '/lab',
   path: '/lab',
@@ -426,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
+  '/lab-order': typeof AuthenticatedLabOrderRoute
   '/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/me': typeof AuthenticatedMeRoute
@@ -489,6 +496,7 @@ export interface FileRoutesByTo {
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
+  '/lab-order': typeof AuthenticatedLabOrderRoute
   '/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/me': typeof AuthenticatedMeRoute
@@ -554,6 +562,7 @@ export interface FileRoutesById {
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
+  '/_authenticated/lab-order': typeof AuthenticatedLabOrderRoute
   '/_authenticated/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/_authenticated/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -619,6 +628,7 @@ export interface FileRouteTypes {
     | '/insurance'
     | '/inventory'
     | '/lab'
+    | '/lab-order'
     | '/lab-templates'
     | '/leave-inbox'
     | '/me'
@@ -682,6 +692,7 @@ export interface FileRouteTypes {
     | '/insurance'
     | '/inventory'
     | '/lab'
+    | '/lab-order'
     | '/lab-templates'
     | '/leave-inbox'
     | '/me'
@@ -746,6 +757,7 @@ export interface FileRouteTypes {
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
+    | '/_authenticated/lab-order'
     | '/_authenticated/lab-templates'
     | '/_authenticated/leave-inbox'
     | '/_authenticated/me'
@@ -987,6 +999,13 @@ declare module '@tanstack/react-router' {
       path: '/lab-templates'
       fullPath: '/lab-templates'
       preLoaderRoute: typeof AuthenticatedLabTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lab-order': {
+      id: '/_authenticated/lab-order'
+      path: '/lab-order'
+      fullPath: '/lab-order'
+      preLoaderRoute: typeof AuthenticatedLabOrderRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lab': {
@@ -1266,6 +1285,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
+  AuthenticatedLabOrderRoute: typeof AuthenticatedLabOrderRoute
   AuthenticatedLabTemplatesRoute: typeof AuthenticatedLabTemplatesRoute
   AuthenticatedLeaveInboxRoute: typeof AuthenticatedLeaveInboxRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -1325,6 +1345,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,
+  AuthenticatedLabOrderRoute: AuthenticatedLabOrderRoute,
   AuthenticatedLabTemplatesRoute: AuthenticatedLabTemplatesRoute,
   AuthenticatedLeaveInboxRoute: AuthenticatedLeaveInboxRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
