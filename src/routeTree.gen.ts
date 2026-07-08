@@ -27,6 +27,7 @@ import { Route as AuthenticatedReceptionRouteImport } from './routes/_authentica
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
 import { Route as AuthenticatedProcurementRouteImport } from './routes/_authenticated/procurement'
+import { Route as AuthenticatedPrescribeRouteImport } from './routes/_authenticated/prescribe'
 import { Route as AuthenticatedPreauthRouteImport } from './routes/_authenticated/preauth'
 import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
@@ -36,6 +37,7 @@ import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLeaveInboxRouteImport } from './routes/_authenticated/leave-inbox'
 import { Route as AuthenticatedLabTemplatesRouteImport } from './routes/_authenticated/lab-templates'
+import { Route as AuthenticatedLabOrderRouteImport } from './routes/_authenticated/lab-order'
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
@@ -164,6 +166,11 @@ const AuthenticatedProcurementRoute =
     path: '/procurement',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPrescribeRoute = AuthenticatedPrescribeRouteImport.update({
+  id: '/prescribe',
+  path: '/prescribe',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPreauthRoute = AuthenticatedPreauthRouteImport.update({
   id: '/preauth',
   path: '/preauth',
@@ -210,6 +217,11 @@ const AuthenticatedLabTemplatesRoute =
     path: '/lab-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLabOrderRoute = AuthenticatedLabOrderRouteImport.update({
+  id: '/lab-order',
+  path: '/lab-order',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLabRoute = AuthenticatedLabRouteImport.update({
   id: '/lab',
   path: '/lab',
@@ -426,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
+  '/lab-order': typeof AuthenticatedLabOrderRoute
   '/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/me': typeof AuthenticatedMeRoute
@@ -435,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/preauth': typeof AuthenticatedPreauthRoute
+  '/prescribe': typeof AuthenticatedPrescribeRoute
   '/procurement': typeof AuthenticatedProcurementRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
@@ -489,6 +503,7 @@ export interface FileRoutesByTo {
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
+  '/lab-order': typeof AuthenticatedLabOrderRoute
   '/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/me': typeof AuthenticatedMeRoute
@@ -498,6 +513,7 @@ export interface FileRoutesByTo {
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/preauth': typeof AuthenticatedPreauthRoute
+  '/prescribe': typeof AuthenticatedPrescribeRoute
   '/procurement': typeof AuthenticatedProcurementRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
@@ -554,6 +570,7 @@ export interface FileRoutesById {
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
+  '/_authenticated/lab-order': typeof AuthenticatedLabOrderRoute
   '/_authenticated/lab-templates': typeof AuthenticatedLabTemplatesRoute
   '/_authenticated/leave-inbox': typeof AuthenticatedLeaveInboxRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -563,6 +580,7 @@ export interface FileRoutesById {
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
   '/_authenticated/physio': typeof AuthenticatedPhysioRoute
   '/_authenticated/preauth': typeof AuthenticatedPreauthRoute
+  '/_authenticated/prescribe': typeof AuthenticatedPrescribeRoute
   '/_authenticated/procurement': typeof AuthenticatedProcurementRoute
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
@@ -619,6 +637,7 @@ export interface FileRouteTypes {
     | '/insurance'
     | '/inventory'
     | '/lab'
+    | '/lab-order'
     | '/lab-templates'
     | '/leave-inbox'
     | '/me'
@@ -628,6 +647,7 @@ export interface FileRouteTypes {
     | '/pharmacy'
     | '/physio'
     | '/preauth'
+    | '/prescribe'
     | '/procurement'
     | '/queue'
     | '/radiology'
@@ -682,6 +702,7 @@ export interface FileRouteTypes {
     | '/insurance'
     | '/inventory'
     | '/lab'
+    | '/lab-order'
     | '/lab-templates'
     | '/leave-inbox'
     | '/me'
@@ -691,6 +712,7 @@ export interface FileRouteTypes {
     | '/pharmacy'
     | '/physio'
     | '/preauth'
+    | '/prescribe'
     | '/procurement'
     | '/queue'
     | '/radiology'
@@ -746,6 +768,7 @@ export interface FileRouteTypes {
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
+    | '/_authenticated/lab-order'
     | '/_authenticated/lab-templates'
     | '/_authenticated/leave-inbox'
     | '/_authenticated/me'
@@ -755,6 +778,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pharmacy'
     | '/_authenticated/physio'
     | '/_authenticated/preauth'
+    | '/_authenticated/prescribe'
     | '/_authenticated/procurement'
     | '/_authenticated/queue'
     | '/_authenticated/radiology'
@@ -926,6 +950,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/prescribe': {
+      id: '/_authenticated/prescribe'
+      path: '/prescribe'
+      fullPath: '/prescribe'
+      preLoaderRoute: typeof AuthenticatedPrescribeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/preauth': {
       id: '/_authenticated/preauth'
       path: '/preauth'
@@ -987,6 +1018,13 @@ declare module '@tanstack/react-router' {
       path: '/lab-templates'
       fullPath: '/lab-templates'
       preLoaderRoute: typeof AuthenticatedLabTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lab-order': {
+      id: '/_authenticated/lab-order'
+      path: '/lab-order'
+      fullPath: '/lab-order'
+      preLoaderRoute: typeof AuthenticatedLabOrderRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lab': {
@@ -1266,6 +1304,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
+  AuthenticatedLabOrderRoute: typeof AuthenticatedLabOrderRoute
   AuthenticatedLabTemplatesRoute: typeof AuthenticatedLabTemplatesRoute
   AuthenticatedLeaveInboxRoute: typeof AuthenticatedLeaveInboxRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -1275,6 +1314,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
   AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
   AuthenticatedPreauthRoute: typeof AuthenticatedPreauthRoute
+  AuthenticatedPrescribeRoute: typeof AuthenticatedPrescribeRoute
   AuthenticatedProcurementRoute: typeof AuthenticatedProcurementRoute
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
@@ -1325,6 +1365,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,
+  AuthenticatedLabOrderRoute: AuthenticatedLabOrderRoute,
   AuthenticatedLabTemplatesRoute: AuthenticatedLabTemplatesRoute,
   AuthenticatedLeaveInboxRoute: AuthenticatedLeaveInboxRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
@@ -1334,6 +1375,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
   AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
   AuthenticatedPreauthRoute: AuthenticatedPreauthRoute,
+  AuthenticatedPrescribeRoute: AuthenticatedPrescribeRoute,
   AuthenticatedProcurementRoute: AuthenticatedProcurementRoute,
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
