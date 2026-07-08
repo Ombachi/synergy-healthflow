@@ -27,6 +27,7 @@ import { Route as AuthenticatedReceptionRouteImport } from './routes/_authentica
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
 import { Route as AuthenticatedProcurementRouteImport } from './routes/_authenticated/procurement'
+import { Route as AuthenticatedPrescribeRouteImport } from './routes/_authenticated/prescribe'
 import { Route as AuthenticatedPreauthRouteImport } from './routes/_authenticated/preauth'
 import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
@@ -165,6 +166,11 @@ const AuthenticatedProcurementRoute =
     path: '/procurement',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPrescribeRoute = AuthenticatedPrescribeRouteImport.update({
+  id: '/prescribe',
+  path: '/prescribe',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPreauthRoute = AuthenticatedPreauthRouteImport.update({
   id: '/preauth',
   path: '/preauth',
@@ -442,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/preauth': typeof AuthenticatedPreauthRoute
+  '/prescribe': typeof AuthenticatedPrescribeRoute
   '/procurement': typeof AuthenticatedProcurementRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
@@ -506,6 +513,7 @@ export interface FileRoutesByTo {
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/preauth': typeof AuthenticatedPreauthRoute
+  '/prescribe': typeof AuthenticatedPrescribeRoute
   '/procurement': typeof AuthenticatedProcurementRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
@@ -572,6 +580,7 @@ export interface FileRoutesById {
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
   '/_authenticated/physio': typeof AuthenticatedPhysioRoute
   '/_authenticated/preauth': typeof AuthenticatedPreauthRoute
+  '/_authenticated/prescribe': typeof AuthenticatedPrescribeRoute
   '/_authenticated/procurement': typeof AuthenticatedProcurementRoute
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
@@ -638,6 +647,7 @@ export interface FileRouteTypes {
     | '/pharmacy'
     | '/physio'
     | '/preauth'
+    | '/prescribe'
     | '/procurement'
     | '/queue'
     | '/radiology'
@@ -702,6 +712,7 @@ export interface FileRouteTypes {
     | '/pharmacy'
     | '/physio'
     | '/preauth'
+    | '/prescribe'
     | '/procurement'
     | '/queue'
     | '/radiology'
@@ -767,6 +778,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pharmacy'
     | '/_authenticated/physio'
     | '/_authenticated/preauth'
+    | '/_authenticated/prescribe'
     | '/_authenticated/procurement'
     | '/_authenticated/queue'
     | '/_authenticated/radiology'
@@ -936,6 +948,13 @@ declare module '@tanstack/react-router' {
       path: '/procurement'
       fullPath: '/procurement'
       preLoaderRoute: typeof AuthenticatedProcurementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/prescribe': {
+      id: '/_authenticated/prescribe'
+      path: '/prescribe'
+      fullPath: '/prescribe'
+      preLoaderRoute: typeof AuthenticatedPrescribeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/preauth': {
@@ -1295,6 +1314,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
   AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
   AuthenticatedPreauthRoute: typeof AuthenticatedPreauthRoute
+  AuthenticatedPrescribeRoute: typeof AuthenticatedPrescribeRoute
   AuthenticatedProcurementRoute: typeof AuthenticatedProcurementRoute
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
@@ -1355,6 +1375,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
   AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
   AuthenticatedPreauthRoute: AuthenticatedPreauthRoute,
+  AuthenticatedPrescribeRoute: AuthenticatedPrescribeRoute,
   AuthenticatedProcurementRoute: AuthenticatedProcurementRoute,
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
