@@ -50,7 +50,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/preauth": ["insurance_officer", "billing_officer"],
   "/sla": [],
   "/sports-medicine": ["physio"],
-  "/anti-doping": [],
+  "/anti-doping": ["physio"],
 
   // Orders (stock requests live globally for lab/pharmacy/store)
   "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper"],
