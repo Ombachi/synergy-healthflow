@@ -97,6 +97,21 @@ const items: Item[] = [
 
   // Patient self-service assessments
   { title: "Assessments", url: "/assessments", icon: ClipboardList, badge: undefined },
+
+  // ========= HAIMS =========
+  { title: "HAIMS · Executive", url: "/haims", icon: Gauge, badge: undefined },
+  { title: "Admission requests", url: "/admissions", icon: ClipboardCheck, badge: undefined },
+  { title: "Nursing station", url: "/nursing-station", icon: HeartPulse, badge: undefined },
+  { title: "Ward rounds", url: "/ward-rounds", icon: Stethoscope, badge: undefined },
+  { title: "eMAR", url: "/emar", icon: Pill, badge: undefined },
+  { title: "Clinical monitoring", url: "/monitoring", icon: Activity, badge: undefined },
+  { title: "Care plans", url: "/care-plans", icon: ClipboardList, badge: undefined },
+  { title: "Inpatient procedures", url: "/inpatient-procedures", icon: Bandage, badge: undefined },
+  { title: "Allied health", url: "/allied-health", icon: HeartPulse, badge: undefined },
+  { title: "Infection control", url: "/infection-control", icon: ShieldAlert, badge: undefined },
+  { title: "Surgery / theatre", url: "/surgery", icon: Bandage, badge: undefined },
+  { title: "Discharge planning", url: "/discharge-planning", icon: LogOut, badge: undefined },
+  { title: "Ward analytics", url: "/ward-analytics", icon: BarChart3, badge: undefined },
 ];
 
 
