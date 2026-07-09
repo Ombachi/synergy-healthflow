@@ -48,7 +48,22 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/roster": [],
 
   // Removed from clinical-staff nav — kept for admins only.
-  "/beds": [],
+  "/beds": ["nurse", "doctor", "receptionist"],
+
+  // ========= HAIMS (Hospital Admission & Inpatient Management) =========
+  "/haims": ["doctor", "nurse", "physio", "nutritionist", "pharmacist", "billing_officer"],
+  "/admissions": ["receptionist", "nurse", "doctor"],
+  "/nursing-station": ["nurse", "doctor"],
+  "/ward-rounds": ["doctor", "physio", "nurse"],
+  "/emar": ["nurse", "pharmacist", "doctor"],
+  "/monitoring": ["nurse", "doctor", "physio"],
+  "/care-plans": ["nurse", "doctor", "physio", "nutritionist"],
+  "/inpatient-procedures": ["doctor", "nurse", "physio"],
+  "/allied-health": ["physio", "nutritionist", "doctor"],
+  "/infection-control": ["doctor", "nurse"],
+  "/surgery": ["doctor", "nurse"],
+  "/discharge-planning": ["doctor", "nurse", "billing_officer"],
+  "/ward-analytics": ["doctor", "nurse"],
   "/preauth": ["insurance_officer", "billing_officer"],
   "/sla": [],
   "/sports-medicine": ["physio"],

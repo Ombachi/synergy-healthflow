@@ -236,45 +236,140 @@ export type Database = {
         }
         Relationships: []
       }
+      admission_requests: {
+        Row: {
+          acuity: string | null
+          admission_id: string | null
+          created_at: string
+          id: string
+          isolation_required: boolean
+          notes: string | null
+          patient_id: string
+          preferred_ward_id: string | null
+          reason: string
+          requested_bed_type: string
+          requested_by: string | null
+          requesting_consultant: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          acuity?: string | null
+          admission_id?: string | null
+          created_at?: string
+          id?: string
+          isolation_required?: boolean
+          notes?: string | null
+          patient_id: string
+          preferred_ward_id?: string | null
+          reason: string
+          requested_bed_type?: string
+          requested_by?: string | null
+          requesting_consultant?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          acuity?: string | null
+          admission_id?: string | null
+          created_at?: string
+          id?: string
+          isolation_required?: boolean
+          notes?: string | null
+          patient_id?: string
+          preferred_ward_id?: string | null
+          reason?: string
+          requested_bed_type?: string
+          requested_by?: string | null
+          requesting_consultant?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admission_requests_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admission_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admission_requests_preferred_ward_id_fkey"
+            columns: ["preferred_ward_id"]
+            isOneToOne: false
+            referencedRelation: "mv_kpi_occupancy"
+            referencedColumns: ["ward_id"]
+          },
+          {
+            foreignKeyName: "admission_requests_preferred_ward_id_fkey"
+            columns: ["preferred_ward_id"]
+            isOneToOne: false
+            referencedRelation: "wards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admissions: {
         Row: {
+          acuity: string | null
           admission_reason: string | null
           admitted_at: string
           admitted_by: string | null
+          admitting_consultant: string | null
           bed_id: string | null
           created_at: string
           discharged_at: string | null
           discharged_by: string | null
+          expected_discharge_date: string | null
           id: string
+          isolation_required: boolean
           patient_id: string
+          primary_diagnosis: string | null
           status: string
           updated_at: string
           visit_id: string | null
         }
         Insert: {
+          acuity?: string | null
           admission_reason?: string | null
           admitted_at?: string
           admitted_by?: string | null
+          admitting_consultant?: string | null
           bed_id?: string | null
           created_at?: string
           discharged_at?: string | null
           discharged_by?: string | null
+          expected_discharge_date?: string | null
           id?: string
+          isolation_required?: boolean
           patient_id: string
+          primary_diagnosis?: string | null
           status?: string
           updated_at?: string
           visit_id?: string | null
         }
         Update: {
+          acuity?: string | null
           admission_reason?: string | null
           admitted_at?: string
           admitted_by?: string | null
+          admitting_consultant?: string | null
           bed_id?: string | null
           created_at?: string
           discharged_at?: string | null
           discharged_by?: string | null
+          expected_discharge_date?: string | null
           id?: string
+          isolation_required?: boolean
           patient_id?: string
+          primary_diagnosis?: string | null
           status?: string
           updated_at?: string
           visit_id?: string | null
@@ -299,6 +394,50 @@ export type Database = {
             columns: ["visit_id"]
             isOneToOne: false
             referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      allied_health_notes: {
+        Row: {
+          admission_id: string
+          assessment: string | null
+          clinician_id: string | null
+          created_at: string
+          discipline: string
+          id: string
+          intervention: string | null
+          plan: string | null
+          session_at: string
+        }
+        Insert: {
+          admission_id: string
+          assessment?: string | null
+          clinician_id?: string | null
+          created_at?: string
+          discipline: string
+          id?: string
+          intervention?: string | null
+          plan?: string | null
+          session_at?: string
+        }
+        Update: {
+          admission_id?: string
+          assessment?: string | null
+          clinician_id?: string | null
+          created_at?: string
+          discipline?: string
+          id?: string
+          intervention?: string | null
+          plan?: string | null
+          session_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "allied_health_notes_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
             referencedColumns: ["id"]
           },
         ]
@@ -752,27 +891,33 @@ export type Database = {
       }
       beds: {
         Row: {
+          bed_type: string
           code: string
           created_at: string
           id: string
+          is_isolation: boolean
           notes: string | null
           status: string
           updated_at: string
           ward_id: string
         }
         Insert: {
+          bed_type?: string
           code: string
           created_at?: string
           id?: string
+          is_isolation?: boolean
           notes?: string | null
           status?: string
           updated_at?: string
           ward_id: string
         }
         Update: {
+          bed_type?: string
           code?: string
           created_at?: string
           id?: string
+          is_isolation?: boolean
           notes?: string | null
           status?: string
           updated_at?: string
@@ -892,6 +1037,88 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      care_plan_goals: {
+        Row: {
+          care_plan_id: string
+          created_at: string
+          goal: string
+          id: string
+          intervention: string | null
+          status: string
+          target_date: string | null
+        }
+        Insert: {
+          care_plan_id: string
+          created_at?: string
+          goal: string
+          id?: string
+          intervention?: string | null
+          status?: string
+          target_date?: string | null
+        }
+        Update: {
+          care_plan_id?: string
+          created_at?: string
+          goal?: string
+          id?: string
+          intervention?: string | null
+          status?: string
+          target_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_plan_goals_care_plan_id_fkey"
+            columns: ["care_plan_id"]
+            isOneToOne: false
+            referencedRelation: "care_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_plans: {
+        Row: {
+          admission_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          plan_type: string
+          problem: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admission_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          plan_type: string
+          problem?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admission_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          plan_type?: string
+          problem?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_plans_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cash_sessions: {
         Row: {
@@ -1725,6 +1952,50 @@ export type Database = {
         }
         Relationships: []
       }
+      fluid_balance_entries: {
+        Row: {
+          admission_id: string
+          created_at: string
+          direction: string
+          id: string
+          notes: string | null
+          recorded_at: string
+          recorded_by: string | null
+          route: string
+          volume_ml: number
+        }
+        Insert: {
+          admission_id: string
+          created_at?: string
+          direction: string
+          id?: string
+          notes?: string | null
+          recorded_at?: string
+          recorded_by?: string | null
+          route: string
+          volume_ml: number
+        }
+        Update: {
+          admission_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          notes?: string | null
+          recorded_at?: string
+          recorded_by?: string | null
+          route?: string
+          volume_ml?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fluid_balance_entries_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goods_received_notes: {
         Row: {
           created_at: string
@@ -2019,6 +2290,53 @@ export type Database = {
           },
         ]
       }
+      infection_control_alerts: {
+        Row: {
+          admission_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_hospital_acquired: boolean
+          notes: string | null
+          onset_date: string | null
+          organism: string | null
+          precaution_type: string
+          status: string
+        }
+        Insert: {
+          admission_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_hospital_acquired?: boolean
+          notes?: string | null
+          onset_date?: string | null
+          organism?: string | null
+          precaution_type: string
+          status?: string
+        }
+        Update: {
+          admission_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_hospital_acquired?: boolean
+          notes?: string | null
+          onset_date?: string | null
+          organism?: string | null
+          precaution_type?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "infection_control_alerts_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       injuries: {
         Row: {
           athlete_id: string
@@ -2065,6 +2383,62 @@ export type Database = {
             columns: ["athlete_id"]
             isOneToOne: false
             referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inpatient_procedures: {
+        Row: {
+          admission_id: string
+          complications: string | null
+          consent_obtained: boolean
+          created_at: string
+          id: string
+          location: string | null
+          notes: string | null
+          performed_at: string | null
+          performed_by: string | null
+          procedure_name: string
+          scheduled_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admission_id: string
+          complications?: string | null
+          consent_obtained?: boolean
+          created_at?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          performed_at?: string | null
+          performed_by?: string | null
+          procedure_name: string
+          scheduled_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admission_id?: string
+          complications?: string | null
+          consent_obtained?: boolean
+          created_at?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          performed_at?: string | null
+          performed_by?: string | null
+          procedure_name?: string
+          scheduled_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inpatient_procedures_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
             referencedColumns: ["id"]
           },
         ]
@@ -3102,6 +3476,112 @@ export type Database = {
         }
         Relationships: []
       }
+      mar_administrations: {
+        Row: {
+          administered_at: string
+          administered_by: string | null
+          created_at: string
+          dose_given: string | null
+          id: string
+          medication_order_id: string
+          notes: string | null
+          reason_not_given: string | null
+          status: string
+          witness_id: string | null
+        }
+        Insert: {
+          administered_at?: string
+          administered_by?: string | null
+          created_at?: string
+          dose_given?: string | null
+          id?: string
+          medication_order_id: string
+          notes?: string | null
+          reason_not_given?: string | null
+          status?: string
+          witness_id?: string | null
+        }
+        Update: {
+          administered_at?: string
+          administered_by?: string | null
+          created_at?: string
+          dose_given?: string | null
+          id?: string
+          medication_order_id?: string
+          notes?: string | null
+          reason_not_given?: string | null
+          status?: string
+          witness_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mar_administrations_medication_order_id_fkey"
+            columns: ["medication_order_id"]
+            isOneToOne: false
+            referencedRelation: "medication_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medication_orders: {
+        Row: {
+          admission_id: string
+          created_at: string
+          dose: string
+          frequency: string
+          id: string
+          indication: string | null
+          medication: string
+          prescribed_by: string | null
+          prn: boolean
+          route: string
+          start_at: string
+          status: string
+          stop_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          admission_id: string
+          created_at?: string
+          dose: string
+          frequency: string
+          id?: string
+          indication?: string | null
+          medication: string
+          prescribed_by?: string | null
+          prn?: boolean
+          route: string
+          start_at?: string
+          status?: string
+          stop_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admission_id?: string
+          created_at?: string
+          dose?: string
+          frequency?: string
+          id?: string
+          indication?: string | null
+          medication?: string
+          prescribed_by?: string | null
+          prn?: boolean
+          route?: string
+          start_at?: string
+          status?: string
+          stop_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_orders_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_attachments: {
         Row: {
           created_at: string
@@ -4069,6 +4549,60 @@ export type Database = {
           },
         ]
       }
+      quality_events: {
+        Row: {
+          actions_taken: string | null
+          admission_id: string | null
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          occurred_at: string
+          patient_id: string | null
+          reported_by: string | null
+          severity: string
+        }
+        Insert: {
+          actions_taken?: string | null
+          admission_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_type: string
+          id?: string
+          occurred_at?: string
+          patient_id?: string | null
+          reported_by?: string | null
+          severity?: string
+        }
+        Update: {
+          actions_taken?: string | null
+          admission_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          occurred_at?: string
+          patient_id?: string | null
+          reported_by?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quality_events_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recovery_sessions: {
         Row: {
           created_at: string
@@ -4771,6 +5305,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      surgery_bookings: {
+        Row: {
+          admission_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string | null
+          procedure_name: string
+          scheduled_at: string
+          status: string
+          surgeon_id: string | null
+          theatre: string | null
+          updated_at: string
+        }
+        Insert: {
+          admission_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          procedure_name: string
+          scheduled_at: string
+          status?: string
+          surgeon_id?: string | null
+          theatre?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admission_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          procedure_name?: string
+          scheduled_at?: string
+          status?: string
+          surgeon_id?: string | null
+          theatre?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surgery_bookings_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "surgery_bookings_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tender_bids: {
         Row: {
@@ -5477,6 +6068,56 @@ export type Database = {
           },
         ]
       }
+      ward_rounds: {
+        Row: {
+          admission_id: string
+          assessment: string | null
+          created_at: string
+          id: string
+          objective: string | null
+          performed_by: string | null
+          plan: string | null
+          round_at: string
+          round_type: string
+          subjective: string | null
+          updated_at: string
+        }
+        Insert: {
+          admission_id: string
+          assessment?: string | null
+          created_at?: string
+          id?: string
+          objective?: string | null
+          performed_by?: string | null
+          plan?: string | null
+          round_at?: string
+          round_type?: string
+          subjective?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admission_id?: string
+          assessment?: string | null
+          created_at?: string
+          id?: string
+          objective?: string | null
+          performed_by?: string | null
+          plan?: string | null
+          round_at?: string
+          round_type?: string
+          subjective?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ward_rounds_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wards: {
         Row: {
           code: string | null
@@ -5506,6 +6147,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      warning_scores: {
+        Row: {
+          admission_id: string
+          components: Json
+          created_at: string
+          id: string
+          notes: string | null
+          risk_level: string | null
+          scale: string
+          scored_at: string
+          scored_by: string | null
+          total_score: number
+        }
+        Insert: {
+          admission_id: string
+          components?: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          risk_level?: string | null
+          scale: string
+          scored_at?: string
+          scored_by?: string | null
+          total_score: number
+        }
+        Update: {
+          admission_id?: string
+          components?: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          risk_level?: string | null
+          scale?: string
+          scored_at?: string
+          scored_by?: string | null
+          total_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warning_scores_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "admissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       writeoffs: {
         Row: {
