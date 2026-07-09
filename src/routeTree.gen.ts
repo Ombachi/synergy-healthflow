@@ -13,9 +13,12 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DisplayQueueRouteImport } from './routes/display.queue'
+import { Route as AuthenticatedWardRoundsRouteImport } from './routes/_authenticated/ward-rounds'
+import { Route as AuthenticatedWardAnalyticsRouteImport } from './routes/_authenticated/ward-analytics'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTendersRouteImport } from './routes/_authenticated/tenders'
+import { Route as AuthenticatedSurgeryRouteImport } from './routes/_authenticated/surgery'
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
 import { Route as AuthenticatedSportsMedicineRouteImport } from './routes/_authenticated/sports-medicine'
 import { Route as AuthenticatedSportsRouteImport } from './routes/_authenticated/sports'
@@ -32,6 +35,8 @@ import { Route as AuthenticatedPreauthRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
 import { Route as AuthenticatedNutritionRouteImport } from './routes/_authenticated/nutrition'
+import { Route as AuthenticatedNursingStationRouteImport } from './routes/_authenticated/nursing-station'
+import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
@@ -41,10 +46,16 @@ import { Route as AuthenticatedLabOrderRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
+import { Route as AuthenticatedInpatientProceduresRouteImport } from './routes/_authenticated/inpatient-procedures'
+import { Route as AuthenticatedInfectionControlRouteImport } from './routes/_authenticated/infection-control'
+import { Route as AuthenticatedHaimsRouteImport } from './routes/_authenticated/haims'
+import { Route as AuthenticatedEmarRouteImport } from './routes/_authenticated/emar'
+import { Route as AuthenticatedDischargePlanningRouteImport } from './routes/_authenticated/discharge-planning'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
 import { Route as AuthenticatedCashReconciliationRouteImport } from './routes/_authenticated/cash-reconciliation'
+import { Route as AuthenticatedCarePlansRouteImport } from './routes/_authenticated/care-plans'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedBedsRouteImport } from './routes/_authenticated/beds'
 import { Route as AuthenticatedAuditInventoryRouteImport } from './routes/_authenticated/audit-inventory'
@@ -54,6 +65,8 @@ import { Route as AuthenticatedAssessmentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
 import { Route as AuthenticatedAntiDopingRouteImport } from './routes/_authenticated/anti-doping'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
+import { Route as AuthenticatedAlliedHealthRouteImport } from './routes/_authenticated/allied-health'
+import { Route as AuthenticatedAdmissionsRouteImport } from './routes/_authenticated/admissions'
 import { Route as AuthenticatedAdminKpiRouteImport } from './routes/_authenticated/admin-kpi'
 import { Route as VerifyRxRxIdRouteImport } from './routes/verify.rx.$rxId'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
@@ -93,6 +106,17 @@ const DisplayQueueRoute = DisplayQueueRouteImport.update({
   path: '/display/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWardRoundsRoute = AuthenticatedWardRoundsRouteImport.update({
+  id: '/ward-rounds',
+  path: '/ward-rounds',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWardAnalyticsRoute =
+  AuthenticatedWardAnalyticsRouteImport.update({
+    id: '/ward-analytics',
+    path: '/ward-analytics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
   id: '/visits',
   path: '/visits',
@@ -106,6 +130,11 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
 const AuthenticatedTendersRoute = AuthenticatedTendersRouteImport.update({
   id: '/tenders',
   path: '/tenders',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSurgeryRoute = AuthenticatedSurgeryRouteImport.update({
+  id: '/surgery',
+  path: '/surgery',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedStoreRoute = AuthenticatedStoreRouteImport.update({
@@ -191,6 +220,17 @@ const AuthenticatedNutritionRoute = AuthenticatedNutritionRouteImport.update({
   path: '/nutrition',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNursingStationRoute =
+  AuthenticatedNursingStationRouteImport.update({
+    id: '/nursing-station',
+    path: '/nursing-station',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMonitoringRoute = AuthenticatedMonitoringRouteImport.update({
+  id: '/monitoring',
+  path: '/monitoring',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
@@ -237,6 +277,34 @@ const AuthenticatedInsuranceRoute = AuthenticatedInsuranceRouteImport.update({
   path: '/insurance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInpatientProceduresRoute =
+  AuthenticatedInpatientProceduresRouteImport.update({
+    id: '/inpatient-procedures',
+    path: '/inpatient-procedures',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInfectionControlRoute =
+  AuthenticatedInfectionControlRouteImport.update({
+    id: '/infection-control',
+    path: '/infection-control',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHaimsRoute = AuthenticatedHaimsRouteImport.update({
+  id: '/haims',
+  path: '/haims',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmarRoute = AuthenticatedEmarRouteImport.update({
+  id: '/emar',
+  path: '/emar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDischargePlanningRoute =
+  AuthenticatedDischargePlanningRouteImport.update({
+    id: '/discharge-planning',
+    path: '/discharge-planning',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -260,6 +328,11 @@ const AuthenticatedCashReconciliationRoute =
     path: '/cash-reconciliation',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCarePlansRoute = AuthenticatedCarePlansRouteImport.update({
+  id: '/care-plans',
+  path: '/care-plans',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -309,6 +382,17 @@ const AuthenticatedAnnouncementsRoute =
     path: '/announcements',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAlliedHealthRoute =
+  AuthenticatedAlliedHealthRouteImport.update({
+    id: '/allied-health',
+    path: '/allied-health',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdmissionsRoute = AuthenticatedAdmissionsRouteImport.update({
+  id: '/admissions',
+  path: '/admissions',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminKpiRoute = AuthenticatedAdminKpiRouteImport.update({
   id: '/admin-kpi',
   path: '/admin-kpi',
@@ -422,6 +506,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
+  '/admissions': typeof AuthenticatedAdmissionsRoute
+  '/allied-health': typeof AuthenticatedAlliedHealthRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
@@ -431,10 +517,16 @@ export interface FileRoutesByFullPath {
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/care-plans': typeof AuthenticatedCarePlansRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
+  '/emar': typeof AuthenticatedEmarRoute
+  '/haims': typeof AuthenticatedHaimsRoute
+  '/infection-control': typeof AuthenticatedInfectionControlRoute
+  '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -444,6 +536,8 @@ export interface FileRoutesByFullPath {
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
@@ -460,9 +554,12 @@ export interface FileRoutesByFullPath {
   '/sports': typeof AuthenticatedSportsRoute
   '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
+  '/surgery': typeof AuthenticatedSurgeryRoute
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/ward-analytics': typeof AuthenticatedWardAnalyticsRoute
+  '/ward-rounds': typeof AuthenticatedWardRoundsRoute
   '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
@@ -487,6 +584,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
+  '/admissions': typeof AuthenticatedAdmissionsRoute
+  '/allied-health': typeof AuthenticatedAlliedHealthRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
@@ -496,10 +595,16 @@ export interface FileRoutesByTo {
   '/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/beds': typeof AuthenticatedBedsRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/care-plans': typeof AuthenticatedCarePlansRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
+  '/emar': typeof AuthenticatedEmarRoute
+  '/haims': typeof AuthenticatedHaimsRoute
+  '/infection-control': typeof AuthenticatedInfectionControlRoute
+  '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -509,6 +614,8 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/physio': typeof AuthenticatedPhysioRoute
@@ -525,9 +632,12 @@ export interface FileRoutesByTo {
   '/sports': typeof AuthenticatedSportsRoute
   '/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/store': typeof AuthenticatedStoreRoute
+  '/surgery': typeof AuthenticatedSurgeryRoute
   '/tenders': typeof AuthenticatedTendersRoute
   '/users': typeof AuthenticatedUsersRoute
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/ward-analytics': typeof AuthenticatedWardAnalyticsRoute
+  '/ward-rounds': typeof AuthenticatedWardRoundsRoute
   '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
@@ -554,6 +664,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin-kpi': typeof AuthenticatedAdminKpiRoute
+  '/_authenticated/admissions': typeof AuthenticatedAdmissionsRoute
+  '/_authenticated/allied-health': typeof AuthenticatedAlliedHealthRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/anti-doping': typeof AuthenticatedAntiDopingRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
@@ -563,10 +675,16 @@ export interface FileRoutesById {
   '/_authenticated/audit-inventory': typeof AuthenticatedAuditInventoryRoute
   '/_authenticated/beds': typeof AuthenticatedBedsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
+  '/_authenticated/care-plans': typeof AuthenticatedCarePlansRoute
   '/_authenticated/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
   '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/discharge-planning': typeof AuthenticatedDischargePlanningRoute
+  '/_authenticated/emar': typeof AuthenticatedEmarRoute
+  '/_authenticated/haims': typeof AuthenticatedHaimsRoute
+  '/_authenticated/infection-control': typeof AuthenticatedInfectionControlRoute
+  '/_authenticated/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
@@ -576,6 +694,8 @@ export interface FileRoutesById {
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
+  '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
+  '/_authenticated/nursing-station': typeof AuthenticatedNursingStationRoute
   '/_authenticated/nutrition': typeof AuthenticatedNutritionRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
   '/_authenticated/physio': typeof AuthenticatedPhysioRoute
@@ -592,9 +712,12 @@ export interface FileRoutesById {
   '/_authenticated/sports': typeof AuthenticatedSportsRoute
   '/_authenticated/sports-medicine': typeof AuthenticatedSportsMedicineRoute
   '/_authenticated/store': typeof AuthenticatedStoreRoute
+  '/_authenticated/surgery': typeof AuthenticatedSurgeryRoute
   '/_authenticated/tenders': typeof AuthenticatedTendersRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
+  '/_authenticated/ward-analytics': typeof AuthenticatedWardAnalyticsRoute
+  '/_authenticated/ward-rounds': typeof AuthenticatedWardRoundsRoute
   '/display/queue': typeof DisplayQueueRoute
   '/_authenticated/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/_authenticated/admin/breaches': typeof AuthenticatedAdminBreachesRoute
@@ -621,6 +744,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin-kpi'
+    | '/admissions'
+    | '/allied-health'
     | '/announcements'
     | '/anti-doping'
     | '/appointments'
@@ -630,10 +755,16 @@ export interface FileRouteTypes {
     | '/audit-inventory'
     | '/beds'
     | '/billing'
+    | '/care-plans'
     | '/cash-reconciliation'
     | '/controlled-drugs'
     | '/credit-notes'
     | '/dashboard'
+    | '/discharge-planning'
+    | '/emar'
+    | '/haims'
+    | '/infection-control'
+    | '/inpatient-procedures'
     | '/insurance'
     | '/inventory'
     | '/lab'
@@ -643,6 +774,8 @@ export interface FileRouteTypes {
     | '/me'
     | '/medical'
     | '/messages'
+    | '/monitoring'
+    | '/nursing-station'
     | '/nutrition'
     | '/pharmacy'
     | '/physio'
@@ -659,9 +792,12 @@ export interface FileRouteTypes {
     | '/sports'
     | '/sports-medicine'
     | '/store'
+    | '/surgery'
     | '/tenders'
     | '/users'
     | '/visits'
+    | '/ward-analytics'
+    | '/ward-rounds'
     | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
@@ -686,6 +822,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin-kpi'
+    | '/admissions'
+    | '/allied-health'
     | '/announcements'
     | '/anti-doping'
     | '/appointments'
@@ -695,10 +833,16 @@ export interface FileRouteTypes {
     | '/audit-inventory'
     | '/beds'
     | '/billing'
+    | '/care-plans'
     | '/cash-reconciliation'
     | '/controlled-drugs'
     | '/credit-notes'
     | '/dashboard'
+    | '/discharge-planning'
+    | '/emar'
+    | '/haims'
+    | '/infection-control'
+    | '/inpatient-procedures'
     | '/insurance'
     | '/inventory'
     | '/lab'
@@ -708,6 +852,8 @@ export interface FileRouteTypes {
     | '/me'
     | '/medical'
     | '/messages'
+    | '/monitoring'
+    | '/nursing-station'
     | '/nutrition'
     | '/pharmacy'
     | '/physio'
@@ -724,9 +870,12 @@ export interface FileRouteTypes {
     | '/sports'
     | '/sports-medicine'
     | '/store'
+    | '/surgery'
     | '/tenders'
     | '/users'
     | '/visits'
+    | '/ward-analytics'
+    | '/ward-rounds'
     | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
@@ -752,6 +901,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin-kpi'
+    | '/_authenticated/admissions'
+    | '/_authenticated/allied-health'
     | '/_authenticated/announcements'
     | '/_authenticated/anti-doping'
     | '/_authenticated/appointments'
@@ -761,10 +912,16 @@ export interface FileRouteTypes {
     | '/_authenticated/audit-inventory'
     | '/_authenticated/beds'
     | '/_authenticated/billing'
+    | '/_authenticated/care-plans'
     | '/_authenticated/cash-reconciliation'
     | '/_authenticated/controlled-drugs'
     | '/_authenticated/credit-notes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/discharge-planning'
+    | '/_authenticated/emar'
+    | '/_authenticated/haims'
+    | '/_authenticated/infection-control'
+    | '/_authenticated/inpatient-procedures'
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
@@ -774,6 +931,8 @@ export interface FileRouteTypes {
     | '/_authenticated/me'
     | '/_authenticated/medical'
     | '/_authenticated/messages'
+    | '/_authenticated/monitoring'
+    | '/_authenticated/nursing-station'
     | '/_authenticated/nutrition'
     | '/_authenticated/pharmacy'
     | '/_authenticated/physio'
@@ -790,9 +949,12 @@ export interface FileRouteTypes {
     | '/_authenticated/sports'
     | '/_authenticated/sports-medicine'
     | '/_authenticated/store'
+    | '/_authenticated/surgery'
     | '/_authenticated/tenders'
     | '/_authenticated/users'
     | '/_authenticated/visits'
+    | '/_authenticated/ward-analytics'
+    | '/_authenticated/ward-rounds'
     | '/display/queue'
     | '/_authenticated/admin/access-reviews'
     | '/_authenticated/admin/breaches'
@@ -852,6 +1014,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DisplayQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/ward-rounds': {
+      id: '/_authenticated/ward-rounds'
+      path: '/ward-rounds'
+      fullPath: '/ward-rounds'
+      preLoaderRoute: typeof AuthenticatedWardRoundsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ward-analytics': {
+      id: '/_authenticated/ward-analytics'
+      path: '/ward-analytics'
+      fullPath: '/ward-analytics'
+      preLoaderRoute: typeof AuthenticatedWardAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/visits': {
       id: '/_authenticated/visits'
       path: '/visits'
@@ -871,6 +1047,13 @@ declare module '@tanstack/react-router' {
       path: '/tenders'
       fullPath: '/tenders'
       preLoaderRoute: typeof AuthenticatedTendersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/surgery': {
+      id: '/_authenticated/surgery'
+      path: '/surgery'
+      fullPath: '/surgery'
+      preLoaderRoute: typeof AuthenticatedSurgeryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/store': {
@@ -985,6 +1168,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNutritionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/nursing-station': {
+      id: '/_authenticated/nursing-station'
+      path: '/nursing-station'
+      fullPath: '/nursing-station'
+      preLoaderRoute: typeof AuthenticatedNursingStationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/monitoring': {
+      id: '/_authenticated/monitoring'
+      path: '/monitoring'
+      fullPath: '/monitoring'
+      preLoaderRoute: typeof AuthenticatedMonitoringRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/messages': {
       id: '/_authenticated/messages'
       path: '/messages'
@@ -1048,6 +1245,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInsuranceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inpatient-procedures': {
+      id: '/_authenticated/inpatient-procedures'
+      path: '/inpatient-procedures'
+      fullPath: '/inpatient-procedures'
+      preLoaderRoute: typeof AuthenticatedInpatientProceduresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/infection-control': {
+      id: '/_authenticated/infection-control'
+      path: '/infection-control'
+      fullPath: '/infection-control'
+      preLoaderRoute: typeof AuthenticatedInfectionControlRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/haims': {
+      id: '/_authenticated/haims'
+      path: '/haims'
+      fullPath: '/haims'
+      preLoaderRoute: typeof AuthenticatedHaimsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/emar': {
+      id: '/_authenticated/emar'
+      path: '/emar'
+      fullPath: '/emar'
+      preLoaderRoute: typeof AuthenticatedEmarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/discharge-planning': {
+      id: '/_authenticated/discharge-planning'
+      path: '/discharge-planning'
+      fullPath: '/discharge-planning'
+      preLoaderRoute: typeof AuthenticatedDischargePlanningRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -1074,6 +1306,13 @@ declare module '@tanstack/react-router' {
       path: '/cash-reconciliation'
       fullPath: '/cash-reconciliation'
       preLoaderRoute: typeof AuthenticatedCashReconciliationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/care-plans': {
+      id: '/_authenticated/care-plans'
+      path: '/care-plans'
+      fullPath: '/care-plans'
+      preLoaderRoute: typeof AuthenticatedCarePlansRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/billing': {
@@ -1137,6 +1376,20 @@ declare module '@tanstack/react-router' {
       path: '/announcements'
       fullPath: '/announcements'
       preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/allied-health': {
+      id: '/_authenticated/allied-health'
+      path: '/allied-health'
+      fullPath: '/allied-health'
+      preLoaderRoute: typeof AuthenticatedAlliedHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admissions': {
+      id: '/_authenticated/admissions'
+      path: '/admissions'
+      fullPath: '/admissions'
+      preLoaderRoute: typeof AuthenticatedAdmissionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin-kpi': {
@@ -1288,6 +1541,8 @@ const AuthenticatedVisitsRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminKpiRoute: typeof AuthenticatedAdminKpiRoute
+  AuthenticatedAdmissionsRoute: typeof AuthenticatedAdmissionsRoute
+  AuthenticatedAlliedHealthRoute: typeof AuthenticatedAlliedHealthRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedAntiDopingRoute: typeof AuthenticatedAntiDopingRoute
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
@@ -1297,10 +1552,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditInventoryRoute: typeof AuthenticatedAuditInventoryRoute
   AuthenticatedBedsRoute: typeof AuthenticatedBedsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
+  AuthenticatedCarePlansRoute: typeof AuthenticatedCarePlansRoute
   AuthenticatedCashReconciliationRoute: typeof AuthenticatedCashReconciliationRoute
   AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDischargePlanningRoute: typeof AuthenticatedDischargePlanningRoute
+  AuthenticatedEmarRoute: typeof AuthenticatedEmarRoute
+  AuthenticatedHaimsRoute: typeof AuthenticatedHaimsRoute
+  AuthenticatedInfectionControlRoute: typeof AuthenticatedInfectionControlRoute
+  AuthenticatedInpatientProceduresRoute: typeof AuthenticatedInpatientProceduresRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
@@ -1310,6 +1571,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
+  AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
+  AuthenticatedNursingStationRoute: typeof AuthenticatedNursingStationRoute
   AuthenticatedNutritionRoute: typeof AuthenticatedNutritionRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
   AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
@@ -1326,9 +1589,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSportsRoute: typeof AuthenticatedSportsRoute
   AuthenticatedSportsMedicineRoute: typeof AuthenticatedSportsMedicineRoute
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
+  AuthenticatedSurgeryRoute: typeof AuthenticatedSurgeryRoute
   AuthenticatedTendersRoute: typeof AuthenticatedTendersRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRouteWithChildren
+  AuthenticatedWardAnalyticsRoute: typeof AuthenticatedWardAnalyticsRoute
+  AuthenticatedWardRoundsRoute: typeof AuthenticatedWardRoundsRoute
   AuthenticatedAdminAccessReviewsRoute: typeof AuthenticatedAdminAccessReviewsRoute
   AuthenticatedAdminBreachesRoute: typeof AuthenticatedAdminBreachesRoute
   AuthenticatedAdminConsentRoute: typeof AuthenticatedAdminConsentRoute
@@ -1349,6 +1615,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminKpiRoute: AuthenticatedAdminKpiRoute,
+  AuthenticatedAdmissionsRoute: AuthenticatedAdmissionsRoute,
+  AuthenticatedAlliedHealthRoute: AuthenticatedAlliedHealthRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedAntiDopingRoute: AuthenticatedAntiDopingRoute,
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
@@ -1358,10 +1626,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditInventoryRoute: AuthenticatedAuditInventoryRoute,
   AuthenticatedBedsRoute: AuthenticatedBedsRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
+  AuthenticatedCarePlansRoute: AuthenticatedCarePlansRoute,
   AuthenticatedCashReconciliationRoute: AuthenticatedCashReconciliationRoute,
   AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDischargePlanningRoute: AuthenticatedDischargePlanningRoute,
+  AuthenticatedEmarRoute: AuthenticatedEmarRoute,
+  AuthenticatedHaimsRoute: AuthenticatedHaimsRoute,
+  AuthenticatedInfectionControlRoute: AuthenticatedInfectionControlRoute,
+  AuthenticatedInpatientProceduresRoute: AuthenticatedInpatientProceduresRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,
@@ -1371,6 +1645,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
+  AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
+  AuthenticatedNursingStationRoute: AuthenticatedNursingStationRoute,
   AuthenticatedNutritionRoute: AuthenticatedNutritionRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
   AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
@@ -1387,9 +1663,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSportsRoute: AuthenticatedSportsRoute,
   AuthenticatedSportsMedicineRoute: AuthenticatedSportsMedicineRoute,
   AuthenticatedStoreRoute: AuthenticatedStoreRoute,
+  AuthenticatedSurgeryRoute: AuthenticatedSurgeryRoute,
   AuthenticatedTendersRoute: AuthenticatedTendersRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRouteWithChildren,
+  AuthenticatedWardAnalyticsRoute: AuthenticatedWardAnalyticsRoute,
+  AuthenticatedWardRoundsRoute: AuthenticatedWardRoundsRoute,
   AuthenticatedAdminAccessReviewsRoute: AuthenticatedAdminAccessReviewsRoute,
   AuthenticatedAdminBreachesRoute: AuthenticatedAdminBreachesRoute,
   AuthenticatedAdminConsentRoute: AuthenticatedAdminConsentRoute,
