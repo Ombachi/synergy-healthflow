@@ -1601,43 +1601,76 @@ export type Database = {
       }
       discharge_summaries: {
         Row: {
+          admission_id: string | null
+          clearance_status: string | null
           created_at: string
           created_by: string | null
+          diagnosis: string | null
+          discharge_medications: string | null
+          discharged_at: string | null
+          discharged_by: string | null
           finalized: boolean
           finalized_at: string | null
           finalized_by: string | null
           follow_up: string | null
+          hospital_course: string | null
           id: string
+          invoice_id: string | null
+          patient_id: string | null
+          preauth_id: string | null
+          source_data: Json | null
           summary: string
           treatment_plan: string | null
           updated_at: string
-          visit_id: string
+          visit_id: string | null
         }
         Insert: {
+          admission_id?: string | null
+          clearance_status?: string | null
           created_at?: string
           created_by?: string | null
+          diagnosis?: string | null
+          discharge_medications?: string | null
+          discharged_at?: string | null
+          discharged_by?: string | null
           finalized?: boolean
           finalized_at?: string | null
           finalized_by?: string | null
           follow_up?: string | null
+          hospital_course?: string | null
           id?: string
+          invoice_id?: string | null
+          patient_id?: string | null
+          preauth_id?: string | null
+          source_data?: Json | null
           summary: string
           treatment_plan?: string | null
           updated_at?: string
-          visit_id: string
+          visit_id?: string | null
         }
         Update: {
+          admission_id?: string | null
+          clearance_status?: string | null
           created_at?: string
           created_by?: string | null
+          diagnosis?: string | null
+          discharge_medications?: string | null
+          discharged_at?: string | null
+          discharged_by?: string | null
           finalized?: boolean
           finalized_at?: string | null
           finalized_by?: string | null
           follow_up?: string | null
+          hospital_course?: string | null
           id?: string
+          invoice_id?: string | null
+          patient_id?: string | null
+          preauth_id?: string | null
+          source_data?: Json | null
           summary?: string
           treatment_plan?: string | null
           updated_at?: string
-          visit_id?: string
+          visit_id?: string | null
         }
         Relationships: [
           {
@@ -6621,6 +6654,7 @@ export type Database = {
         | "hr_officer"
         | "hr_manager"
         | "dept_manager"
+        | "admissions_officer"
       bid_status:
         | "submitted"
         | "shortlisted"
@@ -6791,6 +6825,7 @@ export const Constants = {
         "hr_officer",
         "hr_manager",
         "dept_manager",
+        "admissions_officer",
       ],
       bid_status: [
         "submitted",

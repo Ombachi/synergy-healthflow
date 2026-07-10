@@ -17,6 +17,8 @@ const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "physio@demo.local", full_name: "Pam Physio", role: "physio" },
   { email: "nutritionist@demo.local", full_name: "Nora Nutritionist", role: "nutritionist" },
   { email: "procurement@demo.local", full_name: "Pete Procurement", role: "procurement" },
+  { email: "hr@demo.local", full_name: "Hana HR Officer", role: "hr_officer" },
+  { email: "admissions@demo.local", full_name: "Amos Admissions Officer", role: "admissions_officer" },
 ];
 
 function generateDemoPassword(): string {

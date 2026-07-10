@@ -77,6 +77,7 @@ import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedHrDocumentsRouteImport } from './routes/_authenticated/hr.documents'
 import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticated/hr.admin'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
+import { Route as AuthenticatedComingSoonNameRouteImport } from './routes/_authenticated/coming-soon.$name'
 import { Route as AuthenticatedAdminSoftDeletedRouteImport } from './routes/_authenticated/admin.soft-deleted'
 import { Route as AuthenticatedAdminErrorsRouteImport } from './routes/_authenticated/admin.errors'
 import { Route as AuthenticatedAdminConsentRouteImport } from './routes/_authenticated/admin.consent'
@@ -447,6 +448,12 @@ const AuthenticatedDepartmentDeptRoute =
     path: '/department/$dept',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedComingSoonNameRoute =
+  AuthenticatedComingSoonNameRouteImport.update({
+    id: '/coming-soon/$name',
+    path: '/coming-soon/$name',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminSoftDeletedRoute =
   AuthenticatedAdminSoftDeletedRouteImport.update({
     id: '/admin/soft-deleted',
@@ -566,6 +573,7 @@ export interface FileRoutesByFullPath {
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
+  '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
   '/hr/documents': typeof AuthenticatedHrDocumentsRoute
@@ -644,6 +652,7 @@ export interface FileRoutesByTo {
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
+  '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
   '/hr/documents': typeof AuthenticatedHrDocumentsRoute
@@ -724,6 +733,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/_authenticated/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/_authenticated/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
+  '/_authenticated/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
   '/_authenticated/hr/admin': typeof AuthenticatedHrAdminRoute
   '/_authenticated/hr/documents': typeof AuthenticatedHrDocumentsRoute
@@ -804,6 +814,7 @@ export interface FileRouteTypes {
     | '/admin/consent'
     | '/admin/errors'
     | '/admin/soft-deleted'
+    | '/coming-soon/$name'
     | '/department/$dept'
     | '/hr/admin'
     | '/hr/documents'
@@ -882,6 +893,7 @@ export interface FileRouteTypes {
     | '/admin/consent'
     | '/admin/errors'
     | '/admin/soft-deleted'
+    | '/coming-soon/$name'
     | '/department/$dept'
     | '/hr/admin'
     | '/hr/documents'
@@ -961,6 +973,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/consent'
     | '/_authenticated/admin/errors'
     | '/_authenticated/admin/soft-deleted'
+    | '/_authenticated/coming-soon/$name'
     | '/_authenticated/department/$dept'
     | '/_authenticated/hr/admin'
     | '/_authenticated/hr/documents'
@@ -1462,6 +1475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDepartmentDeptRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/coming-soon/$name': {
+      id: '/_authenticated/coming-soon/$name'
+      path: '/coming-soon/$name'
+      fullPath: '/coming-soon/$name'
+      preLoaderRoute: typeof AuthenticatedComingSoonNameRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/soft-deleted': {
       id: '/_authenticated/admin/soft-deleted'
       path: '/admin/soft-deleted'
@@ -1600,6 +1620,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminConsentRoute: typeof AuthenticatedAdminConsentRoute
   AuthenticatedAdminErrorsRoute: typeof AuthenticatedAdminErrorsRoute
   AuthenticatedAdminSoftDeletedRoute: typeof AuthenticatedAdminSoftDeletedRoute
+  AuthenticatedComingSoonNameRoute: typeof AuthenticatedComingSoonNameRoute
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
   AuthenticatedHrAdminRoute: typeof AuthenticatedHrAdminRoute
   AuthenticatedHrDocumentsRoute: typeof AuthenticatedHrDocumentsRoute
@@ -1674,6 +1695,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminConsentRoute: AuthenticatedAdminConsentRoute,
   AuthenticatedAdminErrorsRoute: AuthenticatedAdminErrorsRoute,
   AuthenticatedAdminSoftDeletedRoute: AuthenticatedAdminSoftDeletedRoute,
+  AuthenticatedComingSoonNameRoute: AuthenticatedComingSoonNameRoute,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
   AuthenticatedHrAdminRoute: AuthenticatedHrAdminRoute,
   AuthenticatedHrDocumentsRoute: AuthenticatedHrDocumentsRoute,
@@ -1702,13 +1724,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
