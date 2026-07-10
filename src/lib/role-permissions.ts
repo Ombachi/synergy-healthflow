@@ -48,12 +48,12 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/roster": [],
 
   // Removed from clinical-staff nav — kept for admins only.
-  "/beds": ["nurse", "doctor", "receptionist"],
+  "/beds": ["nurse", "doctor", "receptionist", "admissions_officer"],
 
   // ========= HAIMS (Hospital Admission & Inpatient Management) =========
-  "/haims": ["doctor", "nurse", "physio", "nutritionist", "pharmacist", "billing_officer"],
-  "/admissions": ["receptionist", "nurse", "doctor"],
-  "/nursing-station": ["nurse", "doctor"],
+  "/haims": [], // admin only
+  "/admissions": ["receptionist", "nurse", "doctor", "admissions_officer"],
+  "/nursing-station": ["nurse", "doctor", "admissions_officer"],
   "/ward-rounds": ["doctor", "physio", "nurse"],
   "/emar": ["nurse", "pharmacist", "doctor"],
   "/monitoring": ["nurse", "doctor", "physio"],
@@ -115,6 +115,8 @@ export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
   "/print/sample/": ["lab_tech", "nurse", "doctor"],
   "/print/drug/": ["pharmacist", "store_keeper"],
   "/print/prescription/": ["doctor", "pharmacist"],
+  // Stub / coming-soon service-line pages visible to every signed-in user.
+  "/coming-soon/": ["admin", "doctor", "nurse", "patient", "athlete", "lab_tech", "pharmacist", "radiologist", "receptionist", "cashier", "insurance_officer", "physio", "nutritionist", "store_keeper", "procurement", "billing_officer", "hr_officer", "hr_manager", "dept_manager", "admissions_officer"],
 };
 
 // Always visible to all signed-in users.
