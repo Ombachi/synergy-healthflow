@@ -305,7 +305,7 @@ function AuthedLayout() {
                   {STANDALONE.filter((it) => canAccess(it.url, roles)).map((it) => (
                     <SidebarMenuItem key={it.url}>
                       <SidebarMenuButton asChild isActive={pathname === it.url}>
-                        <Link to={it.url}>
+                        <Link to={it.url as string}>
                           <it.icon />
                           <span>{it.title}</span>
                         </Link>
@@ -347,7 +347,7 @@ function AuthedLayout() {
                             return (
                               <SidebarMenuItem key={`${group.key}-${it.title}-${it.url}`}>
                                 <SidebarMenuButton asChild isActive={pathname === targetUrl}>
-                                  <Link to={targetUrl}>
+                                  <Link to={targetUrl as string}>
                                     <it.icon />
                                     <span className="flex-1">{it.title}</span>
                                     {isStub && (
