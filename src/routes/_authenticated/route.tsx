@@ -54,7 +54,7 @@ const GROUPS: Group[] = [
   {
     key: "outpatient", label: "Outpatient", icon: Stethoscope, 
     items: [
-      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+      
       { title: "Appointments", url: "/appointments", icon: CalendarClock, dept: "appointments" },
       { title: "Reception", url: "/reception", icon: ClipboardCheck, dept: "reception" },
       { title: "Queue board", url: "/queue", icon: ListOrdered },
