@@ -52,7 +52,7 @@ const stub = (slug: string) => `/coming-soon/${slug}`;
 
 const GROUPS: Group[] = [
   {
-    key: "outpatient", label: "Outpatient", icon: Stethoscope, alwaysShow: true,
+    key: "outpatient", label: "Outpatient", icon: Stethoscope, 
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
       { title: "Appointments", url: "/appointments", icon: CalendarClock, dept: "appointments" },
@@ -71,7 +71,7 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    key: "inpatient", label: "Inpatient", icon: BedDouble, alwaysShow: true,
+    key: "inpatient", label: "Inpatient", icon: BedDouble, 
     items: [
       { title: "HAIMS · Executive", url: "/haims", icon: Gauge },
       { title: "Admissions", url: "/admissions", icon: ClipboardCheck },
@@ -113,7 +113,7 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    key: "emergency", label: "Emergency", icon: Siren, alwaysShow: true,
+    key: "emergency", label: "Emergency", icon: Siren, 
     items: [
       { title: "Dashboard", url: stub("emergency"), icon: LayoutDashboard },
       { title: "Triage", url: stub("emergency-triage"), icon: HeartPulse },
