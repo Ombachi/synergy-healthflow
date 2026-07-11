@@ -1,7 +1,32 @@
 import type { AppRole } from "@/hooks/use-auth";
 
+/**
+ * Canonical set of clinical roles — anyone directly involved in delivering
+ * care at an encounter. Non-clinical roles (procurement, store_keeper,
+ * hr_*, cashier-only, billing_officer, insurance_officer) are deliberately
+ * excluded and must not appear in clinical route allow-lists below.
+ */
+export const CLINICAL_ROLES: AppRole[] = [
+  "doctor",
+  "nurse",
+  "physio",
+  "nutritionist",
+  "lab_tech",
+  "pharmacist",
+  "radiologist",
+  "receptionist",
+  "admissions_officer",
+];
+
+// Sub-domain role sets for gated inpatient areas.
+const THEATRE_ROLES: AppRole[] = ["doctor", "nurse"];
+const ICU_ROLES: AppRole[] = ["doctor", "nurse", "physio"];
+const MATERNITY_ROLES: AppRole[] = ["doctor", "nurse"];
+const EMERGENCY_ROLES: AppRole[] = ["doctor", "nurse", "receptionist"];
+
 // Roles allowed for each module route. Admin always has access.
 // Empty array = admin only.
+
 export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Front desk / patient flow
   "/reception": ["receptionist"],
