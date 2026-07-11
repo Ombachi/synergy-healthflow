@@ -193,6 +193,7 @@ const GROUPS: Group[] = [
 
 // Standalone entries that live outside any group.
 const STANDALONE: Item[] = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Messages", url: "/messages", icon: MessageSquare },
 ];
 
