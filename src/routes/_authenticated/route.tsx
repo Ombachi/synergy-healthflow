@@ -52,9 +52,9 @@ const stub = (slug: string) => `/coming-soon/${slug}`;
 
 const GROUPS: Group[] = [
   {
-    key: "outpatient", label: "Outpatient", icon: Stethoscope, alwaysShow: true,
+    key: "outpatient", label: "Outpatient", icon: Stethoscope, 
     items: [
-      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+      
       { title: "Appointments", url: "/appointments", icon: CalendarClock, dept: "appointments" },
       { title: "Reception", url: "/reception", icon: ClipboardCheck, dept: "reception" },
       { title: "Queue board", url: "/queue", icon: ListOrdered },
@@ -71,7 +71,7 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    key: "inpatient", label: "Inpatient", icon: BedDouble, alwaysShow: true,
+    key: "inpatient", label: "Inpatient", icon: BedDouble, 
     items: [
       { title: "HAIMS · Executive", url: "/haims", icon: Gauge },
       { title: "Admissions", url: "/admissions", icon: ClipboardCheck },
@@ -90,10 +90,30 @@ const GROUPS: Group[] = [
       { title: "Infection control", url: "/infection-control", icon: ShieldAlert },
       { title: "Discharge planning", url: "/discharge-planning", icon: LogOut },
       { title: "Ward analytics", url: "/ward-analytics", icon: BarChart3 },
+      // Theatre — nested under Inpatient
+      { title: "Theatre · Dashboard", url: "/surgery", icon: Syringe },
+      { title: "Theatre · Schedule", url: stub("theatre-schedule"), icon: CalendarDays },
+      { title: "Theatre · Waiting list", url: stub("theatre-waiting-list"), icon: ListOrdered },
+      { title: "Theatre · Surgical checklist", url: stub("surgical-checklist"), icon: ClipboardCheck },
+      { title: "Theatre · Anaesthesia records", url: stub("anaesthesia-records"), icon: FileText },
+      { title: "Theatre · Recovery", url: stub("recovery"), icon: HeartPulse },
+      { title: "Theatre · Reports", url: stub("theatre-reports"), icon: FileText },
+      // ICU / HDU — nested under Inpatient
+      { title: "ICU · Dashboard", url: stub("icu-dashboard"), icon: HeartPulse },
+      { title: "ICU · Census", url: stub("icu-census"), icon: BedDouble },
+      { title: "ICU · Ventilators", url: stub("ventilator-management"), icon: Activity },
+      { title: "ICU · Sedation & analgesia", url: stub("sedation"), icon: Syringe },
+      { title: "ICU · Critical care rounds", url: stub("critical-care-rounds"), icon: Stethoscope },
+      // Maternity — nested under Inpatient
+      { title: "Maternity · Dashboard", url: stub("maternity-dashboard"), icon: Baby },
+      { title: "Maternity · Antenatal", url: stub("antenatal"), icon: HeartPulse },
+      { title: "Maternity · Labour & delivery", url: stub("labour-delivery"), icon: Baby },
+      { title: "Maternity · Postnatal", url: stub("postnatal"), icon: BedDouble },
+      { title: "Maternity · Newborn nursery", url: stub("newborn-nursery"), icon: Baby },
     ],
   },
   {
-    key: "emergency", label: "Emergency", icon: Siren, alwaysShow: true,
+    key: "emergency", label: "Emergency", icon: Siren, 
     items: [
       { title: "Dashboard", url: stub("emergency"), icon: LayoutDashboard },
       { title: "Triage", url: stub("emergency-triage"), icon: HeartPulse },
@@ -105,76 +125,7 @@ const GROUPS: Group[] = [
       { title: "Transfers", url: stub("emergency-transfers"), icon: Ambulance },
     ],
   },
-  {
-    key: "laboratory", label: "Laboratory", icon: FlaskConical, alwaysShow: true,
-    items: [
-      { title: "Dashboard", url: "/lab", icon: LayoutDashboard, badge: "lab", dept: "lab" },
-      { title: "Work queue", url: stub("lab-work-queue"), icon: ListOrdered },
-      { title: "Sample collection", url: stub("sample-collection"), icon: Syringe },
-      { title: "Sample tracking", url: stub("sample-tracking"), icon: ScanLine },
-      { title: "Result entry", url: "/lab", icon: Microscope, badge: "lab" },
-      { title: "Quality control", url: stub("lab-qc"), icon: ShieldCheck },
-      { title: "Critical results", url: stub("lab-critical"), icon: ShieldAlert },
-      { title: "Templates", url: "/lab-templates", icon: FlaskConical },
-      { title: "Reports", url: stub("lab-reports"), icon: FileText },
-    ],
-  },
-  {
-    key: "radiology", label: "Radiology", icon: ScanLine, alwaysShow: true,
-    items: [
-      { title: "Dashboard", url: "/radiology", icon: LayoutDashboard, badge: "radiology", dept: "radiology" },
-      { title: "Imaging requests", url: stub("imaging-requests"), icon: ClipboardList },
-      { title: "Scheduling", url: stub("radiology-scheduling"), icon: CalendarClock },
-      { title: "Reporting", url: stub("radiology-reporting"), icon: FileText },
-      { title: "Image review", url: stub("image-review"), icon: ScanLine },
-      { title: "Reports", url: stub("radiology-reports"), icon: FileText },
-    ],
-  },
-  {
-    key: "pharmacy", label: "Pharmacy", icon: Pill, alwaysShow: true,
-    items: [
-      { title: "Dashboard", url: "/pharmacy", icon: LayoutDashboard, badge: "pharmacy", dept: "pharmacy" },
-      { title: "Prescription queue", url: "/pharmacy", icon: ListOrdered, badge: "pharmacy" },
-      { title: "Dispensing", url: stub("dispensing"), icon: Pill },
-      { title: "Medication verification", url: stub("medication-verification"), icon: ShieldCheck },
-      { title: "Inventory requests", url: "/orders/stock-requests", icon: ShoppingCart },
-      { title: "Controlled drugs", url: "/controlled-drugs", icon: ShieldAlert },
-      { title: "Reports", url: stub("pharmacy-reports"), icon: FileText },
-    ],
-  },
-  {
-    key: "theatre", label: "Theatre", icon: Syringe, alwaysShow: true,
-    items: [
-      { title: "Dashboard", url: "/surgery", icon: LayoutDashboard },
-      { title: "Theatre schedule", url: stub("theatre-schedule"), icon: CalendarDays },
-      { title: "Waiting list", url: stub("theatre-waiting-list"), icon: ListOrdered },
-      { title: "Surgical checklist", url: stub("surgical-checklist"), icon: ClipboardCheck },
-      { title: "Anaesthesia records", url: stub("anaesthesia-records"), icon: FileText },
-      { title: "Operations", url: "/surgery", icon: Bandage },
-      { title: "Recovery", url: stub("recovery"), icon: HeartPulse },
-      { title: "Reports", url: stub("theatre-reports"), icon: FileText },
-    ],
-  },
-  {
-    key: "icu", label: "ICU / HDU", icon: HeartPulse, alwaysShow: true,
-    items: [
-      { title: "Dashboard", url: stub("icu-dashboard"), icon: LayoutDashboard },
-      { title: "ICU census", url: stub("icu-census"), icon: BedDouble },
-      { title: "Ventilator management", url: stub("ventilator-management"), icon: Activity },
-      { title: "Sedation & analgesia", url: stub("sedation"), icon: Syringe },
-      { title: "Critical care rounds", url: stub("critical-care-rounds"), icon: Stethoscope },
-    ],
-  },
-  {
-    key: "maternity", label: "Maternity", icon: Baby, alwaysShow: true,
-    items: [
-      { title: "Dashboard", url: stub("maternity-dashboard"), icon: LayoutDashboard },
-      { title: "Antenatal care", url: stub("antenatal"), icon: HeartPulse },
-      { title: "Labour & delivery", url: stub("labour-delivery"), icon: Baby },
-      { title: "Postnatal ward", url: stub("postnatal"), icon: BedDouble },
-      { title: "Newborn nursery", url: stub("newborn-nursery"), icon: Baby },
-    ],
-  },
+
 
   // Non-clinical utility groups (only shown if user has ≥1 accessible item).
   {
@@ -242,6 +193,7 @@ const GROUPS: Group[] = [
 
 // Standalone entries that live outside any group.
 const STANDALONE: Item[] = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Messages", url: "/messages", icon: MessageSquare },
 ];
 

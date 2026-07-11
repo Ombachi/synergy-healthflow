@@ -1,7 +1,32 @@
 import type { AppRole } from "@/hooks/use-auth";
 
+/**
+ * Canonical set of clinical roles — anyone directly involved in delivering
+ * care at an encounter. Non-clinical roles (procurement, store_keeper,
+ * hr_*, cashier-only, billing_officer, insurance_officer) are deliberately
+ * excluded and must not appear in clinical route allow-lists below.
+ */
+export const CLINICAL_ROLES: AppRole[] = [
+  "doctor",
+  "nurse",
+  "physio",
+  "nutritionist",
+  "lab_tech",
+  "pharmacist",
+  "radiologist",
+  "receptionist",
+  "admissions_officer",
+];
+
+// Sub-domain role sets for gated inpatient areas.
+const THEATRE_ROLES: AppRole[] = ["doctor", "nurse"];
+const ICU_ROLES: AppRole[] = ["doctor", "nurse", "physio"];
+const MATERNITY_ROLES: AppRole[] = ["doctor", "nurse"];
+const EMERGENCY_ROLES: AppRole[] = ["doctor", "nurse", "receptionist"];
+
 // Roles allowed for each module route. Admin always has access.
 // Empty array = admin only.
+
 export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Front desk / patient flow
   "/reception": ["receptionist"],
@@ -115,8 +140,27 @@ export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
   "/print/sample/": ["lab_tech", "nurse", "doctor"],
   "/print/drug/": ["pharmacist", "store_keeper"],
   "/print/prescription/": ["doctor", "pharmacist"],
-  // Stub / coming-soon service-line pages visible to every signed-in user.
-  "/coming-soon/": ["admin", "doctor", "nurse", "patient", "athlete", "lab_tech", "pharmacist", "radiologist", "receptionist", "cashier", "insurance_officer", "physio", "nutritionist", "store_keeper", "procurement", "billing_officer", "hr_officer", "hr_manager", "dept_manager", "admissions_officer"],
+  // Sub-domain coming-soon prefixes — MUST be listed before the generic
+  // "/coming-soon/" catch-all so canAccess() matches them first.
+  "/coming-soon/theatre-": THEATRE_ROLES,
+  "/coming-soon/surgical-": THEATRE_ROLES,
+  "/coming-soon/anaesthesia-": THEATRE_ROLES,
+  "/coming-soon/recovery": THEATRE_ROLES,
+  "/coming-soon/icu-": ICU_ROLES,
+  "/coming-soon/critical-care-": ICU_ROLES,
+  "/coming-soon/ventilator-": ICU_ROLES,
+  "/coming-soon/sedation": ICU_ROLES,
+  "/coming-soon/maternity-": MATERNITY_ROLES,
+  "/coming-soon/antenatal": MATERNITY_ROLES,
+  "/coming-soon/labour-": MATERNITY_ROLES,
+  "/coming-soon/postnatal": MATERNITY_ROLES,
+  "/coming-soon/newborn-": MATERNITY_ROLES,
+  "/coming-soon/emergency": EMERGENCY_ROLES,
+  "/coming-soon/resuscitation": EMERGENCY_ROLES,
+  "/coming-soon/observation-unit": EMERGENCY_ROLES,
+  // Remaining stub / coming-soon service-line pages visible to every signed-in user.
+  "/coming-soon/": CLINICAL_ROLES.concat(["cashier", "insurance_officer", "store_keeper", "procurement", "billing_officer", "hr_officer", "hr_manager", "dept_manager", "patient", "athlete"]),
+
 };
 
 // Always visible to all signed-in users.
