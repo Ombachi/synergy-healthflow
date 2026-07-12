@@ -197,7 +197,7 @@ const STANDALONE: Item[] = [
   { title: "Messages", url: "/messages", icon: MessageSquare },
 ];
 
-const STORAGE_KEY = "vitalis:sidebar:open-groups";
+const STORAGE_KEY = "litu-vault:sidebar:open-groups";
 
 function AuthedLayout() {
   const navigate = useNavigate();
@@ -245,8 +245,8 @@ function AuthedLayout() {
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <div className="flex items-center gap-2 px-2 py-1.5 font-semibold">
-              <Heart className="h-5 w-5 text-primary" />
-              <span className="group-data-[collapsible=icon]:hidden">Vitalis</span>
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <span className="group-data-[collapsible=icon]:hidden">Litu Vault</span>
             </div>
           </SidebarHeader>
           <SidebarContent>
