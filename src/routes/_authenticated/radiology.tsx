@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ScanLine } from "lucide-react";
@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
+import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
+import { EncounterTabs } from "@/components/encounter-tabs";
 
 export const Route = createFileRoute("/_authenticated/radiology")({ component: () => <RoleGate path="/radiology"><RadPortal /></RoleGate> });
 
@@ -22,6 +24,8 @@ function RadPortal() {
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
   const canWork = hasAnyRole(["radiologist", "admin"]);
+  const encMap = useEncounterMap();
+  const [encFilter, setEncFilter] = useState<EncounterFilter>("all");
 
   const orders = useQuery({
     queryKey: ["img-orders"],

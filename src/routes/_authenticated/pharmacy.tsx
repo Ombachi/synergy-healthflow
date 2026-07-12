@@ -91,14 +91,24 @@ function PharmacyPortal() {
   const lowStock = inv.data?.filter((i) => i.quantity <= i.reorder_threshold) ?? [];
 
   const statusOf = (r: Rx) => dispenses.data?.find((d) => d.prescription_id === r.id) ? "dispensed" : "pending";
+  const encCounts = useMemo(
+    () => encounterCounts(rx.data ?? [], encMap.data?.inpatientVisitIds),
+    [rx.data, encMap.data?.inpatientVisitIds],
+  );
   const filtered = useMemo(() => {
+    const inp = encMap.data?.inpatientVisitIds;
     return (rx.data ?? []).filter((r) => {
       const s = statusOf(r);
       if (filter !== "all" && s !== filter) return false;
+      if (encFilter !== "all") {
+        const isInp = !!(r.visit_id && inp?.has(r.visit_id));
+        if (encFilter === "inpatient" && !isInp) return false;
+        if (encFilter === "outpatient" && isInp) return false;
+      }
       if (search && !r.medication.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [rx.data, dispenses.data, filter, search]); // eslint-disable-line
+  }, [rx.data, dispenses.data, filter, encFilter, search, encMap.data?.inpatientVisitIds]); // eslint-disable-line
 
   const selected = filtered.find((r) => r.id === selectedId) ?? filtered[0] ?? null;
   const selDispense = selected && dispenses.data?.find((d) => d.prescription_id === selected.id);
@@ -120,6 +130,9 @@ function PharmacyPortal() {
             <div className="relative mt-2">
               <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input placeholder="Search medication..." value={search} onChange={(e)=>setSearch(e.target.value)} className="h-8 pl-7 text-xs" />
+            </div>
+            <div className="mt-2">
+              <EncounterTabs value={encFilter} onChange={setEncFilter} counts={encCounts} />
             </div>
             <div className="mt-2 flex gap-1 text-xs">
               {(["pending","dispensed","all"] as const).map((f) => (
