@@ -176,6 +176,9 @@ function LabPortal() {
               <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input placeholder="Search test or patient..." value={search} onChange={(e)=>setSearch(e.target.value)} className="h-8 pl-7 text-xs" />
             </div>
+            <div className="mt-2">
+              <EncounterTabs value={encFilter} onChange={setEncFilter} counts={encCounts} />
+            </div>
             <div className="mt-2 flex gap-1 text-xs">
               {(["pending","collected","resulted","all"] as const).map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
