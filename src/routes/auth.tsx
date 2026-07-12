@@ -11,7 +11,7 @@ import { lovable } from "@/integrations/lovable/index";
 export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
-    meta: [{ title: "Sign in — Vitalis" }],
+    meta: [{ title: "Sign in — Litu Vault" }],
   }),
   component: AuthPage,
 });
@@ -68,9 +68,9 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-lg border bg-card p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">Welcome to Vitalis</h1>
+        <h1 className="text-2xl font-semibold">Welcome to Litu Vault</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Sign in to access the dashboard.
+          Open the vault — sign in to access your records.
         </p>
 
         <Tabs defaultValue="signin" className="mt-6">

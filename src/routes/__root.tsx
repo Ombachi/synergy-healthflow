@@ -78,14 +78,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Litu Vault — Vault-grade health records" },
+      { name: "description", content: "Encrypted, audited, role-gated health records for clinicians, athletes, and administrators." },
+      { name: "author", content: "Litu Vault" },
+      { property: "og:title", content: "Litu Vault" },
+      { property: "og:description", content: "Vault-grade health records — encrypted, audited, role-gated." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
