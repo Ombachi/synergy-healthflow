@@ -14,6 +14,8 @@ import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
 // Stock requests moved to global navigation under Orders (/orders/stock-requests).
 import { WorkflowChip } from "@/components/workflow-chip";
+import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
+import { EncounterTabs } from "@/components/encounter-tabs";
 
 export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
@@ -27,7 +29,9 @@ function PharmacyPortal() {
   const canDispense = hasAnyRole(["pharmacist", "admin"]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "dispensed">("pending");
+  const [encFilter, setEncFilter] = useState<EncounterFilter>("all");
   const [search, setSearch] = useState("");
+  const encMap = useEncounterMap();
 
   const rx = useQuery({ queryKey: ["pharm-rx"], queryFn: async () => {
     const { data, error } = await supabase.from("prescriptions" as never).select("*").order("created_at", { ascending: false }).limit(200);
