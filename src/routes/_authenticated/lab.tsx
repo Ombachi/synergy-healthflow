@@ -13,6 +13,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
 import { WorkflowChip } from "@/components/workflow-chip";
+import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
+import { EncounterTabs } from "@/components/encounter-tabs";
 
 export const Route = createFileRoute("/_authenticated/lab")({ component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
 
@@ -29,7 +31,9 @@ function LabPortal() {
   const canWork = hasAnyRole(["lab_tech", "admin"]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "collected" | "resulted">("pending");
+  const [encFilter, setEncFilter] = useState<EncounterFilter>("all");
   const [search, setSearch] = useState("");
+  const encMap = useEncounterMap();
 
   const orders = useQuery({ queryKey: ["lab-orders"], queryFn: async () => {
     const { data, error } = await supabase.from("lab_orders" as never).select("*").order("created_at", { ascending: false });
@@ -56,9 +60,20 @@ function LabPortal() {
   const testInfo = (id: string) => tests.data?.find((t) => t.id === id);
   const patientName = (id: string) => patients.data?.find((p) => p.id === id)?.full_name ?? "—";
 
+  const encCounts = useMemo(
+    () => encounterCounts(orders.data ?? [], encMap.data?.inpatientVisitIds),
+    [orders.data, encMap.data?.inpatientVisitIds],
+  );
+
   const filtered = useMemo(() => {
+    const inp = encMap.data?.inpatientVisitIds;
     return (orders.data ?? []).filter((o) => {
       if (filter !== "all" && o.status !== filter) return false;
+      if (encFilter !== "all") {
+        const isInp = !!(o.visit_id && inp?.has(o.visit_id));
+        if (encFilter === "inpatient" && !isInp) return false;
+        if (encFilter === "outpatient" && isInp) return false;
+      }
       if (search) {
         const t = testName(o.test_id).toLowerCase();
         const p = patientName(o.patient_id).toLowerCase();
@@ -66,7 +81,7 @@ function LabPortal() {
       }
       return true;
     });
-  }, [orders.data, filter, search, tests.data, patients.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [orders.data, filter, encFilter, search, tests.data, patients.data, encMap.data?.inpatientVisitIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selected = filtered.find((o) => o.id === selectedId) ?? filtered[0] ?? null;
   const selSample = selected && samples.data?.find((s) => s.order_id === selected.id);
