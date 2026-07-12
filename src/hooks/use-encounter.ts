@@ -18,8 +18,8 @@ export function useEncounterMap() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("admissions" as never)
-        .select("visit_id, status")
-        .in("status", ["active", "admitted", "in_progress"] as never);
+        .select("visit_id, discharged_at")
+        .is("discharged_at", null);
       if (error) throw error;
       const inpatient = new Set<string>();
       ((data as unknown as { visit_id: string | null }[]) ?? []).forEach((row) => {
