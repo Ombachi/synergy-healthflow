@@ -1,41 +1,62 @@
+# Litu Vault rebrand + encounter-driven clinical refactor
 
-## Delivery Plan
+Big turn. Splitting into a clear sequence so nothing regresses. I'll do it in **three sub-turns**; this plan covers all three, and I'll ship them one after another unless you say otherwise.
 
-You picked all 4 feature batches + 4 infra items. Realistically that's ~4 focused turns of code + 1 documentation turn. I'll do them in this order (each turn = 1 migration + UI + a smoke test):
+## Sub-turn 1 — Rebrand + homepage + RBAC audit (safe, no schema)
 
-### Turn 1 — Batch A: Clinical Safety
-- **E-signature**: `signatures` table (entity_type, entity_id, signer_id, signed_at, hash). Sign action on discharge summaries + prescriptions locks the record (trigger blocks UPDATE when signed). Signature block rendered on PDFs.
-- **Controlled drugs register**: `drug_catalog.schedule` (I,II,III,IV,V) + `controlled_drug_register` table (item_id, batch_id, direction, qty, patient_id, prescriber_id, witness_id, running_balance). Auto-post on pharmacy dispense of scheduled drugs. Register view for pharmacist/admin.
-- **Barcode/QR**: JsBarcode + qrcode.react. Wristband print page `/print/wristband/$patientId` (MRN barcode), sample tube label `/print/sample/$sampleId`, drug pack `/print/drug/$batchId`.
-- **Printable Rx**: `/print/prescription/$rxId` with hospital letterhead, prescriber signature block, QR encoding `{rxId, hash}` → public verify route `/verify/rx/$rxId`.
+**Rename Vitalis → Litu Vault**
+- Landing page (`src/routes/index.tsx`): new hero built around a vault metaphor — "Your health records, locked in the vault." Prominent Sign in / Create account CTAs above the fold, secondary trust strip (encrypted, audited, role-gated). Generate a Litu Vault logo (vault door + cross motif) as an SVG asset.
+- Auth page copy, sidebar header, root `<title>` / meta / og tags → "Litu Vault".
+- Toaster + any hard-coded "Vitalis" strings across routes swept.
 
-### Turn 2 — Batch B: Compliance & Audit
-- **Soft-delete**: add `deleted_at`, `deleted_by`, `deletion_reason` to patients + visits. Update RLS to filter `deleted_at IS NULL` for non-admins. Restore action for admins. Audit trigger already exists — extend to log deletes.
-- **Consent versioning**: `consent_templates` (versioned) + `consents.template_version` + `consent_events` (granted/withdrawn/superseded). UI shows history timeline.
-- **Breach notification**: `breach_incidents` table (severity, affected_patients, discovered_at, notified_at, notification_channel, dpa_ref). Admin workflow: log → assess → notify → close. 72-hour countdown per Kenya DPA.
-- **Access reviews**: `access_reviews` table (quarter, reviewer_id, status) + `access_review_items` (user_id, role, decision: keep/revoke). Admin route auto-generates quarterly review from `user_roles`.
+**Homepage layout**
+- Left: logo, tagline, two big buttons (Sign in, Create account).
+- Right: vault-illustration card with three trust bullets (RBAC, audit trail, encrypted records).
+- Footer strip: "Trusted like a bank vault. Built for clinicians."
 
-### Turn 3 — Batch C: Finance Ops
-- **Cash reconciliation**: `cash_sessions` (cashier_id, opened_at, opening_float, closed_at, declared_cash, system_cash, variance_cents). End-of-shift close screen calculates from `payments` where method='cash'.
-- **Credit notes / refunds**: `credit_notes` (invoice_id, reason, amount_cents, approved_by) → posts negative `payments` line. Refund workflow: request → approve → issue. Blocks refund > paid amount.
+**RBAC audit**
+- Re-verify `role-permissions.ts`: procurement, store_keeper, HR, cashier cannot reach `/lab`, `/lab-order`, `/radiology`, `/pharmacy`, `/prescribe`, or their queues. Add a small unit-style assertion file (`src/lib/__rbac_check.ts`) that runs at import to warn in dev if a forbidden pair sneaks back.
+- Sidebar already role-filters; confirm Laboratory / Radiology / Pharmacy groups are hidden for procurement/store_keeper/HR/cashier.
 
-### Turn 4 — Batch D: Ops Visibility
-- **SLA dashboard**: materialized view of lab TAT (order→result) & radiology TAT (order→report). Breach thresholds (lab 4h routine / 1h stat; radiology 24h / 2h stat). `/sla` route with red/amber/green tiles + breach list.
-- **Queue display**: `/display/queue` public route (no auth, kiosk mode), large font, auto-refresh 15s, shows "Now serving" + "Next 5" per department. Realtime subscription to `visit_queue`.
-- **pg_cron**: hourly `refresh_admin_kpis()`, nightly `refresh_sla_views()`, 15-min stale-lab-order alerts.
-- **Error monitoring hook**: wire `src/lib/lovable-error-reporting.ts` into a central `logError()` that also inserts into new `error_events` table (env, route, message, stack, user_id, occurred_at) so admins have an in-app error log even without Sentry.
+## Sub-turn 2 — Encounter-aware queues (no schema change)
 
-### Turn 5 — Infra Runbook (documentation only)
-Single doc `/mnt/documents/vitalis-infra-runbook.md` covering:
-- **PHI encryption**: envelope encryption pattern with Web Crypto (AES-GCM) + key stored per-user; caveats vs true KMS.
-- **PITR / backups**: how to verify in Lovable Cloud, restore drill checklist, RTO/RPO targets.
-- **Rate limiting**: Postgres token-bucket function example (`rl_check(user_id, bucket, limit, window)`) usable inside server functions.
-- **Read replicas / caching**: staged plan — start with materialized views + React Query cache tuning; graduate to Supabase read replica when >200 concurrent users; edge caching for public routes.
-- **Sentry**: exact hook points in `src/lib/lovable-error-reporting.ts` and `src/server.ts`.
-- **Pen-test / SOC-lite**: OWASP ASVS L1 checklist mapped to current controls, quarterly cadence.
+Use existing `visit_id` (outpatient) vs `admission_id` (inpatient) as the encounter discriminator. On each queue page, add an **Outpatient | Inpatient | All** tab set:
 
-### What I need from you
-Confirm this phasing. On approval I start **Turn 1 (Clinical Safety)** immediately. Each subsequent turn is a single "next" from you — that way you can review and stop if credits get tight.
+- `/lab` — split lab_orders by whether the linked visit has an active admission.
+- `/radiology` — same split on imaging_orders.
+- `/pharmacy` — split prescriptions / medication_orders (MAR entries are inpatient by definition).
+- `/nutrition` — split nutrition_plans / allied_health_notes by encounter.
+- `/queue` (nurse) — split visit_queue rows: outpatient = visit without admission, inpatient = visit with admission.
 
-### Credit note
-Each turn is ~1 migration + 4–8 files. Turns 1 and 2 are the heaviest (~15 files each). If you want to compress, tell me to merge Turns 3+4 (feasible) or Turns 1+2 (risky — schema surface too big).
+Ward filter dropdown for the nurse inpatient tab (reads `admissions.ward_id`).
+
+## Sub-turn 3 — Schema + clinical_tasks + visit/admission unification
+
+**Migration**
+- Add `encounter_id UUID` + `encounter_type TEXT CHECK IN ('visit','admission')` to: `lab_orders`, `lab_results`, `lab_samples`, `imaging_orders`, `prescriptions`, `medication_orders`, `procedure_orders`, `nutrition_plans`, `allied_health_notes`, `visit_diagnoses`, `vitals`.
+- Backfill: `encounter_id = COALESCE(admission_id, visit_id)`, `encounter_type` = whichever matched.
+- Trigger `set_encounter_from_source()` on insert to populate both from whichever id the caller supplies.
+- New table `clinical_tasks` (id, encounter_id, encounter_type, patient_id, kind, source_table, source_id, assigned_role, assigned_to, status[pending|in_progress|done|cancelled], priority, due_at, created_at, updated_at, completed_at, completed_by). RLS: creator + assigned_role + admin. Grants for authenticated + service_role.
+- Triggers on lab_orders / imaging_orders / prescriptions / procedure_orders / medication_orders insert → create matching `clinical_tasks` row assigned to the correct role.
+- Auto-attach: lab_results already have order_id; extend `auto_flag_lab_result` (or new trigger) to copy `encounter_id`/`encounter_type` from the parent order so patient timelines can query by encounter directly.
+
+**/visits/$visitId enhancements**
+- If the visit has an active admission (join on `admissions.visit_id` or `admissions.patient_id` + open status): render an Admission Context banner (ward, bed, LOS, admission diagnosis, attending consultant).
+- New **Tasks** panel: lists `clinical_tasks` for the encounter with status toggles (pending → in_progress → done). Filter chips by role.
+- Link "Open ward round" / "Add MAR entry" shortcuts when inpatient context is detected.
+
+**Discharge planning**
+- `/discharge-planning` reads outstanding `clinical_tasks WHERE encounter_type='admission' AND status <> 'done'` and blocks the Discharge button until all are done or cancelled (admin override). Auto-generator already pulls ward rounds + care plans; extend it to summarize completed tasks by category.
+
+## Technical notes
+
+- Migrations follow the strict order (CREATE → GRANT → RLS → POLICY). `clinical_tasks` gets `authenticated` grants + `service_role`, no `anon`.
+- Sub-turn 1 ships immediately with no DB changes.
+- Sub-turn 2 uses the existing schema — safe to ship without waiting for migration approval.
+- Sub-turn 3 is one migration + one code pass; the trigger keeps old code paths (which only set `visit_id` or `admission_id`) working.
+
+## Questions before I start
+
+1. **Logo style**: minimalist line-art vault door with a subtle medical cross, monochrome (works on any background) — OK? Or do you want full-color?
+2. **Sub-turn order**: ship 1 → 2 → 3 across three messages (recommended, safer), or do you want everything in one go?
+3. **Discharge task gate**: hard block until all admission tasks are `done`/`cancelled`, or soft warn + allow admin override? (Recommend: hard block for non-admin, admin override with reason.)
