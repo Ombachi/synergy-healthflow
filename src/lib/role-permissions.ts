@@ -31,7 +31,8 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Front desk / patient flow
   "/reception": ["receptionist"],
   "/appointments": ["receptionist", "doctor"],
-  "/queue": ["receptionist", "nurse", "doctor", "lab_tech", "pharmacist", "radiologist", "cashier", "billing_officer"],
+  // Queue is a clinical/front-desk board only — no pharmacist/lab_tech/cashier/billing.
+  "/queue": ["receptionist", "nurse", "doctor"],
 
   // Patient
   "/me": ["patient"],
@@ -43,7 +44,8 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/lab": ["lab_tech"],
   "/lab-order": ["doctor", "physio", "nurse"],
   "/pharmacy": ["pharmacist"],
-  "/prescribe": ["doctor", "physio", "pharmacist"],
+  // Prescribers only — pharmacists dispense at /pharmacy, they do not prescribe.
+  "/prescribe": ["doctor", "physio"],
   "/radiology": ["radiologist"],
 
   // Billing & insurance

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ScanLine } from "lucide-react";
@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
+import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
+import { EncounterTabs } from "@/components/encounter-tabs";
 
 export const Route = createFileRoute("/_authenticated/radiology")({ component: () => <RoleGate path="/radiology"><RadPortal /></RoleGate> });
 
@@ -22,6 +24,8 @@ function RadPortal() {
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
   const canWork = hasAnyRole(["radiologist", "admin"]);
+  const encMap = useEncounterMap();
+  const [encFilter, setEncFilter] = useState<EncounterFilter>("all");
 
   const orders = useQuery({
     queryKey: ["img-orders"],
@@ -79,6 +83,19 @@ function RadPortal() {
 
   const patientName = (id: string) => patients.data?.find((p) => p.id === id)?.full_name ?? "—";
 
+  const encCounts = useMemo(
+    () => encounterCounts(orders.data ?? [], encMap.data?.inpatientVisitIds),
+    [orders.data, encMap.data?.inpatientVisitIds],
+  );
+  const filteredOrders = useMemo(() => {
+    const inp = encMap.data?.inpatientVisitIds;
+    return (orders.data ?? []).filter((o) => {
+      if (encFilter === "all") return true;
+      const isInp = !!(o.visit_id && inp?.has(o.visit_id));
+      return encFilter === "inpatient" ? isInp : !isInp;
+    });
+  }, [orders.data, encFilter, encMap.data?.inpatientVisitIds]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -87,10 +104,13 @@ function RadPortal() {
       </div>
 
       <div className="rounded-lg border bg-card">
-        <div className="border-b p-3 font-medium">Imaging orders</div>
+        <div className="flex items-center justify-between border-b p-3">
+          <div className="font-medium">Imaging orders</div>
+          <div className="w-72"><EncounterTabs value={encFilter} onChange={setEncFilter} counts={encCounts} /></div>
+        </div>
         <div className="divide-y">
-          {orders.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No orders.</div>}
-          {orders.data?.map((o) => (
+          {filteredOrders.length === 0 && <div className="p-4 text-sm text-muted-foreground">No orders.</div>}
+          {filteredOrders.map((o) => (
             <div key={o.id} className="p-3 text-sm">
               <div className="grid grid-cols-12 items-center gap-2">
                 <div className="col-span-3">

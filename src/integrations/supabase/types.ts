@@ -405,6 +405,8 @@ export type Database = {
           clinician_id: string | null
           created_at: string
           discipline: string
+          encounter_id: string | null
+          encounter_type: string | null
           id: string
           intervention: string | null
           plan: string | null
@@ -416,6 +418,8 @@ export type Database = {
           clinician_id?: string | null
           created_at?: string
           discipline: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           intervention?: string | null
           plan?: string | null
@@ -427,6 +431,8 @@ export type Database = {
           clinician_id?: string | null
           created_at?: string
           discipline?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           intervention?: string | null
           plan?: string | null
@@ -1304,6 +1310,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      clinical_tasks: {
+        Row: {
+          assigned_role: Database["public"]["Enums"]["app_role"] | null
+          assigned_to: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_at: string | null
+          encounter_id: string | null
+          encounter_type: string | null
+          id: string
+          kind: string
+          patient_id: string | null
+          priority: number
+          source_id: string | null
+          source_table: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_role?: Database["public"]["Enums"]["app_role"] | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          encounter_id?: string | null
+          encounter_type?: string | null
+          id?: string
+          kind: string
+          patient_id?: string | null
+          priority?: number
+          source_id?: string | null
+          source_table?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_role?: Database["public"]["Enums"]["app_role"] | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          encounter_id?: string | null
+          encounter_type?: string | null
+          id?: string
+          kind?: string
+          patient_id?: string | null
+          priority?: number
+          source_id?: string | null
+          source_table?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       competitions: {
         Row: {
@@ -2253,6 +2325,8 @@ export type Database = {
           body_part: string | null
           clinical_question: string | null
           created_at: string
+          encounter_id: string | null
+          encounter_type: string | null
           findings: string | null
           id: string
           image_path: string | null
@@ -2272,6 +2346,8 @@ export type Database = {
           body_part?: string | null
           clinical_question?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           findings?: string | null
           id?: string
           image_path?: string | null
@@ -2291,6 +2367,8 @@ export type Database = {
           body_part?: string | null
           clinical_question?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           findings?: string | null
           id?: string
           image_path?: string | null
@@ -2996,6 +3074,8 @@ export type Database = {
         Row: {
           clinical_notes: string | null
           created_at: string
+          encounter_id: string | null
+          encounter_type: string | null
           id: string
           ordered_by: string | null
           patient_id: string
@@ -3008,6 +3088,8 @@ export type Database = {
         Insert: {
           clinical_notes?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           ordered_by?: string | null
           patient_id: string
@@ -3020,6 +3102,8 @@ export type Database = {
         Update: {
           clinical_notes?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           ordered_by?: string | null
           patient_id?: string
@@ -3184,6 +3268,8 @@ export type Database = {
           abnormal_flag: string | null
           comments: string | null
           created_at: string
+          encounter_id: string | null
+          encounter_type: string | null
           file_path: string | null
           id: string
           numeric_value: number | null
@@ -3200,6 +3286,8 @@ export type Database = {
           abnormal_flag?: string | null
           comments?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           file_path?: string | null
           id?: string
           numeric_value?: number | null
@@ -3216,6 +3304,8 @@ export type Database = {
           abnormal_flag?: string | null
           comments?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           file_path?: string | null
           id?: string
           numeric_value?: number | null
@@ -3251,6 +3341,8 @@ export type Database = {
           collected_by: string | null
           condition: string | null
           created_at: string
+          encounter_id: string | null
+          encounter_type: string | null
           id: string
           notes: string | null
           order_id: string
@@ -3261,6 +3353,8 @@ export type Database = {
           collected_by?: string | null
           condition?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           notes?: string | null
           order_id: string
@@ -3271,6 +3365,8 @@ export type Database = {
           collected_by?: string | null
           condition?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           notes?: string | null
           order_id?: string
@@ -3561,6 +3657,8 @@ export type Database = {
           admission_id: string
           created_at: string
           dose: string
+          encounter_id: string | null
+          encounter_type: string | null
           frequency: string
           id: string
           indication: string | null
@@ -3577,6 +3675,8 @@ export type Database = {
           admission_id: string
           created_at?: string
           dose: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           frequency: string
           id?: string
           indication?: string | null
@@ -3593,6 +3693,8 @@ export type Database = {
           admission_id?: string
           created_at?: string
           dose?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           frequency?: string
           id?: string
           indication?: string | null
@@ -3786,6 +3888,8 @@ export type Database = {
           athlete_id: string
           compliance_pct: number | null
           created_at: string
+          encounter_id: string | null
+          encounter_type: string | null
           end_date: string | null
           id: string
           notes: string | null
@@ -3798,6 +3902,8 @@ export type Database = {
           athlete_id: string
           compliance_pct?: number | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
@@ -3810,6 +3916,8 @@ export type Database = {
           athlete_id?: string
           compliance_pct?: number | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
@@ -4329,6 +4437,8 @@ export type Database = {
           created_by: string | null
           dose: string | null
           duration: string | null
+          encounter_id: string | null
+          encounter_type: string | null
           frequency: string | null
           id: string
           instructions: string | null
@@ -4341,6 +4451,8 @@ export type Database = {
           created_by?: string | null
           dose?: string | null
           duration?: string | null
+          encounter_id?: string | null
+          encounter_type?: string | null
           frequency?: string | null
           id?: string
           instructions?: string | null
@@ -4353,6 +4465,8 @@ export type Database = {
           created_by?: string | null
           dose?: string | null
           duration?: string | null
+          encounter_id?: string | null
+          encounter_type?: string | null
           frequency?: string | null
           id?: string
           instructions?: string | null
@@ -4374,6 +4488,8 @@ export type Database = {
         Row: {
           code: string | null
           created_at: string
+          encounter_id: string | null
+          encounter_type: string | null
           id: string
           notes: string | null
           ordered_by: string | null
@@ -4389,6 +4505,8 @@ export type Database = {
         Insert: {
           code?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           notes?: string | null
           ordered_by?: string | null
@@ -4404,6 +4522,8 @@ export type Database = {
         Update: {
           code?: string | null
           created_at?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           id?: string
           notes?: string | null
           ordered_by?: string | null
@@ -5819,6 +5939,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           diagnosis: string
+          encounter_id: string | null
+          encounter_type: string | null
           icd_code: string | null
           id: string
           is_primary: boolean
@@ -5830,6 +5952,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           diagnosis: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           icd_code?: string | null
           id?: string
           is_primary?: boolean
@@ -5841,6 +5965,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           diagnosis?: string
+          encounter_id?: string | null
+          encounter_type?: string | null
           icd_code?: string | null
           id?: string
           is_primary?: boolean
@@ -6032,6 +6158,8 @@ export type Database = {
           captured_by: string | null
           created_at: string
           diastolic_bp: number | null
+          encounter_id: string | null
+          encounter_type: string | null
           glucose_mg_dl: number | null
           heart_rate: number | null
           height_cm: number | null
@@ -6051,6 +6179,8 @@ export type Database = {
           captured_by?: string | null
           created_at?: string
           diastolic_bp?: number | null
+          encounter_id?: string | null
+          encounter_type?: string | null
           glucose_mg_dl?: number | null
           heart_rate?: number | null
           height_cm?: number | null
@@ -6070,6 +6200,8 @@ export type Database = {
           captured_by?: string | null
           created_at?: string
           diastolic_bp?: number | null
+          encounter_id?: string | null
+          encounter_type?: string | null
           glucose_mg_dl?: number | null
           heart_rate?: number | null
           height_cm?: number | null
