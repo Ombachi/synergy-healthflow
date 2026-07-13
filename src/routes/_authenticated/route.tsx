@@ -36,8 +36,11 @@ const HIDE_GROUPS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   nurse:             ["emergency"],
   pharmacist:        ["emergency"],
   physio:            ["emergency"],
+  nutritionist:      ["emergency"],
   radiologist:       ["emergency"],
-  procurement:       ["outpatient", "inpatient"],
+  procurement:       ["outpatient", "inpatient", "emergency"],
+  store_keeper:      ["outpatient", "inpatient", "emergency"],
+  admin:             ["emergency"],
 };
 
 // Theatre / ICU / Maternity stub prefixes (nested under Inpatient).
@@ -57,15 +60,18 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
     "/beds", "/coming-soon/ward-board", "/nursing-station", "/emar",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
+    "/care-plans", "/ward-rounds",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
     ...SUBDOMAIN_PREFIXES,
   ],
   nurse: [
-    "/coming-soon/nursing-triage", "/visits", "/lab-order", "/coming-soon/visit-history",
+    "/coming-soon/nursing-triage", "/visits", "/lab-order",
+    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
     "/admissions", "/beds", "/coming-soon/ward-board", "/nursing-station",
     "/care-plans", "/ward-rounds", "/emar",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    "/discharge-planning",
     ...SUBDOMAIN_PREFIXES,
   ],
   pharmacist: [
@@ -80,8 +86,18 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
     "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
     "/coming-soon/ward-board", "/coming-soon/my-inpatients", "/emar",
+    "/care-plans", "/ward-rounds",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    ...SUBDOMAIN_PREFIXES,
+  ],
+  nutritionist: [
+    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
+    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+    "/coming-soon/ward-board", "/coming-soon/my-inpatients",
+    "/care-plans", "/coming-soon/inpatient-imaging",
+    "/allied-health",
+    "/sports",
     ...SUBDOMAIN_PREFIXES,
   ],
   radiologist: [
@@ -92,12 +108,33 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
     ...SUBDOMAIN_PREFIXES,
   ],
+  admin: [
+    // Outpatient trims
+    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
+    "/lab-order", "/coming-soon/outpatient-imaging", "/prescribe",
+    "/coming-soon/visit-history",
+    // Inpatient trims
+    "/admissions", "/beds", "/nursing-station",
+    "/coming-soon/ward-board", "/coming-soon/my-inpatients",
+    "/care-plans", "/coming-soon/inpatient-imaging",
+    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    ...SUBDOMAIN_PREFIXES,
+    // Sports trims
+    "/sports-medicine", "/anti-doping",
+    // Store trims
+    "/tenders", "/audit-inventory", "/orders/stock-requests",
+    // HR trims
+    "/hr/me", "/hr/leave", "/hr/payslips", "/hr/documents", "/hr/admin",
+    "/requests", "/attendance", "/leave-inbox", "/announcements",
+    // Finance trims
+    "/cash-reconciliation", "/credit-notes", "/preauth",
+  ],
 };
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/assessments"],
-  athlete:           ["/me", "/assessments"],
+  patient:           ["/me", "/assessments", "/messages"],
+  athlete:           ["/me", "/assessments", "/messages"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
 };
@@ -107,7 +144,6 @@ function urlMatches(url: string, pattern: string): boolean {
 }
 
 function isItemVisibleForRoles(url: string, groupKey: string | null, roles: AppRole[]): boolean {
-  if (roles.includes("admin")) return true;
   if (roles.length === 0) return true; // let canAccess handle it
   // Item is visible if ANY of the user's roles would show it.
   return roles.some((role) => {
