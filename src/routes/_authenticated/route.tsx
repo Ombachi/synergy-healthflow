@@ -354,7 +354,10 @@ function AuthedLayout() {
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {STANDALONE.filter((it) => canAccess(it.url, roles)).map((it) => (
+                  {STANDALONE
+                    .filter((it) => canAccess(it.url, roles))
+                    .filter((it) => isItemVisibleForRoles(it.url, null, roles))
+                    .map((it) => (
                     <SidebarMenuItem key={it.url}>
                       <SidebarMenuButton asChild isActive={pathname === it.url}>
                         <Link to={it.url as string}>
@@ -371,7 +374,8 @@ function AuthedLayout() {
             {GROUPS.map((group) => {
               const visibleItems = group.items
                 .filter((it) => canAccess(it.url, roles) || it.url.startsWith("/coming-soon/"))
-                .filter((it) => !(isAdmin && it.hideForAdmin));
+                .filter((it) => !(isAdmin && it.hideForAdmin))
+                .filter((it) => isItemVisibleForRoles(it.url, group.key, roles));
               if (visibleItems.length === 0 && !group.alwaysShow) return null;
 
               const isOpen = !!openGroups[group.key];
