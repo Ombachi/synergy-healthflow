@@ -19,6 +19,106 @@ import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
 import { useWorkCounts } from "@/hooks/use-notifications";
 import { canAccess } from "@/lib/role-permissions";
+import type { AppRole } from "@/hooks/use-auth";
+
+// ============================================================================
+// Per-role sidebar visibility rules.
+// These filter what is *shown* in the nav; they do NOT relax route access
+// (canAccess() still owns that). A user with multiple roles sees an item if
+// at least one of their roles would show it.
+// ============================================================================
+
+// Whole groups hidden for a role.
+const HIDE_GROUPS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
+  lab_tech:          ["inpatient", "emergency", "store"],
+  billing_officer:   ["outpatient", "inpatient", "emergency", "finance"],
+  doctor:            ["emergency"],
+  nurse:             ["emergency"],
+  pharmacist:        ["emergency"],
+  physio:            ["emergency"],
+  radiologist:       ["emergency"],
+  procurement:       ["outpatient", "inpatient"],
+};
+
+// Theatre / ICU / Maternity stub prefixes (nested under Inpatient).
+const THEATRE_PREFIXES = ["/surgery", "/coming-soon/theatre-", "/coming-soon/surgical-", "/coming-soon/anaesthesia-", "/coming-soon/recovery"];
+const ICU_PREFIXES = ["/coming-soon/icu-", "/coming-soon/ventilator-", "/coming-soon/sedation", "/coming-soon/critical-care-"];
+const MATERNITY_PREFIXES = ["/coming-soon/maternity-", "/coming-soon/antenatal", "/coming-soon/labour-", "/coming-soon/postnatal", "/coming-soon/newborn-"];
+const SUBDOMAIN_PREFIXES = [...THEATRE_PREFIXES, ...ICU_PREFIXES, ...MATERNITY_PREFIXES];
+
+// Individual URLs hidden for a role.
+const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
+  lab_tech: [
+    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
+    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+  ],
+  doctor: [
+    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
+    "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+    "/beds", "/coming-soon/ward-board", "/nursing-station", "/emar",
+    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
+    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    ...SUBDOMAIN_PREFIXES,
+  ],
+  nurse: [
+    "/coming-soon/nursing-triage", "/visits", "/lab-order", "/coming-soon/visit-history",
+    "/admissions", "/beds", "/coming-soon/ward-board", "/nursing-station",
+    "/care-plans", "/ward-rounds", "/emar",
+    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
+    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    ...SUBDOMAIN_PREFIXES,
+  ],
+  pharmacist: [
+    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
+    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+    "/coming-soon/ward-board", "/coming-soon/my-inpatients", "/emar",
+    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
+    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    ...SUBDOMAIN_PREFIXES,
+  ],
+  physio: [
+    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
+    "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+    "/coming-soon/ward-board", "/coming-soon/my-inpatients", "/emar",
+    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
+    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    ...SUBDOMAIN_PREFIXES,
+  ],
+  radiologist: [
+    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
+    "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+    "/coming-soon/ward-board", "/coming-soon/my-inpatients", "/emar",
+    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
+    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    ...SUBDOMAIN_PREFIXES,
+  ],
+};
+
+// Strict whitelist: role sees ONLY these URLs (both groups and standalone).
+const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
+  patient:           ["/me", "/assessments"],
+  athlete:           ["/me", "/assessments"],
+  receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue"],
+  insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
+};
+
+function urlMatches(url: string, pattern: string): boolean {
+  return url === pattern || url.startsWith(pattern);
+}
+
+function isItemVisibleForRoles(url: string, groupKey: string | null, roles: AppRole[]): boolean {
+  if (roles.includes("admin")) return true;
+  if (roles.length === 0) return true; // let canAccess handle it
+  // Item is visible if ANY of the user's roles would show it.
+  return roles.some((role) => {
+    const only = ONLY_URLS_BY_ROLE[role];
+    if (only) return only.some((p) => urlMatches(url, p));
+    if (groupKey && HIDE_GROUPS_BY_ROLE[role]?.includes(groupKey)) return false;
+    const hides = HIDE_URLS_BY_ROLE[role];
+    if (hides && hides.some((p) => urlMatches(url, p))) return false;
+    return true;
+  });
+}
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
