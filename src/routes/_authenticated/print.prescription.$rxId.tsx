@@ -133,7 +133,7 @@ function RxPrint() {
           <div className="mt-2 rounded border border-black/20 p-4">
             <div className="text-lg font-semibold">{rx.data.medication}</div>
             <div className="mt-1 text-sm">
-              <b>Dosage:</b> {rx.data.dosage ?? "—"} &nbsp;•&nbsp;
+              <b>Dosage:</b> {rx.data.dose ?? "—"} &nbsp;•&nbsp;
               <b>Frequency:</b> {rx.data.frequency ?? "—"} &nbsp;•&nbsp;
               <b>Duration:</b> {rx.data.duration ?? "—"}
             </div>
