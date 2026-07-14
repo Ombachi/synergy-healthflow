@@ -149,7 +149,7 @@ function RxPrint() {
         <div className="mt-10 flex items-end justify-between">
           <div>
             <div className="border-t border-black pt-1 text-xs">Prescriber signature</div>
-            <div className="mt-1 text-[10px] text-gray-600">Prescriber ID: {rx.data.prescribed_by?.slice(0, 8) ?? "—"}</div>
+            <div className="mt-1 text-[10px] text-gray-600">Prescriber ID: {rx.data.created_by?.slice(0, 8) ?? "—"}</div>
           </div>
           <div className="text-right text-[10px] text-gray-600">
             <div>Verify at:</div>
