@@ -112,7 +112,11 @@ function RadPortal() {
       } as never).eq("id", openId);
       if (error) throw error;
     },
-    onSuccess: () => { setOpenId(null); setImageFile(null); setForm({ findings: "", report: "", image_path: "" }); qc.invalidateQueries({ queryKey: ["img-orders"] }); toast.success("Report saved"); },
+    onSuccess: () => {
+      if (openId) { try { localStorage.removeItem(draftKey(openId)); localStorage.removeItem("litu:rad-draft:last"); } catch { /* ignore */ } }
+      setOpenId(null); setImageFile(null); setForm({ findings: "", report: "", image_path: "" });
+      qc.invalidateQueries({ queryKey: ["img-orders"] }); toast.success("Report saved");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
