@@ -182,7 +182,7 @@ function RadPortal() {
             <div><Label>Impression / Report</Label><Textarea rows={5} value={form.report} onChange={(e) => setForm({ ...form, report: e.target.value })} /></div>
             <div>
               <Label>Report image</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+              <Input type="file" accept="image/*,application/pdf" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
               {form.image_path && <div className="mt-1 text-xs text-muted-foreground">Current attachment: {form.image_path}</div>}
             </div>
           </div>
