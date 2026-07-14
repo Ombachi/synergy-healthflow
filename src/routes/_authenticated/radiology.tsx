@@ -49,6 +49,41 @@ function RadPortal() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const opening = orders.data?.find((o) => o.id === openId);
 
+  // Persist any in-progress radiology report drafts so navigating away doesn't lose them.
+  const draftKey = (id: string) => `litu:rad-draft:${id}`;
+  function openReport(o: ImgOrder) {
+    setOpenId(o.id);
+    setImageFile(null);
+    try {
+      const raw = localStorage.getItem(draftKey(o.id));
+      if (raw) {
+        const d = JSON.parse(raw) as { findings?: string; report?: string; image_path?: string };
+        setForm({ findings: d.findings ?? o.findings ?? "", report: d.report ?? o.report ?? "", image_path: d.image_path ?? o.image_path ?? "" });
+        return;
+      }
+    } catch { /* ignore */ }
+    setForm({ findings: o.findings ?? "", report: o.report ?? "", image_path: o.image_path ?? "" });
+  }
+  // Persist on change
+  useEffect(() => {
+    if (!openId) return;
+    try { localStorage.setItem(draftKey(openId), JSON.stringify(form)); } catch { /* ignore */ }
+  }, [openId, form]);
+  // Restore last-open draft on mount so the panel comes back if the user navigated away.
+  useEffect(() => {
+    try {
+      const lastId = localStorage.getItem("litu:rad-draft:last");
+      if (lastId && !openId) {
+        const raw = localStorage.getItem(draftKey(lastId));
+        if (raw) setOpenId(lastId);
+      }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (openId) { try { localStorage.setItem("litu:rad-draft:last", openId); } catch { /* ignore */ } }
+  }, [openId]);
+
   const schedule = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("imaging_orders" as never).update({
