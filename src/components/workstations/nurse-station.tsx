@@ -364,6 +364,29 @@ export function NurseStation() {
                   <div>
                     <Label className="text-xs">Allergies</Label>
                     <Input value={v.allergies} onChange={(e) => setV({ ...v, allergies: e.target.value })} placeholder="e.g. penicillin" />
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {COMMON_ALLERGENS.map((a) => {
+                        const present = v.allergies.toLowerCase().split(/[,;]\s*/).includes(a.toLowerCase());
+                        return (
+                          <button
+                            key={a}
+                            type="button"
+                            onClick={() => {
+                              const list = v.allergies.split(/,\s*/).map(s=>s.trim()).filter(Boolean);
+                              const next = present ? list.filter((x) => x.toLowerCase() !== a.toLowerCase()) : [...list, a];
+                              setV({ ...v, allergies: next.join(", ") });
+                            }}
+                            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+                              present ? "border-rose-500 bg-rose-500/10 text-rose-700" : "border-border bg-muted hover:bg-accent"
+                            }`}
+                          >
+                            {present ? "− " : "+ "}{a}
+                          </button>
+                        );
+                      })}
+                      <button type="button" onClick={() => setV({ ...v, allergies: "NKDA" })}
+                        className="rounded-full border px-2 py-0.5 text-[11px] hover:bg-accent">NKDA</button>
+                    </div>
                   </div>
                   <div>
                     <Label className="text-xs">Triage notes</Label>
