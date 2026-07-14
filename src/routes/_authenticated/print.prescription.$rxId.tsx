@@ -15,11 +15,11 @@ interface Rx {
   id: string;
   visit_id: string;
   medication: string;
-  dosage: string | null;
+  dose: string | null;
   frequency: string | null;
   duration: string | null;
   instructions: string | null;
-  prescribed_by: string | null;
+  created_by: string | null;
   created_at: string;
 }
 
@@ -32,7 +32,7 @@ function RxPrint() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("prescriptions" as never)
-        .select("id, visit_id, medication, dosage, frequency, duration, instructions, prescribed_by, created_at")
+        .select("id, visit_id, medication, dose, frequency, duration, instructions, created_by, created_at")
         .eq("id", rxId)
         .maybeSingle();
       if (error) throw error;
@@ -91,7 +91,7 @@ function RxPrint() {
           <SignRecord
             entityType="prescription"
             entityId={rx.data.id}
-            payload={`${rx.data.medication}|${rx.data.dosage}|${rx.data.frequency}`}
+            payload={`${rx.data.medication}|${rx.data.dose}|${rx.data.frequency}`}
           />
           <Button onClick={() => window.print()}><Printer className="mr-1 h-4 w-4" /> Print</Button>
         </div>
@@ -133,7 +133,7 @@ function RxPrint() {
           <div className="mt-2 rounded border border-black/20 p-4">
             <div className="text-lg font-semibold">{rx.data.medication}</div>
             <div className="mt-1 text-sm">
-              <b>Dosage:</b> {rx.data.dosage ?? "—"} &nbsp;•&nbsp;
+              <b>Dosage:</b> {rx.data.dose ?? "—"} &nbsp;•&nbsp;
               <b>Frequency:</b> {rx.data.frequency ?? "—"} &nbsp;•&nbsp;
               <b>Duration:</b> {rx.data.duration ?? "—"}
             </div>
@@ -149,7 +149,7 @@ function RxPrint() {
         <div className="mt-10 flex items-end justify-between">
           <div>
             <div className="border-t border-black pt-1 text-xs">Prescriber signature</div>
-            <div className="mt-1 text-[10px] text-gray-600">Prescriber ID: {rx.data.prescribed_by?.slice(0, 8) ?? "—"}</div>
+            <div className="mt-1 text-[10px] text-gray-600">Prescriber ID: {rx.data.created_by?.slice(0, 8) ?? "—"}</div>
           </div>
           <div className="text-right text-[10px] text-gray-600">
             <div>Verify at:</div>
