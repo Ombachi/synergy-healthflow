@@ -25,6 +25,12 @@ const PRIO_COLOR: Record<number, string> = {
 };
 const PRIO_LABEL: Record<number, string> = { 1: "Emergency", 2: "Urgent", 3: "Normal", 4: "Low", 5: "Routine" };
 
+const COMMON_ALLERGENS: string[] = [
+  "Penicillin","Sulfa drugs","Aspirin","NSAIDs","Codeine","Morphine","Ibuprofen",
+  "Latex","Iodine/contrast","Peanuts","Tree nuts","Shellfish","Eggs","Milk","Soy","Wheat/Gluten",
+  "Bee stings","Pollen","Dust mites",
+];
+
 function ageOf(dob: string | null) {
   if (!dob) return "—";
   const y = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000));
