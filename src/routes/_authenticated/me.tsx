@@ -457,7 +457,11 @@ function PatientTimeline() {
             <DialogContent className="max-w-3xl">
               <DialogHeader><DialogTitle>{viewImg?.row.modality} report</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                {viewImg?.url && <img src={viewImg.url} alt="study" className="max-h-[60vh] w-full rounded border object-contain" />}
+                {viewImg?.url && (viewImg.row.image_path?.toLowerCase().endsWith(".pdf") ? (
+                  <iframe src={viewImg.url} title="study" className="h-[70vh] w-full rounded border" />
+                ) : (
+                  <img src={viewImg.url} alt="study" className="max-h-[60vh] w-full rounded border object-contain" />
+                ))}
                 <div className="whitespace-pre-wrap rounded border bg-muted/30 p-3 text-sm">{viewImg?.row.report ?? viewImg?.row.findings ?? "—"}</div>
               </div>
               <DialogFooter>
