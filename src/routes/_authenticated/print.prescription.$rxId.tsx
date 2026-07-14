@@ -91,7 +91,7 @@ function RxPrint() {
           <SignRecord
             entityType="prescription"
             entityId={rx.data.id}
-            payload={`${rx.data.medication}|${rx.data.dosage}|${rx.data.frequency}`}
+            payload={`${rx.data.medication}|${rx.data.dose}|${rx.data.frequency}`}
           />
           <Button onClick={() => window.print()}><Printer className="mr-1 h-4 w-4" /> Print</Button>
         </div>
