@@ -163,7 +163,7 @@ function RadPortal() {
                 <div className="col-span-3 flex justify-end gap-1">
                   {canWork && o.status === "ordered" && <Button size="sm" variant="outline" onClick={() => schedule.mutate(o.id)}>Schedule</Button>}
                   {canWork && o.status !== "reported" && (
-                    <Button size="sm" onClick={() => { setOpenId(o.id); setImageFile(null); setForm({ findings: o.findings ?? "", report: o.report ?? "", image_path: o.image_path ?? "" }); }}>Report</Button>
+                    <Button size="sm" onClick={() => openReport(o)}>Report</Button>
                   )}
                   {o.report && <span className="text-xs text-muted-foreground">✓ reported</span>}
                 </div>
