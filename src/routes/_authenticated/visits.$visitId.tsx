@@ -411,7 +411,18 @@ function VisitDetail() {
                     {o.clinical_question && <div className="text-xs text-muted-foreground">{o.clinical_question}</div>}
                     {o.findings && <div className="mt-1 text-xs"><span className="font-medium">Findings: </span>{o.findings}</div>}
                     {o.report && <div className="mt-1 text-xs"><span className="font-medium">Report: </span>{o.report}</div>}
-                    {imageUrls.data?.[o.id] && <img src={imageUrls.data[o.id]} alt={`${o.modality} report attachment`} className="mt-2 max-h-56 rounded border object-contain" />}
+                    {imageUrls.data?.[o.id] && (
+                      o.image_path?.toLowerCase().endsWith(".pdf") ? (
+                        <div className="mt-2 space-y-1">
+                          <iframe src={imageUrls.data[o.id]} title={`${o.modality} report`} className="h-72 w-full rounded border" />
+                          <a href={imageUrls.data[o.id]} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">Open report in new tab</a>
+                        </div>
+                      ) : (
+                        <a href={imageUrls.data[o.id]} target="_blank" rel="noreferrer" title="Open full size">
+                          <img src={imageUrls.data[o.id]} alt={`${o.modality} report attachment`} className="mt-2 max-h-56 rounded border object-contain hover:opacity-90" />
+                        </a>
+                      )
+                    )}
                   </li>
                 ))}
               </ul>
