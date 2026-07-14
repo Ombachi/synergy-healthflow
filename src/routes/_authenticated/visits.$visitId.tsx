@@ -15,6 +15,7 @@ import { IcdPicker } from "@/components/icd-picker";
 import { AssignVisit } from "@/components/assign-visit";
 import { AdmitPatientButton } from "@/components/admit-patient";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ProcedurePickerInline } from "@/components/procedure-picker";
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
 
