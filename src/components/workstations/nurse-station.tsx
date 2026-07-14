@@ -41,6 +41,7 @@ export function NurseStation() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [selectedQid, setSelectedQid] = useState<string | null>(null);
+  const [selectedSentVisitId, setSelectedSentVisitId] = useState<string | null>(null);
 
   const queue = useQuery({
     queryKey: ["nurse-queue"],
