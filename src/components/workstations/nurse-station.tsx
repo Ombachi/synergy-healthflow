@@ -239,10 +239,13 @@ export function NurseStation() {
       } as never).then(() => null, () => null);
     },
     onSuccess: () => {
+      const justSent = selectedVisit?.id ?? null;
       setSelectedQid(null);
       qc.invalidateQueries({ queryKey: ["nurse-queue"] });
       qc.invalidateQueries({ queryKey: ["nurse-visits"] });
-      toast.success("Patient sent to doctor");
+      qc.invalidateQueries({ queryKey: ["nurse-sent"] });
+      if (justSent) setSelectedSentVisitId(justSent);
+      toast.success("Patient sent to doctor — you can still update their vitals from Recently sent");
     },
     onError: (e: Error) => toast.error(e.message),
   });
