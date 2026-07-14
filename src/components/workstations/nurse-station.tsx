@@ -401,6 +401,12 @@ export function NurseStation() {
                     <div className="mt-1 flex h-9 items-center rounded-md border bg-muted/40 px-3 text-sm font-mono">{bmi ?? "—"}</div>
                   </div>
                 </div>
+                {isSentMode && (
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <p className="text-xs text-muted-foreground">Patient is with the doctor — you can still record additional vitals.</p>
+                    <Button size="sm" onClick={() => saveVitals.mutate()} disabled={saveVitals.isPending}>Save vitals</Button>
+                  </div>
+                )}
               </section>
 
               {/* Symptoms */}
