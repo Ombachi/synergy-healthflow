@@ -32,7 +32,7 @@ function RxPrint() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("prescriptions" as never)
-        .select("id, visit_id, medication, dosage, frequency, duration, instructions, prescribed_by, created_at")
+        .select("id, visit_id, medication, dose, frequency, duration, instructions, created_by, created_at")
         .eq("id", rxId)
         .maybeSingle();
       if (error) throw error;
