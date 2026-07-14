@@ -294,7 +294,7 @@ export function NurseStation() {
             return (
               <button
                 key={q.id}
-                onClick={() => setSelectedQid(q.id)}
+                onClick={() => { setSelectedQid(q.id); setSelectedSentVisitId(null); }}
                 className={`flex w-full flex-col gap-1 border-l-4 border-b p-3 text-left text-sm transition ${
                   active ? "bg-accent border-l-primary" : "border-l-transparent hover:bg-accent/40"
                 }`}
@@ -313,6 +313,31 @@ export function NurseStation() {
               </button>
             );
           })}
+          {(sentVisits.data?.length ?? 0) > 0 && (
+            <>
+              <div className="border-b bg-muted/40 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Recently sent to doctor
+              </div>
+              {sentVisits.data!.map((sv) => {
+                const pat = sentPatients.data?.find((p) => p.id === sv.patient_id);
+                const active = sv.id === selectedSentVisitId;
+                return (
+                  <button
+                    key={sv.id}
+                    onClick={() => { setSelectedSentVisitId(sv.id); setSelectedQid(null); }}
+                    className={`flex w-full flex-col gap-0.5 border-l-4 border-b p-3 text-left text-sm transition ${
+                      active ? "bg-accent border-l-primary" : "border-l-transparent hover:bg-accent/40"
+                    }`}
+                  >
+                    <div className="font-medium">{pat?.full_name ?? "—"}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {sv.current_stage ?? "sent"} · {elapsed(sv.opened_at)}
+                    </div>
+                  </button>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
 
