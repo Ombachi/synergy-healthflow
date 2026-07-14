@@ -15,11 +15,11 @@ interface Rx {
   id: string;
   visit_id: string;
   medication: string;
-  dosage: string | null;
+  dose: string | null;
   frequency: string | null;
   duration: string | null;
   instructions: string | null;
-  prescribed_by: string | null;
+  created_by: string | null;
   created_at: string;
 }
 
