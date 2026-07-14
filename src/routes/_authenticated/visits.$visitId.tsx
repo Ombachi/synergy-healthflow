@@ -446,10 +446,15 @@ function VisitDetail() {
                 ))}
               </ul>
               {canOrder && !finalized && (
-                <div className="mt-3 grid grid-cols-12 gap-2">
-                  <Input className="col-span-5" placeholder="Procedure" value={procForm.procedure_name} onChange={(e) => setProcForm({ ...procForm, procedure_name: e.target.value })} />
-                  <Input className="col-span-5" placeholder="Notes" value={procForm.notes} onChange={(e) => setProcForm({ ...procForm, notes: e.target.value })} />
-                  <Button className="col-span-2" size="sm" onClick={() => addProcedure.mutate()} disabled={addProcedure.isPending}>Route to nurse</Button>
+                <div className="mt-3 space-y-2">
+                  <ProcedurePickerInline
+                    value={procForm.procedure_name}
+                    onChange={(name) => setProcForm({ ...procForm, procedure_name: name })}
+                  />
+                  <div className="grid grid-cols-12 gap-2">
+                    <Input className="col-span-10" placeholder="Notes / instructions for nurse" value={procForm.notes} onChange={(e) => setProcForm({ ...procForm, notes: e.target.value })} />
+                    <Button className="col-span-2" size="sm" onClick={() => addProcedure.mutate()} disabled={addProcedure.isPending || !procForm.procedure_name.trim()}>Route to nurse</Button>
+                  </div>
                 </div>
               )}
             </div>
