@@ -141,9 +141,10 @@ export function NurseStation() {
 
   const selectedEntry = queue.data?.find((q) => q.id === selectedQid) ?? null;
   const sentVisit = (sentVisits.data ?? []).find((v) => v.id === selectedSentVisitId) ?? null;
-  const selectedVisit = (visits.data?.find((v) => v.id === selectedEntry?.visit_id) ?? null) ?? sentVisit;
-  const selectedPatient = (patients.data?.find((p) => p.id === selectedVisit?.patient_id)
-    ?? sentPatients.data?.find((p) => p.id === sentVisit?.patient_id)) ?? null;
+  const selectedVisit = visits.data?.find((v) => v.id === selectedEntry?.visit_id) ?? sentVisit;
+  const selectedPatient = patients.data?.find((p) => p.id === selectedVisit?.patient_id)
+    ?? sentPatients.data?.find((p) => p.id === selectedVisit?.patient_id)
+    ?? null;
   const selectedProcedures = (procedures.data ?? []).filter((p) => p.visit_id === selectedVisit?.id);
   const isSentMode = !!selectedSentVisitId && !selectedEntry;
 
