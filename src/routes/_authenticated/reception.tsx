@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -251,13 +251,13 @@ function ReceptionPage() {
           <div className="divide-y">
             {activeVisits.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No active visits.</div>}
             {activeVisits.data?.map((v) => (
-              <Link key={v.id} to="/visits/$visitId" params={{ visitId: v.id }} className="flex items-center justify-between gap-2 p-3 text-sm hover:bg-muted/50">
+              <div key={v.id} className="flex items-center justify-between gap-2 p-3 text-sm">
                 <div>
                   <div className="font-medium">{visitPatientName(v.patient_id)}</div>
                   <div className="text-xs text-muted-foreground">{v.current_stage ?? "—"} · {new Date(v.opened_at).toLocaleTimeString()}</div>
                 </div>
-                <span className="text-xs text-muted-foreground">Open →</span>
-              </Link>
+                <span className="text-xs text-muted-foreground">In progress</span>
+              </div>
             ))}
           </div>
         </div>

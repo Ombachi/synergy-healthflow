@@ -15,6 +15,7 @@ import { IcdPicker } from "@/components/icd-picker";
 import { AssignVisit } from "@/components/assign-visit";
 import { AdmitPatientButton } from "@/components/admit-patient";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ProcedurePickerInline } from "@/components/procedure-picker";
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
 
@@ -410,7 +411,18 @@ function VisitDetail() {
                     {o.clinical_question && <div className="text-xs text-muted-foreground">{o.clinical_question}</div>}
                     {o.findings && <div className="mt-1 text-xs"><span className="font-medium">Findings: </span>{o.findings}</div>}
                     {o.report && <div className="mt-1 text-xs"><span className="font-medium">Report: </span>{o.report}</div>}
-                    {imageUrls.data?.[o.id] && <img src={imageUrls.data[o.id]} alt={`${o.modality} report attachment`} className="mt-2 max-h-56 rounded border object-contain" />}
+                    {imageUrls.data?.[o.id] && (
+                      o.image_path?.toLowerCase().endsWith(".pdf") ? (
+                        <div className="mt-2 space-y-1">
+                          <iframe src={imageUrls.data[o.id]} title={`${o.modality} report`} className="h-72 w-full rounded border" />
+                          <a href={imageUrls.data[o.id]} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">Open report in new tab</a>
+                        </div>
+                      ) : (
+                        <a href={imageUrls.data[o.id]} target="_blank" rel="noreferrer" title="Open full size">
+                          <img src={imageUrls.data[o.id]} alt={`${o.modality} report attachment`} className="mt-2 max-h-56 rounded border object-contain hover:opacity-90" />
+                        </a>
+                      )
+                    )}
                   </li>
                 ))}
               </ul>
@@ -446,10 +458,15 @@ function VisitDetail() {
                 ))}
               </ul>
               {canOrder && !finalized && (
-                <div className="mt-3 grid grid-cols-12 gap-2">
-                  <Input className="col-span-5" placeholder="Procedure" value={procForm.procedure_name} onChange={(e) => setProcForm({ ...procForm, procedure_name: e.target.value })} />
-                  <Input className="col-span-5" placeholder="Notes" value={procForm.notes} onChange={(e) => setProcForm({ ...procForm, notes: e.target.value })} />
-                  <Button className="col-span-2" size="sm" onClick={() => addProcedure.mutate()} disabled={addProcedure.isPending}>Route to nurse</Button>
+                <div className="mt-3 space-y-2">
+                  <ProcedurePickerInline
+                    value={procForm.procedure_name}
+                    onChange={(name) => setProcForm({ ...procForm, procedure_name: name })}
+                  />
+                  <div className="grid grid-cols-12 gap-2">
+                    <Input className="col-span-10" placeholder="Notes / instructions for nurse" value={procForm.notes} onChange={(e) => setProcForm({ ...procForm, notes: e.target.value })} />
+                    <Button className="col-span-2" size="sm" onClick={() => addProcedure.mutate()} disabled={addProcedure.isPending || !procForm.procedure_name.trim()}>Route to nurse</Button>
+                  </div>
                 </div>
               )}
             </div>

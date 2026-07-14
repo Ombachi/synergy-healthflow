@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ScanLine } from "lucide-react";
@@ -49,6 +49,41 @@ function RadPortal() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const opening = orders.data?.find((o) => o.id === openId);
 
+  // Persist any in-progress radiology report drafts so navigating away doesn't lose them.
+  const draftKey = (id: string) => `litu:rad-draft:${id}`;
+  function openReport(o: ImgOrder) {
+    setOpenId(o.id);
+    setImageFile(null);
+    try {
+      const raw = localStorage.getItem(draftKey(o.id));
+      if (raw) {
+        const d = JSON.parse(raw) as { findings?: string; report?: string; image_path?: string };
+        setForm({ findings: d.findings ?? o.findings ?? "", report: d.report ?? o.report ?? "", image_path: d.image_path ?? o.image_path ?? "" });
+        return;
+      }
+    } catch { /* ignore */ }
+    setForm({ findings: o.findings ?? "", report: o.report ?? "", image_path: o.image_path ?? "" });
+  }
+  // Persist on change
+  useEffect(() => {
+    if (!openId) return;
+    try { localStorage.setItem(draftKey(openId), JSON.stringify(form)); } catch { /* ignore */ }
+  }, [openId, form]);
+  // Restore last-open draft on mount so the panel comes back if the user navigated away.
+  useEffect(() => {
+    try {
+      const lastId = localStorage.getItem("litu:rad-draft:last");
+      if (lastId && !openId) {
+        const raw = localStorage.getItem(draftKey(lastId));
+        if (raw) setOpenId(lastId);
+      }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (openId) { try { localStorage.setItem("litu:rad-draft:last", openId); } catch { /* ignore */ } }
+  }, [openId]);
+
   const schedule = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("imaging_orders" as never).update({
@@ -77,7 +112,11 @@ function RadPortal() {
       } as never).eq("id", openId);
       if (error) throw error;
     },
-    onSuccess: () => { setOpenId(null); setImageFile(null); setForm({ findings: "", report: "", image_path: "" }); qc.invalidateQueries({ queryKey: ["img-orders"] }); toast.success("Report saved"); },
+    onSuccess: () => {
+      if (openId) { try { localStorage.removeItem(draftKey(openId)); localStorage.removeItem("litu:rad-draft:last"); } catch { /* ignore */ } }
+      setOpenId(null); setImageFile(null); setForm({ findings: "", report: "", image_path: "" });
+      qc.invalidateQueries({ queryKey: ["img-orders"] }); toast.success("Report saved");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -124,7 +163,7 @@ function RadPortal() {
                 <div className="col-span-3 flex justify-end gap-1">
                   {canWork && o.status === "ordered" && <Button size="sm" variant="outline" onClick={() => schedule.mutate(o.id)}>Schedule</Button>}
                   {canWork && o.status !== "reported" && (
-                    <Button size="sm" onClick={() => { setOpenId(o.id); setImageFile(null); setForm({ findings: o.findings ?? "", report: o.report ?? "", image_path: o.image_path ?? "" }); }}>Report</Button>
+                    <Button size="sm" onClick={() => openReport(o)}>Report</Button>
                   )}
                   {o.report && <span className="text-xs text-muted-foreground">✓ reported</span>}
                 </div>
@@ -143,7 +182,7 @@ function RadPortal() {
             <div><Label>Impression / Report</Label><Textarea rows={5} value={form.report} onChange={(e) => setForm({ ...form, report: e.target.value })} /></div>
             <div>
               <Label>Report image</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+              <Input type="file" accept="image/*,application/pdf" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
               {form.image_path && <div className="mt-1 text-xs text-muted-foreground">Current attachment: {form.image_path}</div>}
             </div>
           </div>

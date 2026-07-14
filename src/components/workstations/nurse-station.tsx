@@ -25,6 +25,12 @@ const PRIO_COLOR: Record<number, string> = {
 };
 const PRIO_LABEL: Record<number, string> = { 1: "Emergency", 2: "Urgent", 3: "Normal", 4: "Low", 5: "Routine" };
 
+const COMMON_ALLERGENS: string[] = [
+  "Penicillin","Sulfa drugs","Aspirin","NSAIDs","Codeine","Morphine","Ibuprofen",
+  "Latex","Iodine/contrast","Peanuts","Tree nuts","Shellfish","Eggs","Milk","Soy","Wheat/Gluten",
+  "Bee stings","Pollen","Dust mites",
+];
+
 function ageOf(dob: string | null) {
   if (!dob) return "—";
   const y = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000));
@@ -35,6 +41,7 @@ export function NurseStation() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [selectedQid, setSelectedQid] = useState<string | null>(null);
+  const [selectedSentVisitId, setSelectedSentVisitId] = useState<string | null>(null);
 
   const queue = useQuery({
     queryKey: ["nurse-queue"],
@@ -101,15 +108,45 @@ export function NurseStation() {
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
 
+  // Recently sent to doctor (still allow nurse to update vitals)
+  const sentVisits = useQuery({
+    queryKey: ["nurse-sent", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 8 * 3600 * 1000).toISOString();
+      const { data, error } = await supabase.from("visits" as never)
+        .select("id, patient_id, reason, chief_complaint, triage_level, opened_at, current_stage")
+        .eq("assigned_nurse_id", user!.id).gte("opened_at", since)
+        .order("opened_at", { ascending: false }).limit(20);
+      if (error) throw error;
+      return (data as unknown as (Visit & { opened_at: string; current_stage: string | null })[]) ?? [];
+    },
+  });
+  const sentPatientIds = Array.from(new Set((sentVisits.data ?? []).map((v) => v.patient_id)));
+  const sentPatients = useQuery({
+    queryKey: ["nurse-sent-patients", sentPatientIds.join(",")],
+    enabled: sentPatientIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("patients" as never)
+        .select("id, full_name, date_of_birth, gender, allergies, medical_record_number")
+        .in("id", sentPatientIds as never);
+      return (data as unknown as Patient[]) ?? [];
+    },
+  });
+
   // Auto-select first queue entry
   useEffect(() => {
-    if (!selectedQid && queue.data && queue.data.length > 0) setSelectedQid(queue.data[0].id);
-  }, [queue.data, selectedQid]);
+    if (!selectedQid && !selectedSentVisitId && queue.data && queue.data.length > 0) setSelectedQid(queue.data[0].id);
+  }, [queue.data, selectedQid, selectedSentVisitId]);
 
   const selectedEntry = queue.data?.find((q) => q.id === selectedQid) ?? null;
-  const selectedVisit = visits.data?.find((v) => v.id === selectedEntry?.visit_id) ?? null;
-  const selectedPatient = patients.data?.find((p) => p.id === selectedVisit?.patient_id) ?? null;
+  const sentVisit = (sentVisits.data ?? []).find((v) => v.id === selectedSentVisitId) ?? null;
+  const selectedVisit = visits.data?.find((v) => v.id === selectedEntry?.visit_id) ?? sentVisit;
+  const selectedPatient = patients.data?.find((p) => p.id === selectedVisit?.patient_id)
+    ?? sentPatients.data?.find((p) => p.id === selectedVisit?.patient_id)
+    ?? null;
   const selectedProcedures = (procedures.data ?? []).filter((p) => p.visit_id === selectedVisit?.id);
+  const isSentMode = !!selectedSentVisitId && !selectedEntry;
 
   const [v, setV] = useState({
     temperature_c: "", heart_rate: "", respiratory_rate: "",
@@ -202,10 +239,13 @@ export function NurseStation() {
       } as never).then(() => null, () => null);
     },
     onSuccess: () => {
+      const justSent = selectedVisit?.id ?? null;
       setSelectedQid(null);
       qc.invalidateQueries({ queryKey: ["nurse-queue"] });
       qc.invalidateQueries({ queryKey: ["nurse-visits"] });
-      toast.success("Patient sent to doctor");
+      qc.invalidateQueries({ queryKey: ["nurse-sent"] });
+      if (justSent) setSelectedSentVisitId(justSent);
+      toast.success("Patient sent to doctor — you can still update their vitals from Recently sent");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -257,7 +297,7 @@ export function NurseStation() {
             return (
               <button
                 key={q.id}
-                onClick={() => setSelectedQid(q.id)}
+                onClick={() => { setSelectedQid(q.id); setSelectedSentVisitId(null); }}
                 className={`flex w-full flex-col gap-1 border-l-4 border-b p-3 text-left text-sm transition ${
                   active ? "bg-accent border-l-primary" : "border-l-transparent hover:bg-accent/40"
                 }`}
@@ -276,6 +316,31 @@ export function NurseStation() {
               </button>
             );
           })}
+          {(sentVisits.data?.length ?? 0) > 0 && (
+            <>
+              <div className="border-b bg-muted/40 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Recently sent to doctor
+              </div>
+              {sentVisits.data!.map((sv) => {
+                const pat = sentPatients.data?.find((p) => p.id === sv.patient_id);
+                const active = sv.id === selectedSentVisitId;
+                return (
+                  <button
+                    key={sv.id}
+                    onClick={() => { setSelectedSentVisitId(sv.id); setSelectedQid(null); }}
+                    className={`flex w-full flex-col gap-0.5 border-l-4 border-b p-3 text-left text-sm transition ${
+                      active ? "bg-accent border-l-primary" : "border-l-transparent hover:bg-accent/40"
+                    }`}
+                  >
+                    <div className="font-medium">{pat?.full_name ?? "—"}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {sv.current_stage ?? "sent"} · {elapsed(sv.opened_at)}
+                    </div>
+                  </button>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
 
@@ -336,6 +401,12 @@ export function NurseStation() {
                     <div className="mt-1 flex h-9 items-center rounded-md border bg-muted/40 px-3 text-sm font-mono">{bmi ?? "—"}</div>
                   </div>
                 </div>
+                {isSentMode && (
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <p className="text-xs text-muted-foreground">Patient is with the doctor — you can still record additional vitals.</p>
+                    <Button size="sm" onClick={() => saveVitals.mutate()} disabled={saveVitals.isPending}>Save vitals</Button>
+                  </div>
+                )}
               </section>
 
               {/* Symptoms */}
@@ -364,6 +435,29 @@ export function NurseStation() {
                   <div>
                     <Label className="text-xs">Allergies</Label>
                     <Input value={v.allergies} onChange={(e) => setV({ ...v, allergies: e.target.value })} placeholder="e.g. penicillin" />
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {COMMON_ALLERGENS.map((a) => {
+                        const present = v.allergies.toLowerCase().split(/[,;]\s*/).includes(a.toLowerCase());
+                        return (
+                          <button
+                            key={a}
+                            type="button"
+                            onClick={() => {
+                              const list = v.allergies.split(/,\s*/).map(s=>s.trim()).filter(Boolean);
+                              const next = present ? list.filter((x) => x.toLowerCase() !== a.toLowerCase()) : [...list, a];
+                              setV({ ...v, allergies: next.join(", ") });
+                            }}
+                            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+                              present ? "border-rose-500 bg-rose-500/10 text-rose-700" : "border-border bg-muted hover:bg-accent"
+                            }`}
+                          >
+                            {present ? "− " : "+ "}{a}
+                          </button>
+                        );
+                      })}
+                      <button type="button" onClick={() => setV({ ...v, allergies: "NKDA" })}
+                        className="rounded-full border px-2 py-0.5 text-[11px] hover:bg-accent">NKDA</button>
+                    </div>
                   </div>
                   <div>
                     <Label className="text-xs">Triage notes</Label>
