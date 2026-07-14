@@ -108,15 +108,44 @@ export function NurseStation() {
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
 
+  // Recently sent to doctor (still allow nurse to update vitals)
+  const sentVisits = useQuery({
+    queryKey: ["nurse-sent", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 8 * 3600 * 1000).toISOString();
+      const { data, error } = await supabase.from("visits" as never)
+        .select("id, patient_id, reason, chief_complaint, triage_level, opened_at, current_stage")
+        .eq("assigned_nurse_id", user!.id).gte("opened_at", since)
+        .order("opened_at", { ascending: false }).limit(20);
+      if (error) throw error;
+      return (data as unknown as (Visit & { opened_at: string; current_stage: string | null })[]) ?? [];
+    },
+  });
+  const sentPatientIds = Array.from(new Set((sentVisits.data ?? []).map((v) => v.patient_id)));
+  const sentPatients = useQuery({
+    queryKey: ["nurse-sent-patients", sentPatientIds.join(",")],
+    enabled: sentPatientIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("patients" as never)
+        .select("id, full_name, date_of_birth, gender, allergies, medical_record_number")
+        .in("id", sentPatientIds as never);
+      return (data as unknown as Patient[]) ?? [];
+    },
+  });
+
   // Auto-select first queue entry
   useEffect(() => {
-    if (!selectedQid && queue.data && queue.data.length > 0) setSelectedQid(queue.data[0].id);
-  }, [queue.data, selectedQid]);
+    if (!selectedQid && !selectedSentVisitId && queue.data && queue.data.length > 0) setSelectedQid(queue.data[0].id);
+  }, [queue.data, selectedQid, selectedSentVisitId]);
 
   const selectedEntry = queue.data?.find((q) => q.id === selectedQid) ?? null;
-  const selectedVisit = visits.data?.find((v) => v.id === selectedEntry?.visit_id) ?? null;
-  const selectedPatient = patients.data?.find((p) => p.id === selectedVisit?.patient_id) ?? null;
+  const sentVisit = (sentVisits.data ?? []).find((v) => v.id === selectedSentVisitId) ?? null;
+  const selectedVisit = (visits.data?.find((v) => v.id === selectedEntry?.visit_id) ?? null) ?? sentVisit;
+  const selectedPatient = (patients.data?.find((p) => p.id === selectedVisit?.patient_id)
+    ?? sentPatients.data?.find((p) => p.id === sentVisit?.patient_id)) ?? null;
   const selectedProcedures = (procedures.data ?? []).filter((p) => p.visit_id === selectedVisit?.id);
+  const isSentMode = !!selectedSentVisitId && !selectedEntry;
 
   const [v, setV] = useState({
     temperature_c: "", heart_rate: "", respiratory_rate: "",
