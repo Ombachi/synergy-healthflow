@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { drawBrandHeader, drawVerifyQR, siteOrigin, ORG_NAME } from "./pdf-brand";
 
 export interface ImagingReportInput {
   order_id: string;
