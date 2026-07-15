@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { drawBrandHeader, drawVerifyQR, siteOrigin, ORG_NAME } from "./pdf-brand";
 
 export interface SickOff {
   id: string;
@@ -13,17 +14,15 @@ export interface SickOff {
   created_at: string;
 }
 
-export function exportSickOffPDF(s: SickOff) {
+export async function exportSickOffPDF(s: SickOff) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
-  let y = 24;
+  let y = await drawBrandHeader(doc, { title: "Medical Sick-Off Certificate", accent: [30, 90, 168] });
 
-  doc.setFontSize(18).setFont("helvetica", "bold");
-  doc.text("Medical Sick-Off Certificate", w / 2, y, { align: "center" });
-  y += 10;
+  y += 4;
   doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(120);
-  doc.text(`Issued ${new Date(s.created_at).toLocaleString()}  ·  Ref ${s.id.slice(0, 8)}`, w / 2, y, { align: "center" });
-  y += 12;
+  doc.text(`Issued ${new Date(s.created_at).toLocaleString()}  ·  Ref ${s.id.slice(0, 8).toUpperCase()}`, w / 2, y, { align: "center" });
+  y += 10;
   doc.setTextColor(0);
 
   doc.setFontSize(11).setFont("helvetica", "bold").text("Patient", 14, y); y += 6;
@@ -54,6 +53,14 @@ export function exportSickOffPDF(s: SickOff) {
   doc.line(14, y, 90, y);
   doc.setFontSize(9).text("Attending physician", 14, y + 5);
   if (s.doctor_name) doc.text(s.doctor_name, 14, y + 11);
+
+  // Footer disclaimer
+  const h = doc.internal.pageSize.getHeight();
+  doc.setFontSize(8).setTextColor(120);
+  doc.text(`Issued by ${ORG_NAME}. This certificate is verifiable via the QR code below.`, w / 2, h - 8, { align: "center" });
+  doc.setTextColor(0);
+
+  await drawVerifyQR(doc, `${siteOrigin()}/verify/sick-off/${s.id}`);
 
   doc.save(`sick-off-${s.patient_name.replace(/\s+/g, "_")}-${s.id.slice(0, 8)}.pdf`);
 }

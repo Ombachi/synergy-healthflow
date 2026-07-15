@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { drawBrandHeader, drawVerifyQR, siteOrigin, ORG_NAME } from "./pdf-brand";
 
 export interface LabParam {
   parameter_name: string;
@@ -23,29 +24,20 @@ export interface LabReportInput {
   facility?: string;
 }
 
-const FACILITY = "Vitalis Medical Centre · Nairobi, Kenya";
-
-export function exportLabReportPDF(r: LabReportInput) {
+export async function exportLabReportPDF(r: LabReportInput) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
 
-  // Header bar
-  doc.setFillColor(15, 76, 117);
-  doc.rect(0, 0, w, 22, "F");
-  doc.setTextColor(255).setFont("helvetica", "bold").setFontSize(14);
-  doc.text(r.facility ?? FACILITY, 14, 10);
-  doc.setFont("helvetica", "normal").setFontSize(9);
-  doc.text("Laboratory Report", 14, 17);
-  doc.setTextColor(0);
+  let y = await drawBrandHeader(doc, { title: "Laboratory Report", accent: [15, 76, 117] });
+  y += 4;
 
-  let y = 32;
   doc.setFont("helvetica", "bold").setFontSize(13);
   doc.text(r.test_name.toUpperCase(), 14, y);
   doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(110);
   doc.text(`Ref: ${r.order_id.slice(0, 8).toUpperCase()}`, w - 14, y, { align: "right" });
   doc.setTextColor(0);
-  y += 7;
+  y += 6;
 
   // Patient block
   doc.setDrawColor(220);
@@ -64,10 +56,9 @@ export function exportLabReportPDF(r: LabReportInput) {
   doc.setFont("helvetica", "bold").text("Reported:", w / 2 + 4, y + 12);
   doc.setFont("helvetica", "normal").text(r.performed_at ? new Date(r.performed_at).toLocaleString() : "—", w / 2 + 26, y + 12);
   doc.setFont("helvetica", "bold").text("Facility:", w / 2 + 4, y + 18);
-  doc.setFont("helvetica", "normal").text("Main Lab", w / 2 + 26, y + 18);
+  doc.setFont("helvetica", "normal").text(r.facility ?? ORG_NAME, w / 2 + 26, y + 18);
   y += 28;
 
-  // Result table header
   const cols = [
     { x: 16, w: 70, label: "Parameter" },
     { x: 90, w: 30, label: "Result" },
@@ -83,7 +74,7 @@ export function exportLabReportPDF(r: LabReportInput) {
 
   doc.setFont("helvetica", "normal").setFontSize(9);
   for (const p of r.parameters) {
-    if (y > h - 50) { doc.addPage(); y = 20; }
+    if (y > h - 55) { doc.addPage(); y = 20; }
     const flagColor: [number, number, number] =
       p.abnormal_flag === "critical low" || p.abnormal_flag === "critical high" ? [200, 30, 30]
       : p.abnormal_flag === "low" || p.abnormal_flag === "high" ? [200, 110, 0]
@@ -111,22 +102,20 @@ export function exportLabReportPDF(r: LabReportInput) {
     y += lines.length * 5;
   }
 
-  // Signature block
-  const sigY = Math.max(y + 20, h - 40);
+  const sigY = Math.max(y + 20, h - 55);
   doc.setDrawColor(120);
   doc.line(14, sigY, 90, sigY);
   doc.setFontSize(9).text("Pathologist / Lab Scientist", 14, sigY + 5);
   if (r.pathologist) doc.text(r.pathologist, 14, sigY + 11);
 
-  doc.line(w - 90, sigY, w - 14, sigY);
-  doc.text("Verified by", w - 90, sigY + 5);
-
-  // Footer
   doc.setFontSize(8).setTextColor(120);
   doc.text(
     "This report is generated electronically. Reference ranges may vary by age, sex, and method. Clinical correlation is advised.",
-    w / 2, h - 10, { align: "center" }
+    w / 2, h - 8, { align: "center" },
   );
+  doc.setTextColor(0);
+
+  await drawVerifyQR(doc, `${siteOrigin()}/verify/lab/${r.order_id}`);
 
   doc.save(`lab-${r.test_name.replace(/\s+/g, "_")}-${r.order_id.slice(0, 8)}.pdf`);
 }

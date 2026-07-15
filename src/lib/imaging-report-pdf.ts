@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { drawBrandHeader, drawVerifyQR, siteOrigin, ORG_NAME } from "./pdf-brand";
 
 export interface ImagingReportInput {
   order_id: string;
@@ -22,26 +23,21 @@ export interface ImagingReportInput {
 
 const FACILITY = "Vitalis Medical Centre · Nairobi, Kenya";
 
-export function exportImagingReportPDF(r: ImagingReportInput) {
+export async function exportImagingReportPDF(r: ImagingReportInput) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
 
-  doc.setFillColor(17, 94, 89);
-  doc.rect(0, 0, w, 22, "F");
-  doc.setTextColor(255).setFont("helvetica", "bold").setFontSize(14);
-  doc.text(r.facility ?? FACILITY, 14, 10);
-  doc.setFont("helvetica", "normal").setFontSize(9);
-  doc.text("Diagnostic Imaging Report", 14, 17);
-  doc.setTextColor(0);
+  let y = await drawBrandHeader(doc, { title: "Diagnostic Imaging Report", accent: [17, 94, 89] });
+  y += 4;
 
-  let y = 32;
   doc.setFont("helvetica", "bold").setFontSize(13);
   doc.text(`${r.modality.toUpperCase()}${r.body_part ? " — " + r.body_part : ""}`, 14, y);
   doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(110);
   doc.text(`Ref: ${r.order_id.slice(0, 8).toUpperCase()}`, w - 14, y, { align: "right" });
   doc.setTextColor(0);
   y += 7;
+
 
   // Patient block
   doc.setDrawColor(220).setLineWidth(0.2);
@@ -58,7 +54,7 @@ export function exportImagingReportPDF(r: ImagingReportInput) {
   doc.setFont("helvetica", "bold").text("Performed:", w / 2 + 4, y + 12);
   doc.setFont("helvetica", "normal").text(r.performed_at ? new Date(r.performed_at).toLocaleString() : "—", w / 2 + 26, y + 12);
   doc.setFont("helvetica", "bold").text("Facility:", w / 2 + 4, y + 18);
-  doc.setFont("helvetica", "normal").text("Radiology", w / 2 + 26, y + 18);
+  doc.setFont("helvetica", "normal").text(r.facility ?? ORG_NAME, w / 2 + 26, y + 18);
   y += 30;
 
   const section = (label: string, body?: string | null) => {
@@ -89,7 +85,7 @@ export function exportImagingReportPDF(r: ImagingReportInput) {
   }
 
   // Signature
-  const sigY = Math.max(y + 20, h - 40);
+  const sigY = Math.max(y + 20, h - 60);
   doc.setDrawColor(120);
   doc.line(14, sigY, 90, sigY);
   doc.setFontSize(9).text("Reporting Radiologist", 14, sigY + 5);
@@ -98,7 +94,10 @@ export function exportImagingReportPDF(r: ImagingReportInput) {
   doc.text("Verified by", w - 90, sigY + 5);
 
   doc.setFontSize(8).setTextColor(120);
-  doc.text("This report is generated electronically. Clinical correlation is advised.", w / 2, h - 10, { align: "center" });
+  doc.text("This report is generated electronically. Clinical correlation is advised.", w / 2, h - 8, { align: "center" });
+  doc.setTextColor(0);
+
+  await drawVerifyQR(doc, `${siteOrigin()}/verify/imaging/${r.order_id}`);
 
   doc.save(`imaging-${r.modality.replace(/\s+/g, "_")}-${r.order_id.slice(0, 8)}.pdf`);
 }

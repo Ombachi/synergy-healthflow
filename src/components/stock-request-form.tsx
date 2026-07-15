@@ -22,17 +22,27 @@ export function StockRequestForm({ department, categoryHint }: { department: "la
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<{ item_id: string; qty: number }[]>([{ item_id: "", qty: 1 }]);
+  // Users can also request general hospital consumables (PPE, IV supplies,
+  // wound care, stationery…) — flip this to widen the item picker beyond
+  // the department-specific category hint.
+  const [showAll, setShowAll] = useState(false);
+  const [itemSearch, setItemSearch] = useState("");
 
   const items = useQuery({
-    queryKey: ["sr-items", categoryHint ?? "all"],
+    queryKey: ["sr-items", showAll ? "all" : (categoryHint ?? "all")],
     queryFn: async () => {
-      let q = supabase.from("inventory_items" as never).select("id, name, quantity, category").order("name");
-      if (categoryHint) q = q.ilike("category", `%${categoryHint}%`);
+      let q = supabase.from("inventory_items" as never).select("id, name, quantity, category").order("name").limit(2000);
+      if (!showAll && categoryHint) q = q.ilike("category", `%${categoryHint}%`);
       const { data, error } = await q;
       if (error) throw error;
       return (data as unknown as InvItem[]) ?? [];
     },
   });
+
+  const filteredItems = (items.data ?? []).filter((i) =>
+    !itemSearch.trim() ? true : i.name.toLowerCase().includes(itemSearch.toLowerCase()),
+  );
+
 
   const myRequests = useQuery({
     queryKey: ["sr-mine", department, user?.id],
@@ -92,6 +102,18 @@ export function StockRequestForm({ department, categoryHint }: { department: "la
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>Request stock from central store</DialogTitle></DialogHeader>
             <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/30 p-2">
+                <label className="flex items-center gap-2 text-xs">
+                  <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} />
+                  Show all hospital items (PPE, IV supplies, wound care…)
+                </label>
+                <Input
+                  className="ml-auto h-8 max-w-[220px] text-xs"
+                  placeholder="Search items…"
+                  value={itemSearch}
+                  onChange={(e) => setItemSearch(e.target.value)}
+                />
+              </div>
               <div className="space-y-2">
                 {lines.map((l, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-2">
@@ -101,7 +123,7 @@ export function StockRequestForm({ department, categoryHint }: { department: "la
                       onChange={(e) => setLines(lines.map((x, i) => i === idx ? { ...x, item_id: e.target.value } : x))}
                     >
                       <option value="">Select item…</option>
-                      {items.data?.map((i) => <option key={i.id} value={i.id}>{i.name} (on hand {i.quantity})</option>)}
+                      {filteredItems.map((i) => <option key={i.id} value={i.id}>{i.name} (on hand {i.quantity}){i.category ? ` — ${i.category}` : ""}</option>)}
                     </select>
                     <Input
                       className="col-span-3"

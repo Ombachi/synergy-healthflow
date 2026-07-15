@@ -21,17 +21,15 @@ const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "admissions@demo.local", full_name: "Amos Admissions Officer", role: "admissions_officer" },
 ];
 
-function generateDemoPassword(): string {
-  const bytes = new Uint8Array(18);
-  crypto.getRandomValues(bytes);
-  const base = Array.from(bytes, (b) => b.toString(36)).join("").slice(0, 20);
-  return base + "A1!";
-}
+// Fixed demo password for the seeded accounts. Users can rotate via the
+// admin dashboard; the seeder also RESETS this password on every run so
+// stale accounts (e.g. old HR / admissions officers seeded previously with
+// a randomised password) can log in with the documented credentials again.
+const DEMO_PASSWORD = "Demo123!";
 
 export const seedDemoUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const DEMO_PASSWORD = generateDemoPassword();
     const { data: isAdmin, error: roleErr } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,
       _role: "admin",
@@ -61,6 +59,15 @@ export const seedDemoUsers = createServerFn({ method: "POST" })
         }
         userId = data.user.id;
         status = "created";
+      } else {
+        // Reset the password for existing users so previously-seeded
+        // accounts (e.g. HR / admissions officers) always end up on
+        // the documented demo credentials.
+        await supabaseAdmin.auth.admin.updateUserById(userId, {
+          password: DEMO_PASSWORD,
+          email_confirm: true,
+        });
+        status = "password reset";
       }
       await supabaseAdmin.from("profiles").upsert({
         id: userId,
