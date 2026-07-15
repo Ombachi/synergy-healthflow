@@ -23,26 +23,21 @@ export interface ImagingReportInput {
 
 const FACILITY = "Vitalis Medical Centre · Nairobi, Kenya";
 
-export function exportImagingReportPDF(r: ImagingReportInput) {
+export async function exportImagingReportPDF(r: ImagingReportInput) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
 
-  doc.setFillColor(17, 94, 89);
-  doc.rect(0, 0, w, 22, "F");
-  doc.setTextColor(255).setFont("helvetica", "bold").setFontSize(14);
-  doc.text(r.facility ?? FACILITY, 14, 10);
-  doc.setFont("helvetica", "normal").setFontSize(9);
-  doc.text("Diagnostic Imaging Report", 14, 17);
-  doc.setTextColor(0);
+  let y = await drawBrandHeader(doc, { title: "Diagnostic Imaging Report", accent: [17, 94, 89] });
+  y += 4;
 
-  let y = 32;
   doc.setFont("helvetica", "bold").setFontSize(13);
   doc.text(`${r.modality.toUpperCase()}${r.body_part ? " — " + r.body_part : ""}`, 14, y);
   doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(110);
   doc.text(`Ref: ${r.order_id.slice(0, 8).toUpperCase()}`, w - 14, y, { align: "right" });
   doc.setTextColor(0);
   y += 7;
+
 
   // Patient block
   doc.setDrawColor(220).setLineWidth(0.2);
