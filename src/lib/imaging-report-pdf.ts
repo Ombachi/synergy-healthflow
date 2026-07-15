@@ -85,7 +85,7 @@ export async function exportImagingReportPDF(r: ImagingReportInput) {
   }
 
   // Signature
-  const sigY = Math.max(y + 20, h - 40);
+  const sigY = Math.max(y + 20, h - 60);
   doc.setDrawColor(120);
   doc.line(14, sigY, 90, sigY);
   doc.setFontSize(9).text("Reporting Radiologist", 14, sigY + 5);
