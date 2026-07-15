@@ -58,6 +58,43 @@ function PharmacyPortal() {
 
   const [dispOpen, setDispOpen] = useState<Rx | null>(null);
   const [form, setForm] = useState({ inventory_item_id: "", quantity: 0, instructions: "" });
+  const [invSearch, setInvSearch] = useState("");
+
+  /** Estimate dispense quantity from a text frequency like "TDS", "BD", "QID", "Q6H"
+   * over the duration ("5 days", "1 week"). Fallback to 1 when it can't tell. */
+  function estimateQty(rx: Rx): number {
+    const freq = (rx.frequency ?? "").toLowerCase();
+    const dur = (rx.duration ?? "").toLowerCase();
+    const perDay =
+      /qid|q6h|4\s*times?/.test(freq) ? 4 :
+      /tds|tid|8h|3\s*times?/.test(freq) ? 3 :
+      /bd|bid|12h|2\s*times?/.test(freq) ? 2 :
+      /od|qd|nocte|mane|once/.test(freq) ? 1 : 1;
+    const num = Number(dur.match(/\d+/)?.[0] ?? 0);
+    const days = /week/.test(dur) ? num * 7 : /month/.test(dur) ? num * 30 : num || 1;
+    return Math.max(1, perDay * days);
+  }
+
+  /** Fuzzy-match an inventory item to a medication string (first significant token). */
+  function suggestInventoryId(medication: string): string {
+    const items = inv.data ?? [];
+    if (!items.length) return "";
+    const med = medication.toLowerCase();
+    // exact substring match on medication name first
+    const exact = items.find((i) => med.includes(i.name.toLowerCase()) || i.name.toLowerCase().includes(med.split(/\s+/)[0]));
+    if (exact) return exact.id;
+    return "";
+  }
+
+  function openDispense(rx: Rx) {
+    setDispOpen(rx);
+    setInvSearch("");
+    setForm({
+      inventory_item_id: suggestInventoryId(rx.medication),
+      quantity: estimateQty(rx),
+      instructions: rx.instructions ?? "",
+    });
+  }
 
   const dispense = useMutation({
     mutationFn: async () => {
