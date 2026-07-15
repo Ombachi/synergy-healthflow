@@ -94,11 +94,3 @@ function Landing() {
   );
 }
 
-function _unused_VaultRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
-      <span className="text-xs uppercase tracking-wider text-slate-400">{label}</span>
-      <span className="text-sm font-medium text-slate-100">{value}</span>
-    </div>
-  );
-}
