@@ -44,94 +44,57 @@ function Landing() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-16 md:py-24">
-        <div className="grid gap-12 md:grid-cols-2 md:items-center">
-          {/* Left: brand + CTAs */}
-          <section>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-widest text-slate-300">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Vault-grade health records
-            </div>
-            <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
-              Your health records,
-              <br />
-              <span className="text-slate-400">locked in the vault.</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg text-slate-300">
-              People trust banks with their money because vaults are built for it.
-              Litu Vault is built the same way for your medical, sports, and clinical records —
-              encrypted, audited, and only opened by the people you allow.
-            </p>
+      <main className="container mx-auto flex min-h-[calc(100vh-4rem)] items-center px-4 py-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-widest text-slate-300">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Vault-grade health records
+          </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="bg-white text-slate-900 hover:bg-slate-100"
-              >
-                <Link to="/auth">
-                  Sign in to the vault
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-white/30 bg-transparent text-slate-100 hover:bg-white/10 hover:text-white"
-              >
-                <Link to="/auth">Create an account</Link>
-              </Button>
-            </div>
+          <div className="mx-auto mb-8 flex h-32 w-32 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.03] p-3 shadow-2xl">
+            <img src={logoUrl} alt="Litu Vault logo" className="h-full w-full" />
+          </div>
 
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
-              <div className="flex items-center gap-2">
-                <FileLock2 className="h-4 w-4 text-emerald-400" /> End-to-end encrypted
-              </div>
-              <div className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-emerald-400" /> Role-based access
-              </div>
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-emerald-400" /> Full audit trail
-              </div>
-            </div>
-          </section>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+            Welcome to <span className="text-white">Litu Vault</span>
+          </h1>
+          <p className="mt-6 text-lg text-slate-300">
+            Open the vault — sign in to access your records.
+          </p>
 
-          {/* Right: vault card */}
-          <section className="relative">
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-transparent p-8 shadow-2xl backdrop-blur">
-              <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
-              <div className="absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl" />
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button asChild size="lg" className="bg-white text-slate-900 hover:bg-slate-100">
+              <Link to="/auth">
+                Sign in
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-white/30 bg-transparent text-slate-100 hover:bg-white/10 hover:text-white"
+            >
+              <Link to="/auth">Create an account</Link>
+            </Button>
+          </div>
 
-              <div className="relative flex items-center justify-center py-6">
-                <img
-                  src={logoUrl}
-                  alt="Litu Vault logo"
-                  className="h-48 w-48 md:h-56 md:w-56"
-                  width={224}
-                  height={224}
-                />
-              </div>
-
-              <div className="relative mt-6 space-y-3">
-                <VaultRow label="Encryption" value="AES-256 at rest" />
-                <VaultRow label="Access control" value="Role-gated · least privilege" />
-                <VaultRow label="Audit" value="Every open, every edit, logged" />
-                <VaultRow label="Sovereignty" value="You own the key" />
-              </div>
-            </div>
-          </section>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2"><FileLock2 className="h-4 w-4 text-emerald-400" /> Encrypted</div>
+            <div className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-emerald-400" /> Role-based access</div>
+            <div className="flex items-center gap-2"><Activity className="h-4 w-4 text-emerald-400" /> Full audit trail</div>
+          </div>
         </div>
-
-        <footer className="mt-24 border-t border-white/10 pt-6 text-center text-xs text-slate-500">
-          Trusted like a bank vault. Built for clinicians, athletes, and administrators.
-        </footer>
       </main>
+
+      <footer className="border-t border-white/10 py-6 text-center text-xs text-slate-500">
+        Trusted like a bank vault. Built for clinicians, athletes, and administrators.
+      </footer>
     </div>
   );
 }
 
-function VaultRow({ label, value }: { label: string; value: string }) {
+function _unused_VaultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
       <span className="text-xs uppercase tracking-wider text-slate-400">{label}</span>
