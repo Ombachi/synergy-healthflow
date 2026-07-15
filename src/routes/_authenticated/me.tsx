@@ -403,9 +403,16 @@ function PatientTimeline() {
                     <div className="font-medium">{testName(o.test_id)}</div>
                     <div className="text-xs text-muted-foreground">Ordered {new Date(o.created_at).toLocaleString()} · Status: {o.status}</div>
                   </div>
-                  {downloadable && (
-                    <Button size="sm" variant="outline" onClick={downloadPdf}><Download className="h-4 w-4" /> Download PDF</Button>
-                  )}
+                  <div className="flex gap-2">
+                    {downloadable && (
+                      <Button size="sm" variant="outline" onClick={() => setViewLab({ order: o, summary, params })}>
+                        <FileText className="h-4 w-4" /> View
+                      </Button>
+                    )}
+                    {downloadable && (
+                      <Button size="sm" variant="outline" onClick={downloadPdf}><Download className="h-4 w-4" /> Download PDF</Button>
+                    )}
+                  </div>
                 </div>
                 {params.length > 0 ? (
                   <table className="w-full text-xs">
