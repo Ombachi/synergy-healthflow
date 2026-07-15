@@ -171,13 +171,20 @@ function PatientTimeline() {
         });
       }
     }
-    exportImagingReportPDF({
+    await exportImagingReportPDF({
       order_id: row.id, modality: row.modality, ordered_at: row.created_at,
       findings: row.findings, report: row.report,
       patient_name: patient.data!.full_name, mrn: patient.data!.medical_record_number,
       image_data_url: dataUrl,
     });
   }
+
+  // Lab-result in-app viewer
+  const [viewLab, setViewLab] = useState<null | {
+    order: LabOrderRow;
+    summary: LabResultRow | undefined;
+    params: LabValueRow[];
+  }>(null);
 
 
 
