@@ -54,7 +54,7 @@ export async function exportImagingReportPDF(r: ImagingReportInput) {
   doc.setFont("helvetica", "bold").text("Performed:", w / 2 + 4, y + 12);
   doc.setFont("helvetica", "normal").text(r.performed_at ? new Date(r.performed_at).toLocaleString() : "—", w / 2 + 26, y + 12);
   doc.setFont("helvetica", "bold").text("Facility:", w / 2 + 4, y + 18);
-  doc.setFont("helvetica", "normal").text("Radiology", w / 2 + 26, y + 18);
+  doc.setFont("helvetica", "normal").text(r.facility ?? ORG_NAME, w / 2 + 26, y + 18);
   y += 30;
 
   const section = (label: string, body?: string | null) => {
