@@ -59,6 +59,15 @@ export const seedDemoUsers = createServerFn({ method: "POST" })
         }
         userId = data.user.id;
         status = "created";
+      } else {
+        // Reset the password for existing users so previously-seeded
+        // accounts (e.g. HR / admissions officers) always end up on
+        // the documented demo credentials.
+        await supabaseAdmin.auth.admin.updateUserById(userId, {
+          password: DEMO_PASSWORD,
+          email_confirm: true,
+        });
+        status = "password reset";
       }
       await supabaseAdmin.from("profiles").upsert({
         id: userId,
