@@ -440,7 +440,95 @@ function PatientTimeline() {
               </div>
             );
           })}
+
+          <Dialog open={!!viewLab} onOpenChange={(o) => !o && setViewLab(null)}>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>{viewLab && testName(viewLab.order.test_id)} — lab report</DialogTitle>
+              </DialogHeader>
+              {viewLab && (
+                <div className="space-y-3">
+                  <div className="rounded-md border bg-muted/30 p-3 text-xs">
+                    <div><span className="text-muted-foreground">Patient:</span> <span className="font-medium">{patient.data?.full_name}</span></div>
+                    <div><span className="text-muted-foreground">MRN:</span> {patient.data?.medical_record_number ?? "—"}</div>
+                    <div><span className="text-muted-foreground">Ordered:</span> {new Date(viewLab.order.created_at).toLocaleString()}</div>
+                    <div><span className="text-muted-foreground">Reported:</span> {viewLab.summary?.performed_at ? new Date(viewLab.summary.performed_at).toLocaleString() : "—"}</div>
+                    <div><span className="text-muted-foreground">Ref:</span> {viewLab.order.id.slice(0, 8).toUpperCase()}</div>
+                  </div>
+                  <div className="max-h-[55vh] overflow-auto rounded-md border">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-muted/50 text-xs">
+                        <tr>
+                          <th className="p-2 text-left">Parameter</th>
+                          <th className="p-2 text-left">Result</th>
+                          <th className="p-2 text-left">Units</th>
+                          <th className="p-2 text-left">Reference</th>
+                          <th className="p-2 text-left">Flag</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {viewLab.params.length > 0 ? viewLab.params.map((p) => (
+                          <tr key={p.id} className="border-t">
+                            <td className="p-2 font-medium">{p.parameter_name}</td>
+                            <td className="p-2">{p.value_text ?? "—"}</td>
+                            <td className="p-2">{p.units ?? "—"}</td>
+                            <td className="p-2 text-muted-foreground">{p.reference_range ?? "—"}</td>
+                            <td className="p-2">{p.abnormal_flag && <span className={p.abnormal_flag === "normal" ? "text-emerald-600" : "text-destructive"}>{p.abnormal_flag}</span>}</td>
+                          </tr>
+                        )) : viewLab.summary ? (
+                          <tr className="border-t">
+                            <td className="p-2 font-medium">{testName(viewLab.order.test_id)}</td>
+                            <td className="p-2">{viewLab.summary.result_value ?? "—"}</td>
+                            <td className="p-2">{viewLab.summary.units ?? "—"}</td>
+                            <td className="p-2 text-muted-foreground">{viewLab.summary.reference_range ?? "—"}</td>
+                            <td className="p-2">{viewLab.summary.abnormal_flag && <span className="text-destructive">{viewLab.summary.abnormal_flag}</span>}</td>
+                          </tr>
+                        ) : null}
+                      </tbody>
+                    </table>
+                  </div>
+                  {viewLab.summary?.comments && (
+                    <div className="rounded-md border bg-muted/30 p-3 text-sm">
+                      <div className="mb-1 text-xs font-medium uppercase text-muted-foreground">Interpretation</div>
+                      <div className="whitespace-pre-wrap">{viewLab.summary.comments}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <DialogFooter>
+                {viewLab && (
+                  <Button variant="outline" onClick={() => {
+                    const rows = viewLab.params.length
+                      ? viewLab.params.map((p) => ({
+                          parameter_name: p.parameter_name, value_text: p.value_text,
+                          units: p.units, reference_range: p.reference_range, abnormal_flag: p.abnormal_flag,
+                        }))
+                      : [{
+                          parameter_name: testName(viewLab.order.test_id),
+                          value_text: viewLab.summary?.result_value ?? null,
+                          units: viewLab.summary?.units ?? null,
+                          reference_range: viewLab.summary?.reference_range ?? null,
+                          abnormal_flag: viewLab.summary?.abnormal_flag ?? null,
+                        }];
+                    void exportLabReportPDF({
+                      test_name: testName(viewLab.order.test_id),
+                      order_id: viewLab.order.id,
+                      ordered_at: viewLab.order.created_at,
+                      performed_at: viewLab.summary?.performed_at ?? null,
+                      patient_name: patient.data!.full_name,
+                      mrn: patient.data!.medical_record_number,
+                      parameters: rows,
+                      comments: viewLab.summary?.comments ?? null,
+                    });
+                  }}>
+                    <Download className="h-4 w-4" /> Download PDF
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
+
 
         <TabsContent value="imaging" className="mt-4 space-y-3">
           <h2 className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 text-primary" /> Imaging studies</h2>
