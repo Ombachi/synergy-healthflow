@@ -94,7 +94,10 @@ export async function exportImagingReportPDF(r: ImagingReportInput) {
   doc.text("Verified by", w - 90, sigY + 5);
 
   doc.setFontSize(8).setTextColor(120);
-  doc.text("This report is generated electronically. Clinical correlation is advised.", w / 2, h - 10, { align: "center" });
+  doc.text("This report is generated electronically. Clinical correlation is advised.", w / 2, h - 8, { align: "center" });
+  doc.setTextColor(0);
+
+  await drawVerifyQR(doc, `${siteOrigin()}/verify/imaging/${r.order_id}`);
 
   doc.save(`imaging-${r.modality.replace(/\s+/g, "_")}-${r.order_id.slice(0, 8)}.pdf`);
 }
