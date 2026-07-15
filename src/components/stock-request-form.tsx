@@ -22,17 +22,27 @@ export function StockRequestForm({ department, categoryHint }: { department: "la
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<{ item_id: string; qty: number }[]>([{ item_id: "", qty: 1 }]);
+  // Users can also request general hospital consumables (PPE, IV supplies,
+  // wound care, stationery…) — flip this to widen the item picker beyond
+  // the department-specific category hint.
+  const [showAll, setShowAll] = useState(false);
+  const [itemSearch, setItemSearch] = useState("");
 
   const items = useQuery({
-    queryKey: ["sr-items", categoryHint ?? "all"],
+    queryKey: ["sr-items", showAll ? "all" : (categoryHint ?? "all")],
     queryFn: async () => {
-      let q = supabase.from("inventory_items" as never).select("id, name, quantity, category").order("name");
-      if (categoryHint) q = q.ilike("category", `%${categoryHint}%`);
+      let q = supabase.from("inventory_items" as never).select("id, name, quantity, category").order("name").limit(2000);
+      if (!showAll && categoryHint) q = q.ilike("category", `%${categoryHint}%`);
       const { data, error } = await q;
       if (error) throw error;
       return (data as unknown as InvItem[]) ?? [];
     },
   });
+
+  const filteredItems = (items.data ?? []).filter((i) =>
+    !itemSearch.trim() ? true : i.name.toLowerCase().includes(itemSearch.toLowerCase()),
+  );
+
 
   const myRequests = useQuery({
     queryKey: ["sr-mine", department, user?.id],
