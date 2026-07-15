@@ -197,7 +197,7 @@ function PharmacyPortal() {
                 </div>
               )}
               {canDispense && !selDispense && (
-                <Button onClick={() => setDispOpen(selected)}><Pill className="h-4 w-4" /> Dispense</Button>
+                <Button onClick={() => openDispense(selected)}><Pill className="h-4 w-4" /> Dispense</Button>
               )}
             </div>
           </div>
@@ -209,14 +209,25 @@ function PharmacyPortal() {
           <DialogHeader><DialogTitle>Dispense: {dispOpen?.medication}</DialogTitle></DialogHeader>
           <div className="space-y-2">
             <div>
-              <Label>Link to inventory item (optional)</Label>
+              <Label>Search inventory</Label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input className="h-8 pl-7 text-xs" placeholder="Filter drug items…" value={invSearch}
+                  onChange={(e) => setInvSearch(e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label>Link to inventory item</Label>
               <select className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm"
                 value={form.inventory_item_id} onChange={(e) => setForm({ ...form, inventory_item_id: e.target.value })}>
                 <option value="">— none —</option>
-                {inv.data?.map((i) => <option key={i.id} value={i.id}>{i.name} (qty {i.quantity})</option>)}
+                {(inv.data ?? [])
+                  .filter((i) => !invSearch.trim() ? true : i.name.toLowerCase().includes(invSearch.toLowerCase()))
+                  .map((i) => <option key={i.id} value={i.id}>{i.name} (qty {i.quantity}){i.category ? ` — ${i.category}` : ""}</option>)}
               </select>
+              <div className="mt-1 text-[11px] text-muted-foreground">Auto-matched by medication name; refine with search if needed.</div>
             </div>
-            <div><Label>Quantity</Label><Input type="number" value={form.quantity || ""} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} /></div>
+            <div><Label>Quantity to dispense</Label><Input type="number" value={form.quantity || ""} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} /></div>
             <div><Label>Instructions to patient</Label><Textarea rows={2} value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} /></div>
           </div>
           <DialogFooter><Button onClick={() => dispense.mutate()} disabled={dispense.isPending}>Dispense & deduct stock</Button></DialogFooter>
