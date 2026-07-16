@@ -303,216 +303,44 @@ function PatientTimeline() {
           </div>
         </TabsContent>
 
-        <TabsContent value="lab" className="mt-4 space-y-3">
-          <h2 className="flex items-center gap-2 font-medium"><FlaskConical className="h-4 w-4 text-primary" /> My lab results</h2>
-          {(labOrders.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No lab orders yet.</p>}
-          {labOrders.data?.map((o) => {
-            const summary = labResults.data?.find((r) => r.order_id === o.id);
-            const params = (labValues.data ?? []).filter((v) => v.order_id === o.id);
-            const downloadable = !!summary || params.length > 0;
-            function downloadPdf() {
-              const rows = params.length
-                ? params.map((p) => ({
-                    parameter_name: p.parameter_name,
-                    value_text: p.value_text,
-                    units: p.units,
-                    reference_range: p.reference_range,
-                    abnormal_flag: p.abnormal_flag,
-                  }))
-                : [{
-                    parameter_name: testName(o.test_id),
-                    value_text: summary?.result_value ?? null,
-                    units: summary?.units ?? null,
-                    reference_range: summary?.reference_range ?? null,
-                    abnormal_flag: summary?.abnormal_flag ?? null,
-                  }];
-              exportLabReportPDF({
-                test_name: testName(o.test_id),
-                order_id: o.id,
-                ordered_at: o.created_at,
-                performed_at: summary?.performed_at ?? null,
-                patient_name: patient.data!.full_name,
-                mrn: patient.data!.medical_record_number,
-                parameters: rows,
-                comments: summary?.comments ?? null,
-              });
-            }
-            return (
-              <div key={o.id} className="rounded-lg border bg-card">
-                <div className="flex items-center justify-between border-b p-3 text-sm">
-                  <div>
-                    <div className="font-medium">{testName(o.test_id)}</div>
-                    <div className="text-xs text-muted-foreground">Ordered {new Date(o.created_at).toLocaleString()} · Status: {o.status}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    {downloadable && (
-                      <Button size="sm" variant="outline" onClick={() => setViewLab({ order: o, summary, params })}>
-                        <FileText className="h-4 w-4" /> View
-                      </Button>
-                    )}
-                    {downloadable && (
-                      <Button size="sm" variant="outline" onClick={downloadPdf}><Download className="h-4 w-4" /> Download PDF</Button>
-                    )}
-                  </div>
-                </div>
-                {params.length > 0 ? (
-                  <table className="w-full text-xs">
-                    <thead className="bg-muted/30"><tr><th className="p-2 text-left">Parameter</th><th className="p-2 text-left">Result</th><th className="p-2 text-left">Units</th><th className="p-2 text-left">Reference</th><th className="p-2 text-left">Flag</th></tr></thead>
-                    <tbody>
-                      {params.map((p) => (
-                        <tr key={p.id} className="border-t">
-                          <td className="p-2 font-medium">{p.parameter_name}</td>
-                          <td className="p-2">{p.value_text ?? "—"}</td>
-                          <td className="p-2">{p.units ?? "—"}</td>
-                          <td className="p-2 text-muted-foreground">{p.reference_range ?? "—"}</td>
-                          <td className="p-2">{p.abnormal_flag && <span className={p.abnormal_flag === "normal" ? "text-emerald-600" : "text-destructive"}>{p.abnormal_flag}</span>}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : summary ? (
-                  <div className="p-3 text-sm">
-                    <div>{summary.result_value} {summary.units} {summary.abnormal_flag && <span className="ml-1 text-destructive">{summary.abnormal_flag}</span>}</div>
-                    {summary.comments && <div className="text-xs text-muted-foreground">{summary.comments}</div>}
-                  </div>
-                ) : (
-                  <div className="p-3 text-xs text-muted-foreground">Results pending.</div>
-                )}
-              </div>
-            );
-          })}
-
-          <Dialog open={!!viewLab} onOpenChange={(o) => !o && setViewLab(null)}>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>{viewLab && testName(viewLab.order.test_id)} — lab report</DialogTitle>
-              </DialogHeader>
-              {viewLab && (
-                <div className="space-y-3">
-                  <div className="rounded-md border bg-muted/30 p-3 text-xs">
-                    <div><span className="text-muted-foreground">Patient:</span> <span className="font-medium">{patient.data?.full_name}</span></div>
-                    <div><span className="text-muted-foreground">MRN:</span> {patient.data?.medical_record_number ?? "—"}</div>
-                    <div><span className="text-muted-foreground">Ordered:</span> {new Date(viewLab.order.created_at).toLocaleString()}</div>
-                    <div><span className="text-muted-foreground">Reported:</span> {viewLab.summary?.performed_at ? new Date(viewLab.summary.performed_at).toLocaleString() : "—"}</div>
-                    <div><span className="text-muted-foreground">Ref:</span> {viewLab.order.id.slice(0, 8).toUpperCase()}</div>
-                  </div>
-                  <div className="max-h-[55vh] overflow-auto rounded-md border">
-                    <table className="w-full text-sm">
-                      <thead className="sticky top-0 bg-muted/50 text-xs">
-                        <tr>
-                          <th className="p-2 text-left">Parameter</th>
-                          <th className="p-2 text-left">Result</th>
-                          <th className="p-2 text-left">Units</th>
-                          <th className="p-2 text-left">Reference</th>
-                          <th className="p-2 text-left">Flag</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {viewLab.params.length > 0 ? viewLab.params.map((p) => (
-                          <tr key={p.id} className="border-t">
-                            <td className="p-2 font-medium">{p.parameter_name}</td>
-                            <td className="p-2">{p.value_text ?? "—"}</td>
-                            <td className="p-2">{p.units ?? "—"}</td>
-                            <td className="p-2 text-muted-foreground">{p.reference_range ?? "—"}</td>
-                            <td className="p-2">{p.abnormal_flag && <span className={p.abnormal_flag === "normal" ? "text-emerald-600" : "text-destructive"}>{p.abnormal_flag}</span>}</td>
-                          </tr>
-                        )) : viewLab.summary ? (
-                          <tr className="border-t">
-                            <td className="p-2 font-medium">{testName(viewLab.order.test_id)}</td>
-                            <td className="p-2">{viewLab.summary.result_value ?? "—"}</td>
-                            <td className="p-2">{viewLab.summary.units ?? "—"}</td>
-                            <td className="p-2 text-muted-foreground">{viewLab.summary.reference_range ?? "—"}</td>
-                            <td className="p-2">{viewLab.summary.abnormal_flag && <span className="text-destructive">{viewLab.summary.abnormal_flag}</span>}</td>
-                          </tr>
-                        ) : null}
-                      </tbody>
-                    </table>
-                  </div>
-                  {viewLab.summary?.comments && (
-                    <div className="rounded-md border bg-muted/30 p-3 text-sm">
-                      <div className="mb-1 text-xs font-medium uppercase text-muted-foreground">Interpretation</div>
-                      <div className="whitespace-pre-wrap">{viewLab.summary.comments}</div>
-                    </div>
-                  )}
-                </div>
-              )}
-              <DialogFooter>
-                {viewLab && (
-                  <Button variant="outline" onClick={() => {
-                    const rows = viewLab.params.length
-                      ? viewLab.params.map((p) => ({
-                          parameter_name: p.parameter_name, value_text: p.value_text,
-                          units: p.units, reference_range: p.reference_range, abnormal_flag: p.abnormal_flag,
-                        }))
-                      : [{
-                          parameter_name: testName(viewLab.order.test_id),
-                          value_text: viewLab.summary?.result_value ?? null,
-                          units: viewLab.summary?.units ?? null,
-                          reference_range: viewLab.summary?.reference_range ?? null,
-                          abnormal_flag: viewLab.summary?.abnormal_flag ?? null,
-                        }];
-                    void exportLabReportPDF({
-                      test_name: testName(viewLab.order.test_id),
-                      order_id: viewLab.order.id,
-                      ordered_at: viewLab.order.created_at,
-                      performed_at: viewLab.summary?.performed_at ?? null,
-                      patient_name: patient.data!.full_name,
-                      mrn: patient.data!.medical_record_number,
-                      parameters: rows,
-                      comments: viewLab.summary?.comments ?? null,
-                    });
-                  }}>
-                    <Download className="h-4 w-4" /> Download PDF
-                  </Button>
-                )}
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+        <TabsContent value="lab" className="mt-4">
+          <h2 className="mb-3 flex items-center gap-2 font-medium"><FlaskConical className="h-4 w-4 text-primary" /> My lab results</h2>
+          <LabResultsViewer
+            patientId={patient.data.id}
+            patientName={patient.data.full_name}
+            mrn={patient.data.medical_record_number}
+            age={patientAge}
+            gender={patient.data.gender ?? null}
+          />
         </TabsContent>
 
-
-        <TabsContent value="imaging" className="mt-4 space-y-3">
-          <h2 className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 text-primary" /> Imaging studies</h2>
-          {(imaging.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No imaging studies yet.</p>}
-          {imaging.data?.map((r) => {
-            const reported = !!(r.report || r.findings);
-            return (
-              <div key={r.id} className="rounded-lg border bg-card">
-                <div className="flex items-center justify-between border-b p-3 text-sm">
-                  <div>
-                    <div className="font-medium">{r.modality}</div>
-                    <div className="text-xs text-muted-foreground">Ordered {new Date(r.created_at).toLocaleString()} · Status: {r.status}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    {reported && <Button size="sm" variant="outline" onClick={() => openImaging(r)}>View</Button>}
-                    {reported && <Button size="sm" variant="outline" onClick={() => downloadImagingPdf(r)}><Download className="h-4 w-4" /> PDF</Button>}
-                  </div>
-                </div>
-                {reported ? (
-                  <div className="p-3 text-sm whitespace-pre-wrap">{r.report ?? r.findings}</div>
-                ) : (
-                  <div className="p-3 text-xs text-muted-foreground">Report pending.</div>
-                )}
-              </div>
-            );
-          })}
-          <Dialog open={!!viewImg} onOpenChange={(o) => !o && setViewImg(null)}>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader><DialogTitle>{viewImg?.row.modality} report</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                {viewImg?.url && (viewImg.row.image_path?.toLowerCase().endsWith(".pdf") ? (
-                  <iframe src={viewImg.url} title="study" className="h-[70vh] w-full rounded border" />
-                ) : (
-                  <img src={viewImg.url} alt="study" className="max-h-[60vh] w-full rounded border object-contain" />
-                ))}
-                <div className="whitespace-pre-wrap rounded border bg-muted/30 p-3 text-sm">{viewImg?.row.report ?? viewImg?.row.findings ?? "—"}</div>
-              </div>
-              <DialogFooter>
-                {viewImg && <Button variant="outline" onClick={() => downloadImagingPdf(viewImg.row)}><Download className="h-4 w-4" /> Download PDF</Button>}
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+        <TabsContent value="imaging" className="mt-4">
+          <h2 className="mb-3 flex items-center gap-2 font-medium"><ScanLine className="h-4 w-4 text-primary" /> Imaging studies</h2>
+          <ImagingViewer
+            patientId={patient.data.id}
+            patientName={patient.data.full_name}
+            mrn={patient.data.medical_record_number}
+          />
         </TabsContent>
+
+        <TabsContent value="prescriptions" className="mt-4 space-y-3">
+          <h2 className="flex items-center gap-2 font-medium"><Pill className="h-4 w-4 text-primary" /> My prescriptions</h2>
+          {(rx.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No prescriptions issued yet.</p>}
+          {rx.data?.map((r) => (
+            <div key={r.id} className="flex items-start justify-between rounded-lg border bg-card p-3 text-sm">
+              <div>
+                <div className="font-medium">{r.medication}</div>
+                <div className="text-xs text-muted-foreground">
+                  {[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => downloadRxPdf(r)}>
+                <Download className="h-4 w-4" /> Download PDF
+              </Button>
+            </div>
+          ))}
+        </TabsContent>
+
 
         <TabsContent value="sickoff" className="mt-4 space-y-3">
           <h2 className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4 text-primary" /> Sick-off certificates</h2>
