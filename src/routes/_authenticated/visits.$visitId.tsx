@@ -532,6 +532,36 @@ function VitalReadout({ label, value }: { label: string; value: string }) {
   );
 }
 
+function LabTestSearchButton({ tests, selectedId, onPick }: {
+  tests: LabTest[]; selectedId: string; onPick: (t: LabTest) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const items = tests.map((t) => ({ id: t.id, primary: t.name, secondary: t.code }));
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline"><FlaskConical className="h-4 w-4" /> Search test database</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader><DialogTitle>Search laboratory tests</DialogTitle></DialogHeader>
+        <div className="max-h-[60vh] overflow-hidden">
+          <CatalogSearch
+            items={items}
+            storageKey="rx-test-picker-recents"
+            placeholder="Search by test name or code…"
+            onPick={(it) => {
+              const t = tests.find((x) => x.id === it.id);
+              if (t) { onPick(t); setOpen(false); }
+            }}
+            renderAction={(it) => selectedId === it.id ? <span className="text-xs text-emerald-600">selected</span> : null}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 function NotesEditor({ initial, onSave, disabled }: { initial: string; onSave: (t: string) => void; disabled: boolean }) {
   const [text, setText] = useState(initial);
   return (
