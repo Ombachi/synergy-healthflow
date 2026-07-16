@@ -98,7 +98,33 @@ function PatientTimeline() {
     },
   });
 
-  // Legacy fetchers retained only where still needed (lab/imaging viewers own their own queries).
+  // Sick-off notes
+  const sickoffs = useQuery({
+    queryKey: ["my-sickoffs", pid], enabled: !!pid,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("sick_off_notes" as never)
+        .select("*").eq("patient_id", pid!).order("created_at", { ascending: false });
+      if (error) throw error; return (data as unknown as SickRow[]) ?? [];
+    },
+  });
+
+  const patientAge = useMemo(() => {
+    const dob = patient.data?.date_of_birth;
+    if (!dob) return null;
+    const y = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 86400000));
+    return `${y}y`;
+  }, [patient.data?.date_of_birth]);
+
+  async function downloadRxPdf(r: Rx) {
+    if (!patient.data) return;
+    await exportPrescriptionPDF({
+      rx_id: r.id, created_at: new Date().toISOString(),
+      patient_name: patient.data.full_name, mrn: patient.data.medical_record_number,
+      age: patientAge, gender: patient.data.gender ?? null,
+      items: [{ medication: r.medication, dose: r.dose, frequency: r.frequency, duration: r.duration, instructions: null }],
+    });
+  }
+
 
 
 
