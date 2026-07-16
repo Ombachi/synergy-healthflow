@@ -193,7 +193,9 @@ function PatientTimeline() {
           <TabsTrigger value="appointments">Appointments</TabsTrigger>
           <TabsTrigger value="lab">Lab results</TabsTrigger>
           <TabsTrigger value="imaging">Imaging</TabsTrigger>
+          <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
           <TabsTrigger value="sickoff">Sick-off</TabsTrigger>
+
           <TabsTrigger value="bills">Bills</TabsTrigger>
         </TabsList>
 
