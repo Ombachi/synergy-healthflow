@@ -298,7 +298,7 @@ function LabPortal() {
                       <tr><th className="p-2 text-left">Parameter</th><th className="p-2 text-left">Result</th><th className="p-2 text-left">Units</th><th className="p-2 text-left">Reference</th><th className="p-2 text-left">Flag</th></tr>
                     </thead>
                     <tbody>
-                      {template.data?.map((t) => {
+                      {filteredTemplate.map((t) => {
                         const v = selValues.find((x) => x.template_id === t.id);
                         return (
                           <tr key={t.id} className="border-t">
