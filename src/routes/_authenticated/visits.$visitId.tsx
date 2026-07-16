@@ -362,39 +362,34 @@ function VisitDetail() {
           {(canOrder || (labOrders.data?.length ?? 0) > 0) && (
             <div className="rounded-lg border bg-card p-5">
               <h2 className="flex items-center gap-2 font-medium"><FlaskConical className="h-4 w-4 text-primary" /> Lab investigations</h2>
-              <ul className="mt-3 space-y-1 text-sm">
-                {labOrders.data?.length === 0 && <li className="text-muted-foreground">No labs ordered.</li>}
-                {labOrders.data?.map((o) => {
-                  const t = labTests.data?.find((x) => x.id === o.test_id);
-                  const r = labResults.data?.find((x) => x.order_id === o.id);
-                  return (
-                    <li key={o.id} className="flex justify-between rounded border p-2">
-                      <div>
-                        <div className="font-medium">{t?.name ?? o.test_id} <span className="text-xs text-muted-foreground">· {o.priority}</span></div>
-                        {r?.result_value && (
-                          <div className="mt-1 text-xs">
-                            <div>Result: <span className="font-medium">{r.result_value} {r.units}</span> {r.abnormal_flag && <span className={r.abnormal_flag === "normal" ? "text-emerald-700" : "text-destructive"}>{r.abnormal_flag}</span>}</div>
-                            {r.reference_range && <div className="text-muted-foreground">Reference: {r.reference_range}</div>}
-                            {r.comments && <div>{r.comments}</div>}
-                          </div>
-                        )}
-                      </div>
-                      <span className={`self-start rounded px-2 py-0.5 text-xs ${o.status === "resulted" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="mt-3">
+                <LabResultsViewer
+                  patientId={v.patient_id}
+                  patientName={p?.full_name ?? ""}
+                  mrn={p?.medical_record_number ?? null}
+                />
+              </div>
               {canOrder && !finalized && (
-                <div className="mt-3 grid grid-cols-12 gap-2">
-                  <select className="col-span-5 rounded border bg-background px-2 text-sm" value={labForm.test_id} onChange={(e) => setLabForm({ ...labForm, test_id: e.target.value })}>
-                    <option value="">— Pick a test —</option>
-                    {labTests.data?.map((t) => <option key={t.id} value={t.id}>{t.code} · {t.name}</option>)}
-                  </select>
-                  <select className="col-span-2 rounded border bg-background px-2 text-sm" value={labForm.priority} onChange={(e) => setLabForm({ ...labForm, priority: e.target.value })}>
-                    <option value="routine">Routine</option><option value="urgent">Urgent</option><option value="stat">STAT</option>
-                  </select>
-                  <Input className="col-span-4" placeholder="Clinical notes" value={labForm.clinical_notes} onChange={(e) => setLabForm({ ...labForm, clinical_notes: e.target.value })} />
-                  <Button className="col-span-1" size="sm" onClick={() => addLab.mutate()}>Order</Button>
+                <div className="mt-3 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <LabTestSearchButton
+                      tests={labTests.data ?? []}
+                      selectedId={labForm.test_id}
+                      onPick={(t) => setLabForm({ ...labForm, test_id: t.id })}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {labForm.test_id
+                        ? labTests.data?.find((t) => t.id === labForm.test_id)?.name
+                        : "No test selected"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2">
+                    <select className="col-span-2 rounded border bg-background px-2 text-sm" value={labForm.priority} onChange={(e) => setLabForm({ ...labForm, priority: e.target.value })}>
+                      <option value="routine">Routine</option><option value="urgent">Urgent</option><option value="stat">STAT</option>
+                    </select>
+                    <Input className="col-span-8" placeholder="Clinical notes" value={labForm.clinical_notes} onChange={(e) => setLabForm({ ...labForm, clinical_notes: e.target.value })} />
+                    <Button className="col-span-2" size="sm" onClick={() => addLab.mutate()} disabled={!labForm.test_id || addLab.isPending}>Order</Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -404,32 +399,13 @@ function VisitDetail() {
           {(canOrder || (imgOrders.data?.length ?? 0) > 0) && (
             <div className="rounded-lg border bg-card p-5">
               <h2 className="flex items-center gap-2 font-medium"><ScanLine className="h-4 w-4 text-primary" /> Imaging</h2>
-              <ul className="mt-3 space-y-1 text-sm">
-                {imgOrders.data?.length === 0 && <li className="text-muted-foreground">No imaging ordered.</li>}
-                {imgOrders.data?.map((o) => (
-                  <li key={o.id} className="rounded border p-2">
-                    <div className="flex justify-between">
-                      <div className="font-medium">{o.modality} {o.body_part && `· ${o.body_part}`}</div>
-                      <span className={`rounded px-2 py-0.5 text-xs ${o.status === "reported" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{o.status}</span>
-                    </div>
-                    {o.clinical_question && <div className="text-xs text-muted-foreground">{o.clinical_question}</div>}
-                    {o.findings && <div className="mt-1 text-xs"><span className="font-medium">Findings: </span>{o.findings}</div>}
-                    {o.report && <div className="mt-1 text-xs"><span className="font-medium">Report: </span>{o.report}</div>}
-                    {imageUrls.data?.[o.id] && (
-                      o.image_path?.toLowerCase().endsWith(".pdf") ? (
-                        <div className="mt-2 space-y-1">
-                          <iframe src={imageUrls.data[o.id]} title={`${o.modality} report`} className="h-72 w-full rounded border" />
-                          <a href={imageUrls.data[o.id]} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">Open report in new tab</a>
-                        </div>
-                      ) : (
-                        <a href={imageUrls.data[o.id]} target="_blank" rel="noreferrer" title="Open full size">
-                          <img src={imageUrls.data[o.id]} alt={`${o.modality} report attachment`} className="mt-2 max-h-56 rounded border object-contain hover:opacity-90" />
-                        </a>
-                      )
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-3">
+                <ImagingViewer
+                  patientId={v.patient_id}
+                  patientName={p?.full_name ?? ""}
+                  mrn={p?.medical_record_number ?? null}
+                />
+              </div>
               {canOrder && !finalized && (
                 <div className="mt-3 grid grid-cols-12 gap-2">
                   <select className="col-span-3 rounded border bg-background px-2 text-sm" value={imgForm.modality} onChange={(e) => setImgForm({ ...imgForm, modality: e.target.value })}>
@@ -445,6 +421,7 @@ function VisitDetail() {
               )}
             </div>
           )}
+
 
           {(canOrder || (procedureOrders.data?.length ?? 0) > 0) && (
             <div className="rounded-lg border bg-card p-5">
