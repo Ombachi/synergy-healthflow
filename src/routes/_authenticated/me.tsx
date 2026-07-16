@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download } from "lucide-react";
+import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download, Pill, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,10 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportSickOffPDF } from "@/lib/sick-off-pdf";
-import { exportLabReportPDF } from "@/lib/lab-report-pdf";
-import { exportImagingReportPDF } from "@/lib/imaging-report-pdf";
+import { exportPrescriptionPDF } from "@/lib/prescription-pdf";
+import { LabResultsViewer } from "@/components/lab-results-viewer";
+import { ImagingViewer } from "@/components/imaging-viewer";
 
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
+
 
 const money = (cents: number) => `KES ${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
