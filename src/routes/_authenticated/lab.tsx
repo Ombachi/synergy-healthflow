@@ -22,7 +22,7 @@ interface Test { id: string; code: string; name: string; specimen: string | null
 interface Order { id: string; visit_id: string | null; patient_id: string; test_id: string; status: string; priority: string; clinical_notes: string | null; created_at: string }
 interface Patient { id: string; full_name: string }
 interface Sample { id: string; order_id: string; sample_code: string | null; condition: string | null; collected_at: string | null }
-interface Tmpl { id: string; test_id: string; parameter_name: string; units: string | null; reference_range: string | null; reference_low: number | null; reference_high: number | null; input_type: string; select_options: string | null; display_order: number }
+interface Tmpl { id: string; test_id: string; parameter_name: string; units: string | null; reference_range: string | null; reference_low: number | null; reference_high: number | null; input_type: string; select_options: string | null; display_order: number; gender: string | null; age_group: string | null; auto_formula: string | null }
 interface ValueRow { id: string; order_id: string; template_id: string | null; parameter_name: string; value_text: string | null; value_numeric: number | null; units: string | null; reference_range: string | null; abnormal_flag: string | null }
 
 function LabPortal() {
