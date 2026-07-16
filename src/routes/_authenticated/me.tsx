@@ -49,7 +49,7 @@ function PatientTimeline() {
   const patient = useQuery({
     queryKey: ["my-patient", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number").eq("user_id", user!.id).maybeSingle();
+      const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number, date_of_birth, gender").eq("user_id", user!.id).maybeSingle();
       if (error) throw error; return data as unknown as Patient | null;
     },
   });
