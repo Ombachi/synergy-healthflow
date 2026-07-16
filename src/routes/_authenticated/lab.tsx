@@ -22,7 +22,7 @@ interface Test { id: string; code: string; name: string; specimen: string | null
 interface Order { id: string; visit_id: string | null; patient_id: string; test_id: string; status: string; priority: string; clinical_notes: string | null; created_at: string }
 interface Patient { id: string; full_name: string }
 interface Sample { id: string; order_id: string; sample_code: string | null; condition: string | null; collected_at: string | null }
-interface Tmpl { id: string; test_id: string; parameter_name: string; units: string | null; reference_range: string | null; reference_low: number | null; reference_high: number | null; input_type: string; select_options: string | null; display_order: number }
+interface Tmpl { id: string; test_id: string; parameter_name: string; units: string | null; reference_range: string | null; reference_low: number | null; reference_high: number | null; input_type: string; select_options: string | null; display_order: number; gender: string | null; age_group: string | null; auto_formula: string | null }
 interface ValueRow { id: string; order_id: string; template_id: string | null; parameter_name: string; value_text: string | null; value_numeric: number | null; units: string | null; reference_range: string | null; abnormal_flag: string | null }
 
 function LabPortal() {
@@ -98,6 +98,49 @@ function LabPortal() {
       if (error) throw error; return (data as unknown as Tmpl[]) ?? [];
     },
   });
+
+  // Patient of selected order (for gender/age-dependent reference ranges)
+  const selPatient = useQuery({
+    queryKey: ["lab-patient-full", selected?.patient_id],
+    enabled: !!selected?.patient_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("patients" as never)
+        .select("id, gender, date_of_birth").eq("id", selected!.patient_id).maybeSingle();
+      return data as unknown as { id: string; gender: string | null; date_of_birth: string | null } | null;
+    },
+  });
+
+  // Filter template rows to the patient's dimensions (gender + adult/child).
+  // A template row with gender=null/age_group=null applies to any patient.
+  const filteredTemplate = useMemo(() => {
+    const rows = template.data ?? [];
+    if (rows.length === 0) return rows;
+    const pg = (selPatient.data?.gender ?? "").toLowerCase();
+    const dob = selPatient.data?.date_of_birth;
+    const ageYears = dob ? (Date.now() - new Date(dob).getTime()) / (365.25 * 86400000) : null;
+    const ageGroup = ageYears == null ? null : (ageYears < 12 ? "child" : "adult");
+    // Group by parameter_name — pick the best-fitting variant.
+    const byName = new Map<string, Tmpl[]>();
+    for (const r of rows) {
+      const arr = byName.get(r.parameter_name) ?? [];
+      arr.push(r); byName.set(r.parameter_name, arr);
+    }
+    const score = (t: Tmpl) => {
+      let s = 0;
+      if (t.gender && t.gender.toLowerCase() === pg) s += 2;
+      else if (t.gender) s -= 5;
+      if (t.age_group && t.age_group === ageGroup) s += 2;
+      else if (t.age_group) s -= 5;
+      return s;
+    };
+    const out: Tmpl[] = [];
+    for (const [, arr] of byName) {
+      arr.sort((a, b) => score(b) - score(a));
+      out.push(arr[0]);
+    }
+    return out.sort((a, b) => a.display_order - b.display_order);
+  }, [template.data, selPatient.data]);
+
 
   const collect = useMutation({
     mutationFn: async (orderId: string) => {
@@ -255,7 +298,7 @@ function LabPortal() {
                       <tr><th className="p-2 text-left">Parameter</th><th className="p-2 text-left">Result</th><th className="p-2 text-left">Units</th><th className="p-2 text-left">Reference</th><th className="p-2 text-left">Flag</th></tr>
                     </thead>
                     <tbody>
-                      {template.data?.map((t) => {
+                      {filteredTemplate.map((t) => {
                         const v = selValues.find((x) => x.template_id === t.id);
                         return (
                           <tr key={t.id} className="border-t">
@@ -289,28 +332,52 @@ function LabPortal() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Enter results — {selected && testName(selected.test_id)}</DialogTitle></DialogHeader>
           <div className="max-h-[60vh] space-y-2 overflow-auto">
-            {template.data?.map((t) => (
-              <div key={t.id} className="grid grid-cols-12 items-center gap-2">
-                <Label className="col-span-4 text-xs">{t.parameter_name}{t.units ? ` (${t.units})` : ""}</Label>
-                {t.input_type === "select" ? (
-                  <select className="col-span-5 h-9 rounded border bg-background px-2 text-sm"
-                    value={entryValues[t.id] ?? ""}
-                    onChange={(e) => setEntryValues({ ...entryValues, [t.id]: e.target.value })}>
-                    <option value="">—</option>
-                    {(t.select_options ?? "").split(",").map((s) => s.trim()).filter(Boolean).map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <Input className="col-span-5" type={t.input_type === "numeric" ? "number" : "text"}
-                    value={entryValues[t.id] ?? ""}
-                    onChange={(e) => setEntryValues({ ...entryValues, [t.id]: e.target.value })} />
-                )}
-                <span className="col-span-3 text-[10px] text-muted-foreground">
-                  Ref {t.reference_range ?? `${t.reference_low ?? ""}–${t.reference_high ?? ""}`}
-                </span>
-              </div>
-            ))}
+            {filteredTemplate.map((t) => {
+              const isAuto = !!t.auto_formula;
+              function handleChange(val: string) {
+                const next = { ...entryValues, [t.id]: val };
+                // Auto-calc IFCC / eAG when HbA1c% is entered
+                if (t.parameter_name === "HbA1c") {
+                  const n = Number(val);
+                  if (Number.isFinite(n)) {
+                    for (const other of filteredTemplate) {
+                      if (other.auto_formula === "ifcc_from_hba1c") {
+                        next[other.id] = ((n - 2.15) * 10.929).toFixed(1);
+                      } else if (other.auto_formula === "eag_from_hba1c") {
+                        next[other.id] = (28.7 * n - 46.7).toFixed(0);
+                      }
+                    }
+                  }
+                }
+                setEntryValues(next);
+              }
+              return (
+                <div key={t.id} className="grid grid-cols-12 items-center gap-2">
+                  <Label className="col-span-4 text-xs">
+                    {t.parameter_name}{t.units ? ` (${t.units})` : ""}
+                    {isAuto && <span className="ml-1 rounded bg-primary/10 px-1 text-[9px] text-primary">auto</span>}
+                  </Label>
+                  {t.input_type === "select" ? (
+                    <select className="col-span-5 h-9 rounded border bg-background px-2 text-sm"
+                      value={entryValues[t.id] ?? ""}
+                      onChange={(e) => handleChange(e.target.value)}>
+                      <option value="">—</option>
+                      {(t.select_options ?? "").split(",").map((s) => s.trim()).filter(Boolean).map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input className="col-span-5" type={t.input_type === "numeric" ? "number" : "text"}
+                      value={entryValues[t.id] ?? ""} readOnly={isAuto}
+                      onChange={(e) => handleChange(e.target.value)} />
+                  )}
+                  <span className="col-span-3 text-[10px] text-muted-foreground">
+                    Ref {t.reference_range ?? `${t.reference_low ?? ""}–${t.reference_high ?? ""}`}
+                  </span>
+                </div>
+              );
+            })}
+
             <div className="pt-2">
               <Label className="text-xs">Comments</Label>
               <Textarea rows={2} value={entryComments} onChange={(e) => setEntryComments(e.target.value)} />
