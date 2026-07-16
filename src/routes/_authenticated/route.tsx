@@ -118,9 +118,10 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/coming-soon/ward-board", "/coming-soon/my-inpatients",
     "/care-plans", "/coming-soon/inpatient-imaging",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
+    "/inpatient-procedures", "/discharge-planning", "/emar", "/ward-rounds",
     ...SUBDOMAIN_PREFIXES,
     // Sports trims
-    "/sports-medicine", "/anti-doping",
+    "/sports-medicine", "/anti-doping", "/assessments",
     // Store trims
     "/tenders", "/audit-inventory", "/orders/stock-requests",
     // HR trims
@@ -128,7 +129,10 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/requests", "/attendance", "/leave-inbox", "/announcements",
     // Finance trims
     "/cash-reconciliation", "/credit-notes", "/preauth",
+    // Admin group trims
+    "/roster",
   ],
+
 };
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
