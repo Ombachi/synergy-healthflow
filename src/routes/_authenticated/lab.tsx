@@ -332,28 +332,52 @@ function LabPortal() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Enter results — {selected && testName(selected.test_id)}</DialogTitle></DialogHeader>
           <div className="max-h-[60vh] space-y-2 overflow-auto">
-            {template.data?.map((t) => (
-              <div key={t.id} className="grid grid-cols-12 items-center gap-2">
-                <Label className="col-span-4 text-xs">{t.parameter_name}{t.units ? ` (${t.units})` : ""}</Label>
-                {t.input_type === "select" ? (
-                  <select className="col-span-5 h-9 rounded border bg-background px-2 text-sm"
-                    value={entryValues[t.id] ?? ""}
-                    onChange={(e) => setEntryValues({ ...entryValues, [t.id]: e.target.value })}>
-                    <option value="">—</option>
-                    {(t.select_options ?? "").split(",").map((s) => s.trim()).filter(Boolean).map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <Input className="col-span-5" type={t.input_type === "numeric" ? "number" : "text"}
-                    value={entryValues[t.id] ?? ""}
-                    onChange={(e) => setEntryValues({ ...entryValues, [t.id]: e.target.value })} />
-                )}
-                <span className="col-span-3 text-[10px] text-muted-foreground">
-                  Ref {t.reference_range ?? `${t.reference_low ?? ""}–${t.reference_high ?? ""}`}
-                </span>
-              </div>
-            ))}
+            {filteredTemplate.map((t) => {
+              const isAuto = !!t.auto_formula;
+              function handleChange(val: string) {
+                const next = { ...entryValues, [t.id]: val };
+                // Auto-calc IFCC / eAG when HbA1c% is entered
+                if (t.parameter_name === "HbA1c") {
+                  const n = Number(val);
+                  if (Number.isFinite(n)) {
+                    for (const other of filteredTemplate) {
+                      if (other.auto_formula === "ifcc_from_hba1c") {
+                        next[other.id] = ((n - 2.15) * 10.929).toFixed(1);
+                      } else if (other.auto_formula === "eag_from_hba1c") {
+                        next[other.id] = (28.7 * n - 46.7).toFixed(0);
+                      }
+                    }
+                  }
+                }
+                setEntryValues(next);
+              }
+              return (
+                <div key={t.id} className="grid grid-cols-12 items-center gap-2">
+                  <Label className="col-span-4 text-xs">
+                    {t.parameter_name}{t.units ? ` (${t.units})` : ""}
+                    {isAuto && <span className="ml-1 rounded bg-primary/10 px-1 text-[9px] text-primary">auto</span>}
+                  </Label>
+                  {t.input_type === "select" ? (
+                    <select className="col-span-5 h-9 rounded border bg-background px-2 text-sm"
+                      value={entryValues[t.id] ?? ""}
+                      onChange={(e) => handleChange(e.target.value)}>
+                      <option value="">—</option>
+                      {(t.select_options ?? "").split(",").map((s) => s.trim()).filter(Boolean).map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input className="col-span-5" type={t.input_type === "numeric" ? "number" : "text"}
+                      value={entryValues[t.id] ?? ""} readOnly={isAuto}
+                      onChange={(e) => handleChange(e.target.value)} />
+                  )}
+                  <span className="col-span-3 text-[10px] text-muted-foreground">
+                    Ref {t.reference_range ?? `${t.reference_low ?? ""}–${t.reference_high ?? ""}`}
+                  </span>
+                </div>
+              );
+            })}
+
             <div className="pt-2">
               <Label className="text-xs">Comments</Label>
               <Textarea rows={2} value={entryComments} onChange={(e) => setEntryComments(e.target.value)} />
