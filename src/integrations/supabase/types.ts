@@ -3139,10 +3139,13 @@ export type Database = {
       }
       lab_result_templates: {
         Row: {
+          age_group: string | null
+          auto_formula: string | null
           created_at: string
           critical_high: number | null
           critical_low: number | null
           display_order: number
+          gender: string | null
           id: string
           input_type: string
           parameter_name: string
@@ -3155,10 +3158,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          age_group?: string | null
+          auto_formula?: string | null
           created_at?: string
           critical_high?: number | null
           critical_low?: number | null
           display_order?: number
+          gender?: string | null
           id?: string
           input_type?: string
           parameter_name: string
@@ -3171,10 +3177,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          age_group?: string | null
+          auto_formula?: string | null
           created_at?: string
           critical_high?: number | null
           critical_low?: number | null
           display_order?: number
+          gender?: string | null
           id?: string
           input_type?: string
           parameter_name?: string
@@ -4913,6 +4922,7 @@ export type Database = {
           id: string
           name: string
           unit_price_cents: number
+          updated_at: string
         }
         Insert: {
           active?: boolean
@@ -4922,6 +4932,7 @@ export type Database = {
           id?: string
           name: string
           unit_price_cents?: number
+          updated_at?: string
         }
         Update: {
           active?: boolean
@@ -4931,6 +4942,7 @@ export type Database = {
           id?: string
           name?: string
           unit_price_cents?: number
+          updated_at?: string
         }
         Relationships: []
       }
