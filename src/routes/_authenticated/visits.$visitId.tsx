@@ -16,6 +16,10 @@ import { AssignVisit } from "@/components/assign-visit";
 import { AdmitPatientButton } from "@/components/admit-patient";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProcedurePickerInline } from "@/components/procedure-picker";
+import { LabResultsViewer } from "@/components/lab-results-viewer";
+import { ImagingViewer } from "@/components/imaging-viewer";
+import { CatalogSearch } from "@/components/catalog-search";
+
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
 
