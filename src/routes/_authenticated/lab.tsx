@@ -99,6 +99,49 @@ function LabPortal() {
     },
   });
 
+  // Patient of selected order (for gender/age-dependent reference ranges)
+  const selPatient = useQuery({
+    queryKey: ["lab-patient-full", selected?.patient_id],
+    enabled: !!selected?.patient_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("patients" as never)
+        .select("id, gender, date_of_birth").eq("id", selected!.patient_id).maybeSingle();
+      return data as unknown as { id: string; gender: string | null; date_of_birth: string | null } | null;
+    },
+  });
+
+  // Filter template rows to the patient's dimensions (gender + adult/child).
+  // A template row with gender=null/age_group=null applies to any patient.
+  const filteredTemplate = useMemo(() => {
+    const rows = template.data ?? [];
+    if (rows.length === 0) return rows;
+    const pg = (selPatient.data?.gender ?? "").toLowerCase();
+    const dob = selPatient.data?.date_of_birth;
+    const ageYears = dob ? (Date.now() - new Date(dob).getTime()) / (365.25 * 86400000) : null;
+    const ageGroup = ageYears == null ? null : (ageYears < 12 ? "child" : "adult");
+    // Group by parameter_name — pick the best-fitting variant.
+    const byName = new Map<string, Tmpl[]>();
+    for (const r of rows) {
+      const arr = byName.get(r.parameter_name) ?? [];
+      arr.push(r); byName.set(r.parameter_name, arr);
+    }
+    const score = (t: Tmpl) => {
+      let s = 0;
+      if (t.gender && t.gender.toLowerCase() === pg) s += 2;
+      else if (t.gender) s -= 5;
+      if (t.age_group && t.age_group === ageGroup) s += 2;
+      else if (t.age_group) s -= 5;
+      return s;
+    };
+    const out: Tmpl[] = [];
+    for (const [, arr] of byName) {
+      arr.sort((a, b) => score(b) - score(a));
+      out.push(arr[0]);
+    }
+    return out.sort((a, b) => a.display_order - b.display_order);
+  }, [template.data, selPatient.data]);
+
+
   const collect = useMutation({
     mutationFn: async (orderId: string) => {
       const { error: e1 } = await supabase.from("lab_samples" as never).insert({
