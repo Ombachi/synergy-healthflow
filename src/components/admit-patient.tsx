@@ -48,7 +48,7 @@ export function AdmitPatientButton({
         .select("ward_id, status");
       const counts = new Map<string, number>();
       ((bedRows as { ward_id: string; status: string }[] | null) ?? []).forEach((b) => {
-        if (b.status === "available") counts.set(b.ward_id, (counts.get(b.ward_id) ?? 0) + 1);
+        if (b.status === "free" || b.status === "available") counts.set(b.ward_id, (counts.get(b.ward_id) ?? 0) + 1);
       });
       return ((wardRows as { id: string; name: string; code: string | null }[] | null) ?? []).map((w) => ({
         ...w,
