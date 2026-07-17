@@ -472,10 +472,17 @@ function VisitDetail() {
               </ul>
               {canClose && !finalized && (
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                  <select className="col-span-2 rounded border bg-background px-2 py-2 text-sm" onChange={(e) => e.target.value && pickDrug(e.target.value)} defaultValue="">
-                    <option value="">— Select from drug database —</option>
-                    {drugs.data?.map((d) => <option key={d.id} value={d.id}>{d.drug_name} · {d.medication_class ?? "medication"}</option>)}
-                  </select>
+                  <div className="col-span-2">
+                    <DrugPickerInline
+                      onPick={(d) => setRxForm({
+                        medication: d.drug_name,
+                        dose: d.default_dose ?? "",
+                        frequency: d.default_frequency ?? "",
+                        duration: d.default_duration ?? "",
+                        instructions: d.instructions ?? "",
+                      })}
+                    />
+                  </div>
                   <Input placeholder="Medication" value={rxForm.medication} onChange={(e) => setRxForm({ ...rxForm, medication: e.target.value })} />
                   <Input placeholder="Dose" value={rxForm.dose} onChange={(e) => setRxForm({ ...rxForm, dose: e.target.value })} />
                   <Input placeholder="Frequency" value={rxForm.frequency} onChange={(e) => setRxForm({ ...rxForm, frequency: e.target.value })} />
