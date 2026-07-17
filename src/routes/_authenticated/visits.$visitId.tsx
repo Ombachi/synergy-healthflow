@@ -19,6 +19,7 @@ import { ProcedurePickerInline } from "@/components/procedure-picker";
 import { LabResultsViewer } from "@/components/lab-results-viewer";
 import { ImagingViewer } from "@/components/imaging-viewer";
 import { CatalogSearch } from "@/components/catalog-search";
+import { DrugPickerInline } from "@/components/drug-picker";
 
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
