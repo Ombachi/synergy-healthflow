@@ -75,7 +75,6 @@ function Visits() {
 
   const patients = useQuery({
     queryKey: ["patients-opt"],
-    enabled: canOpen,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("patients" as never)
