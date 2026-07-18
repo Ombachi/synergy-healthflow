@@ -304,181 +304,314 @@ function VisitDetail() {
   const v = visit.data; const p = patient.data;
   const finalized = v.status === "completed" || v.status === "closed" || discharge.data?.finalized;
 
+  const patientAge = useMemo(() => {
+    if (!p?.date_of_birth) return null;
+    const dob = new Date(p.date_of_birth); if (isNaN(+dob)) return null;
+    const now = new Date(); let a = now.getFullYear() - dob.getFullYear();
+    const m = now.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) a--;
+    return a;
+  }, [p?.date_of_birth]);
+
+  const tabs = [
+    { key: "overview", label: "Overview", icon: Clipboard },
+    { key: "vitals", label: "Vitals", icon: HeartPulse },
+    { key: "notes", label: "Notes & Dx", icon: Stethoscope },
+    { key: "orders", label: "Orders", icon: Activity },
+    { key: "results", label: "Results", icon: FlaskConical },
+    { key: "meds", label: "Meds", icon: Pill },
+    { key: "discharge", label: "Discharge", icon: CheckCircle2 },
+  ] as const;
+  type TabKey = typeof tabs[number]["key"];
+  const [tab, setTab] = useState<TabKey>("overview");
+
+  const encList = encounters.data ?? [];
+  const admissionActive = activeAdmission.data && !activeAdmission.data.discharged_at;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <Button asChild variant="ghost" size="sm" className="-ml-2"><Link to="/visits"><ArrowLeft className="h-4 w-4" /> All visits</Link></Button>
-          <h1 className="mt-1 text-2xl font-semibold">Visit · {p?.full_name ?? "…"}</h1>
-          <p className="text-sm text-muted-foreground">
-            Opened {new Date(v.opened_at).toLocaleString()} · Status: <span className="capitalize">{v.status.replace("_"," ")}</span>
-            {v.current_stage && <> · Stage: <span className="capitalize">{v.current_stage}</span></>}
-          </p>
+    <div className="space-y-4">
+      {/* Sticky patient banner */}
+      <div className="sticky top-0 z-30 -mx-4 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <Button asChild variant="ghost" size="sm" className="-ml-2 h-7 px-2 text-xs text-muted-foreground">
+              <Link to="/visits"><ArrowLeft className="h-3 w-3" /> All visits</Link>
+            </Button>
+            <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h1 className="text-xl font-semibold leading-tight">{p?.full_name ?? "…"}</h1>
+              {p?.medical_record_number && <span className="rounded bg-muted px-2 py-0.5 font-mono text-xs">MRN {p.medical_record_number}</span>}
+              {patientAge != null && <span className="text-sm text-muted-foreground">{patientAge}y</span>}
+              {p?.blood_type && <span className="rounded bg-rose-500/10 px-2 py-0.5 text-xs font-medium text-rose-700 dark:text-rose-300">{p.blood_type}</span>}
+              {admissionActive && <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300"><BedDouble className="h-3 w-3" /> Inpatient</span>}
+              <span className="text-xs text-muted-foreground">· Opened {new Date(v.opened_at).toLocaleString()}</span>
+              <span className="text-xs capitalize text-muted-foreground">· {v.status.replace("_"," ")}</span>
+            </div>
+            {(p?.allergies || p?.chronic_conditions) && (
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs">
+                {p?.allergies && <span className="text-amber-700 dark:text-amber-300"><strong>Allergies:</strong> {p.allergies}</span>}
+                {p?.chronic_conditions && <span className="text-muted-foreground"><strong>Chronic:</strong> {p.chronic_conditions}</span>}
+              </div>
+            )}
+          </div>
+          <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-2">
+            <AssignVisit visitId={v.id} assignedDoctorId={v.assigned_doctor_id} assignedNurseId={v.assigned_nurse_id} />
+            {canOrder && p && !admissionActive && <AdmitPatientButton visitId={v.id} patientName={p.full_name} disabled={finalized} />}
+            {canClose && p && <SickOffButton visitId={v.id} patientId={v.patient_id} patientName={p.full_name} mrn={p.medical_record_number} primaryDx={diagnoses.data?.find((d)=>d.is_primary)?.diagnosis ?? diagnoses.data?.[0]?.diagnosis ?? null} userId={user?.id ?? null} />}
+            <Button variant="outline" size="sm" onClick={handleExport}><Download className="h-4 w-4" /> PDF</Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <AssignVisit visitId={v.id} assignedDoctorId={v.assigned_doctor_id} assignedNurseId={v.assigned_nurse_id} />
-          {canOrder && p && <AdmitPatientButton visitId={v.id} patientName={p.full_name} disabled={finalized} />}
-          {canClose && p && <SickOffButton visitId={v.id} patientId={v.patient_id} patientName={p.full_name} mrn={p.medical_record_number} primaryDx={diagnoses.data?.find((d)=>d.is_primary)?.diagnosis ?? diagnoses.data?.[0]?.diagnosis ?? null} userId={user?.id ?? null} />}
-          <Button variant="outline" onClick={handleExport}><Download className="h-4 w-4" /> Export PDF</Button>
+
+        {/* Horizontal encounter timeline */}
+        {encList.length > 0 && (
+          <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto pb-1">
+            {encList.map((enc) => {
+              const active = enc.id === visitId;
+              const label = new Date(enc.opened_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" });
+              return (
+                <Link
+                  key={enc.id}
+                  to="/visits/$visitId"
+                  params={{ visitId: enc.id }}
+                  preload="intent"
+                  className={`group inline-flex min-w-[140px] shrink-0 flex-col rounded-md border px-3 py-2 text-left text-xs transition ${
+                    active ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card hover:border-primary/50 hover:bg-muted"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{label}</span>
+                    <span className={`rounded px-1 text-[10px] capitalize ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      {enc.status.replace("_"," ")}
+                    </span>
+                  </div>
+                  <span className="mt-0.5 truncate text-muted-foreground">{enc.reason ?? enc.chief_complaint ?? "—"}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="mt-3 flex gap-1 overflow-x-auto border-b -mb-3">
+          {tabs.map((t) => {
+            const Icon = t.icon; const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setTab(t.key)}
+                className={`inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition ${
+                  active ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="h-4 w-4" /> {t.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
+      {/* Tab content */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <div className="rounded-lg border bg-card p-5">
-            <h2 className="font-medium">Vitals from nursing triage</h2>
-            {vitals.data?.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No vitals captured yet.</p>}
-            <div className="mt-3 space-y-2">
-              {vitals.data?.slice(0, 1).map((vt) => (
-                <div key={vt.id} className="rounded-md border bg-background p-3 text-sm">
-                  <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString()}</div>
-                  <div className="grid gap-2 sm:grid-cols-4">
-                    <VitalReadout label="BP" value={vt.systolic_bp != null && vt.diastolic_bp != null ? `${vt.systolic_bp}/${vt.diastolic_bp}` : "—"} />
-                    <VitalReadout label="HR" value={vt.heart_rate != null ? `${vt.heart_rate} bpm` : "—"} />
-                    <VitalReadout label="Temp" value={vt.temperature_c != null ? `${vt.temperature_c} °C` : "—"} />
-                    <VitalReadout label="SpO₂" value={vt.oxygen_saturation != null ? `${vt.oxygen_saturation}%` : "—"} />
-                  </div>
-                  {vt.notes && <div className="mt-2 text-muted-foreground">{vt.notes}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-card p-5">
-            <h2 className="font-medium">Visit summary</h2>
-            <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
-              <div><dt className="text-muted-foreground">Reason</dt><dd>{v.reason ?? "—"}</dd></div>
-              <div><dt className="text-muted-foreground">Triage</dt><dd className="capitalize">{v.triage_level ?? "routine"}</dd></div>
-              <div className="col-span-2"><dt className="text-muted-foreground">Chief complaint</dt><dd>{v.chief_complaint ?? "—"}</dd></div>
-            </dl>
-            {canEditVisit && <NotesEditor initial={v.notes ?? ""} onSave={(t) => saveNotes.mutate(t)} disabled={saveNotes.isPending} />}
-          </div>
-
-          {(canClose || (diagnoses.data?.length ?? 0) > 0) && (
-            <div className="rounded-lg border bg-card p-5">
-              <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Diagnoses (ICD-11)</h2>
-              <ul className="mt-3 space-y-2 text-sm">
-                {diagnoses.data?.length === 0 && <li className="text-muted-foreground">None recorded.</li>}
-                {diagnoses.data?.map((d) => (
-                  <li key={d.id} className="flex items-center justify-between rounded border p-2">
-                    <div>
-                      <div className="font-medium">{d.diagnosis} {d.is_primary && <span className="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">primary</span>}</div>
-                      {d.icd_code && <div className="text-xs text-muted-foreground">ICD-11: {d.icd_code}</div>}
-                    </div>
-                    {canClose && !finalized && <Button size="icon" variant="ghost" onClick={() => removeDiagnosis.mutate(d.id)}><Trash2 className="h-4 w-4" /></Button>}
-                  </li>
-                ))}
-              </ul>
-              {canClose && !finalized && (
-                <div className="mt-3 space-y-2">
-                  <IcdPicker value="" onPick={(r) => setDiagForm({ ...diagForm, diagnosis: r.title, icd_code: r.code })} />
-                  <div className="grid grid-cols-12 gap-2">
-                    <Input className="col-span-6" placeholder="Diagnosis" value={diagForm.diagnosis} onChange={(e) => setDiagForm({ ...diagForm, diagnosis: e.target.value })} />
-                    <Input className="col-span-3" placeholder="ICD-11" value={diagForm.icd_code} onChange={(e) => setDiagForm({ ...diagForm, icd_code: e.target.value })} />
-                    <label className="col-span-2 flex items-center gap-1 text-xs"><input type="checkbox" checked={diagForm.is_primary} onChange={(e) => setDiagForm({ ...diagForm, is_primary: e.target.checked })} /> Primary</label>
-                    <Button className="col-span-1" size="sm" onClick={() => addDiagnosis.mutate()}>Add</Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Lab orders */}
-          {(canOrder || (labOrders.data?.length ?? 0) > 0) && (
-            <div className="rounded-lg border bg-card p-5">
-              <h2 className="flex items-center gap-2 font-medium"><FlaskConical className="h-4 w-4 text-primary" /> Lab investigations</h2>
-              <div className="mt-3">
-                <LabResultsViewer
-                  patientId={v.patient_id}
-                  patientName={p?.full_name ?? ""}
-                  mrn={p?.medical_record_number ?? null}
-                />
+          {tab === "overview" && (
+            <>
+              <div className="rounded-lg border bg-card p-5">
+                <h2 className="font-medium">Visit summary</h2>
+                <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div><dt className="text-muted-foreground">Reason</dt><dd>{v.reason ?? "—"}</dd></div>
+                  <div><dt className="text-muted-foreground">Triage</dt><dd className="capitalize">{v.triage_level ?? "routine"}</dd></div>
+                  <div className="col-span-2"><dt className="text-muted-foreground">Chief complaint</dt><dd>{v.chief_complaint ?? "—"}</dd></div>
+                  {v.current_stage && <div><dt className="text-muted-foreground">Stage</dt><dd className="capitalize">{v.current_stage.replace("_"," ")}</dd></div>}
+                </dl>
               </div>
-              {canOrder && !finalized && (
-                <div className="mt-3 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <LabTestSearchButton
-                      tests={labTests.data ?? []}
-                      selectedId={labForm.test_id}
-                      onPick={(t) => setLabForm({ ...labForm, test_id: t.id })}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {labForm.test_id
-                        ? labTests.data?.find((t) => t.id === labForm.test_id)?.name
-                        : "No test selected"}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-2">
-                    <select className="col-span-2 rounded border bg-background px-2 text-sm" value={labForm.priority} onChange={(e) => setLabForm({ ...labForm, priority: e.target.value })}>
-                      <option value="routine">Routine</option><option value="urgent">Urgent</option><option value="stat">STAT</option>
-                    </select>
-                    <Input className="col-span-8" placeholder="Clinical notes" value={labForm.clinical_notes} onChange={(e) => setLabForm({ ...labForm, clinical_notes: e.target.value })} />
-                    <Button className="col-span-2" size="sm" onClick={() => addLab.mutate()} disabled={!labForm.test_id || addLab.isPending}>Order</Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Imaging orders */}
-          {(canOrder || (imgOrders.data?.length ?? 0) > 0) && (
-            <div className="rounded-lg border bg-card p-5">
-              <h2 className="flex items-center gap-2 font-medium"><ScanLine className="h-4 w-4 text-primary" /> Imaging</h2>
-              <div className="mt-3">
-                <ImagingViewer
-                  patientId={v.patient_id}
-                  patientName={p?.full_name ?? ""}
-                  mrn={p?.medical_record_number ?? null}
-                />
-              </div>
-              {canOrder && !finalized && (
-                <div className="mt-3 grid grid-cols-12 gap-2">
-                  <select className="col-span-3 rounded border bg-background px-2 text-sm" value={imgForm.modality} onChange={(e) => setImgForm({ ...imgForm, modality: e.target.value })}>
-                    {["X-ray","CT","MRI","Ultrasound","Mammogram","PET","Fluoroscopy"].map((m) => <option key={m}>{m}</option>)}
-                  </select>
-                  <Input className="col-span-3" placeholder="Body part" value={imgForm.body_part} onChange={(e) => setImgForm({ ...imgForm, body_part: e.target.value })} />
-                  <Input className="col-span-4" placeholder="Clinical question" value={imgForm.clinical_question} onChange={(e) => setImgForm({ ...imgForm, clinical_question: e.target.value })} />
-                  <select className="col-span-1 rounded border bg-background px-1 text-xs" value={imgForm.priority} onChange={(e) => setImgForm({ ...imgForm, priority: e.target.value })}>
-                    <option value="routine">R</option><option value="urgent">U</option><option value="stat">S</option>
-                  </select>
-                  <Button className="col-span-1" size="sm" onClick={() => addImg.mutate()}>Order</Button>
-                </div>
-              )}
-            </div>
-          )}
-
-
-          {(canOrder || (procedureOrders.data?.length ?? 0) > 0) && (
-            <div className="rounded-lg border bg-card p-5">
-              <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Nursing procedures</h2>
-              <ul className="mt-3 space-y-1 text-sm">
-                {procedureOrders.data?.length === 0 && <li className="text-muted-foreground">No procedures ordered.</li>}
-                {procedureOrders.data?.map((o) => (
-                  <li key={o.id} className="flex justify-between rounded border p-2">
-                    <div>
-                      <div className="font-medium">{o.procedure_name}</div>
-                      {o.notes && <div className="text-xs text-muted-foreground">{o.notes}</div>}
+              <div className="rounded-lg border bg-card p-5">
+                <h2 className="font-medium">Latest vitals</h2>
+                {vitals.data?.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No vitals captured yet.</p>}
+                <div className="mt-3">
+                  {vitals.data?.slice(0, 1).map((vt) => (
+                    <div key={vt.id} className="rounded-md border bg-background p-3 text-sm">
+                      <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString()}</div>
+                      <div className="grid gap-2 sm:grid-cols-4">
+                        <VitalReadout label="BP" value={vt.systolic_bp != null && vt.diastolic_bp != null ? `${vt.systolic_bp}/${vt.diastolic_bp}` : "—"} />
+                        <VitalReadout label="HR" value={vt.heart_rate != null ? `${vt.heart_rate} bpm` : "—"} />
+                        <VitalReadout label="Temp" value={vt.temperature_c != null ? `${vt.temperature_c} °C` : "—"} />
+                        <VitalReadout label="SpO₂" value={vt.oxygen_saturation != null ? `${vt.oxygen_saturation}%` : "—"} />
+                      </div>
                     </div>
-                    <span className="self-start rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status}</span>
-                  </li>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {tab === "vitals" && (
+            <div className="rounded-lg border bg-card p-5">
+              <h2 className="font-medium">Vitals history · this encounter</h2>
+              {vitals.data?.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No vitals captured yet.</p>}
+              <div className="mt-3 space-y-2">
+                {vitals.data?.map((vt) => (
+                  <div key={vt.id} className="rounded-md border bg-background p-3 text-sm">
+                    <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString()}</div>
+                    <div className="grid gap-2 sm:grid-cols-4">
+                      <VitalReadout label="BP" value={vt.systolic_bp != null && vt.diastolic_bp != null ? `${vt.systolic_bp}/${vt.diastolic_bp}` : "—"} />
+                      <VitalReadout label="HR" value={vt.heart_rate != null ? `${vt.heart_rate} bpm` : "—"} />
+                      <VitalReadout label="Temp" value={vt.temperature_c != null ? `${vt.temperature_c} °C` : "—"} />
+                      <VitalReadout label="SpO₂" value={vt.oxygen_saturation != null ? `${vt.oxygen_saturation}%` : "—"} />
+                    </div>
+                    {vt.notes && <div className="mt-2 text-muted-foreground">{vt.notes}</div>}
+                  </div>
                 ))}
-              </ul>
-              {canOrder && !finalized && (
-                <div className="mt-3 space-y-2">
-                  <ProcedurePickerInline
-                    value={procForm.procedure_name}
-                    onChange={(name) => setProcForm({ ...procForm, procedure_name: name })}
+              </div>
+            </div>
+          )}
+
+          {tab === "notes" && (
+            <>
+              <div className="rounded-lg border bg-card p-5">
+                <h2 className="font-medium">Clinical notes</h2>
+                {canEditVisit && <NotesEditor initial={v.notes ?? ""} onSave={(t) => saveNotes.mutate(t)} disabled={saveNotes.isPending} />}
+              </div>
+              {(canClose || (diagnoses.data?.length ?? 0) > 0) && (
+                <div className="rounded-lg border bg-card p-5">
+                  <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Diagnoses (ICD-11)</h2>
+                  <ul className="mt-3 space-y-2 text-sm">
+                    {diagnoses.data?.length === 0 && <li className="text-muted-foreground">None recorded.</li>}
+                    {diagnoses.data?.map((d) => (
+                      <li key={d.id} className="flex items-center justify-between rounded border p-2">
+                        <div>
+                          <div className="font-medium">{d.diagnosis} {d.is_primary && <span className="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">primary</span>}</div>
+                          {d.icd_code && <div className="text-xs text-muted-foreground">ICD-11: {d.icd_code}</div>}
+                        </div>
+                        {canClose && !finalized && <Button size="icon" variant="ghost" onClick={() => removeDiagnosis.mutate(d.id)}><Trash2 className="h-4 w-4" /></Button>}
+                      </li>
+                    ))}
+                  </ul>
+                  {canClose && !finalized && (
+                    <div className="mt-3 space-y-2">
+                      <IcdPicker value="" onPick={(r) => setDiagForm({ ...diagForm, diagnosis: r.title, icd_code: r.code })} />
+                      <div className="grid grid-cols-12 gap-2">
+                        <Input className="col-span-6" placeholder="Diagnosis" value={diagForm.diagnosis} onChange={(e) => setDiagForm({ ...diagForm, diagnosis: e.target.value })} />
+                        <Input className="col-span-3" placeholder="ICD-11" value={diagForm.icd_code} onChange={(e) => setDiagForm({ ...diagForm, icd_code: e.target.value })} />
+                        <label className="col-span-2 flex items-center gap-1 text-xs"><input type="checkbox" checked={diagForm.is_primary} onChange={(e) => setDiagForm({ ...diagForm, is_primary: e.target.checked })} /> Primary</label>
+                        <Button className="col-span-1" size="sm" onClick={() => addDiagnosis.mutate()}>Add</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "orders" && (
+            <>
+              {(canOrder || (labOrders.data?.length ?? 0) > 0) && (
+                <div className="rounded-lg border bg-card p-5">
+                  <h2 className="flex items-center gap-2 font-medium"><FlaskConical className="h-4 w-4 text-primary" /> Lab investigations</h2>
+                  {canOrder && !finalized && (
+                    <div className="mt-3 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <LabTestSearchButton
+                          tests={labTests.data ?? []}
+                          selectedId={labForm.test_id}
+                          onPick={(t) => setLabForm({ ...labForm, test_id: t.id })}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {labForm.test_id
+                            ? labTests.data?.find((t) => t.id === labForm.test_id)?.name
+                            : "No test selected"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-12 gap-2">
+                        <select className="col-span-2 rounded border bg-background px-2 text-sm" value={labForm.priority} onChange={(e) => setLabForm({ ...labForm, priority: e.target.value })}>
+                          <option value="routine">Routine</option><option value="urgent">Urgent</option><option value="stat">STAT</option>
+                        </select>
+                        <Input className="col-span-8" placeholder="Clinical notes" value={labForm.clinical_notes} onChange={(e) => setLabForm({ ...labForm, clinical_notes: e.target.value })} />
+                        <Button className="col-span-2" size="sm" onClick={() => addLab.mutate()} disabled={!labForm.test_id || addLab.isPending}>Order</Button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="mt-2 text-xs text-muted-foreground">{labOrders.data?.length ?? 0} lab order(s) on this encounter — view results in the Results tab.</div>
+                </div>
+              )}
+
+              {(canOrder || (imgOrders.data?.length ?? 0) > 0) && (
+                <div className="rounded-lg border bg-card p-5">
+                  <h2 className="flex items-center gap-2 font-medium"><ScanLine className="h-4 w-4 text-primary" /> Imaging</h2>
+                  {canOrder && !finalized && (
+                    <div className="mt-3 grid grid-cols-12 gap-2">
+                      <select className="col-span-3 rounded border bg-background px-2 text-sm" value={imgForm.modality} onChange={(e) => setImgForm({ ...imgForm, modality: e.target.value })}>
+                        {["X-ray","CT","MRI","Ultrasound","Mammogram","PET","Fluoroscopy"].map((m) => <option key={m}>{m}</option>)}
+                      </select>
+                      <Input className="col-span-3" placeholder="Body part" value={imgForm.body_part} onChange={(e) => setImgForm({ ...imgForm, body_part: e.target.value })} />
+                      <Input className="col-span-4" placeholder="Clinical question" value={imgForm.clinical_question} onChange={(e) => setImgForm({ ...imgForm, clinical_question: e.target.value })} />
+                      <select className="col-span-1 rounded border bg-background px-1 text-xs" value={imgForm.priority} onChange={(e) => setImgForm({ ...imgForm, priority: e.target.value })}>
+                        <option value="routine">R</option><option value="urgent">U</option><option value="stat">S</option>
+                      </select>
+                      <Button className="col-span-1" size="sm" onClick={() => addImg.mutate()}>Order</Button>
+                    </div>
+                  )}
+                  <div className="mt-2 text-xs text-muted-foreground">{imgOrders.data?.length ?? 0} imaging order(s) — reports in the Results tab.</div>
+                </div>
+              )}
+
+              {(canOrder || (procedureOrders.data?.length ?? 0) > 0) && (
+                <div className="rounded-lg border bg-card p-5">
+                  <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Nursing procedures</h2>
+                  <ul className="mt-3 space-y-1 text-sm">
+                    {procedureOrders.data?.length === 0 && <li className="text-muted-foreground">No procedures ordered.</li>}
+                    {procedureOrders.data?.map((o) => (
+                      <li key={o.id} className="flex justify-between rounded border p-2">
+                        <div>
+                          <div className="font-medium">{o.procedure_name}</div>
+                          {o.notes && <div className="text-xs text-muted-foreground">{o.notes}</div>}
+                        </div>
+                        <span className="self-start rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {canOrder && !finalized && (
+                    <div className="mt-3 space-y-2">
+                      <ProcedurePickerInline
+                        value={procForm.procedure_name}
+                        onChange={(name) => setProcForm({ ...procForm, procedure_name: name })}
+                      />
+                      <div className="grid grid-cols-12 gap-2">
+                        <Input className="col-span-10" placeholder="Notes / instructions for nurse" value={procForm.notes} onChange={(e) => setProcForm({ ...procForm, notes: e.target.value })} />
+                        <Button className="col-span-2" size="sm" onClick={() => addProcedure.mutate()} disabled={addProcedure.isPending || !procForm.procedure_name.trim()}>Route to nurse</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "results" && (
+            <>
+              <div className="rounded-lg border bg-card p-5">
+                <h2 className="flex items-center gap-2 font-medium"><FlaskConical className="h-4 w-4 text-primary" /> Laboratory results</h2>
+                <div className="mt-3">
+                  <LabResultsViewer
+                    patientId={v.patient_id}
+                    patientName={p?.full_name ?? ""}
+                    mrn={p?.medical_record_number ?? null}
                   />
-                  <div className="grid grid-cols-12 gap-2">
-                    <Input className="col-span-10" placeholder="Notes / instructions for nurse" value={procForm.notes} onChange={(e) => setProcForm({ ...procForm, notes: e.target.value })} />
-                    <Button className="col-span-2" size="sm" onClick={() => addProcedure.mutate()} disabled={addProcedure.isPending || !procForm.procedure_name.trim()}>Route to nurse</Button>
-                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+              <div className="rounded-lg border bg-card p-5">
+                <h2 className="flex items-center gap-2 font-medium"><ScanLine className="h-4 w-4 text-primary" /> Imaging reports</h2>
+                <div className="mt-3">
+                  <ImagingViewer
+                    patientId={v.patient_id}
+                    patientName={p?.full_name ?? ""}
+                    mrn={p?.medical_record_number ?? null}
+                  />
+                </div>
+              </div>
+            </>
           )}
 
-          {(canClose || (prescriptions.data?.length ?? 0) > 0) && (
+          {tab === "meds" && (canClose || (prescriptions.data?.length ?? 0) > 0) && (
             <div className="rounded-lg border bg-card p-5">
               <h2 className="flex items-center gap-2 font-medium"><Pill className="h-4 w-4 text-primary" /> Prescriptions</h2>
               <ul className="mt-3 space-y-2 text-sm">
@@ -518,7 +651,7 @@ function VisitDetail() {
             </div>
           )}
 
-          {canClose && (
+          {tab === "discharge" && canClose && (
             <div className="rounded-lg border bg-card p-5">
               <h2 className="flex items-center gap-2 font-medium"><CheckCircle2 className="h-4 w-4 text-primary" /> Discharge & complete</h2>
               <div className="mt-3 space-y-3">
@@ -534,13 +667,14 @@ function VisitDetail() {
           )}
         </div>
 
+        {/* Right rail: patient snapshot */}
         <div className="space-y-4">
           <div className="rounded-lg border bg-card p-5">
             <h2 className="font-medium">Patient</h2>
             {p ? (
               <dl className="mt-3 space-y-2 text-sm">
                 <div><dt className="text-muted-foreground">Name</dt><dd>{p.full_name}</dd></div>
-                {p.date_of_birth && <div><dt className="text-muted-foreground">DOB</dt><dd>{p.date_of_birth}</dd></div>}
+                {p.date_of_birth && <div><dt className="text-muted-foreground">DOB</dt><dd>{p.date_of_birth}{patientAge != null ? ` · ${patientAge}y` : ""}</dd></div>}
                 {p.blood_type && <div><dt className="text-muted-foreground">Blood</dt><dd>{p.blood_type}</dd></div>}
                 {p.allergies && <div><dt className="text-muted-foreground">Allergies</dt><dd className="text-amber-700 dark:text-amber-300">{p.allergies}</dd></div>}
                 {p.chronic_conditions && <div><dt className="text-muted-foreground">Conditions</dt><dd>{p.chronic_conditions}</dd></div>}
@@ -548,9 +682,28 @@ function VisitDetail() {
               </dl>
             ) : <p className="mt-2 text-sm text-muted-foreground">Loading…</p>}
           </div>
+          {encList.length > 1 && (
+            <div className="rounded-lg border bg-card p-5">
+              <h2 className="font-medium">Prior encounters</h2>
+              <ul className="mt-2 space-y-1 text-sm">
+                {encList.filter((e) => e.id !== visitId).slice(0, 8).map((e) => (
+                  <li key={e.id}>
+                    <Link
+                      to="/visits/$visitId"
+                      params={{ visitId: e.id }}
+                      preload="intent"
+                      className="flex items-center justify-between rounded px-2 py-1 hover:bg-muted"
+                    >
+                      <span>{new Date(e.opened_at).toLocaleDateString()} · {e.reason ?? e.chief_complaint ?? "—"}</span>
+                      <span className="text-xs capitalize text-muted-foreground">{e.status.replace("_"," ")}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
-
     </div>
   );
 }
