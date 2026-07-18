@@ -106,6 +106,30 @@ function VisitDetail() {
     if (error) throw error; return (data as unknown as ProcedureOrder[]) ?? [];
   }});
 
+  // All encounters for this patient, for the horizontal timeline
+  const encounters = useQuery({
+    queryKey: ["patient-encounters", visit.data?.patient_id],
+    enabled: !!visit.data?.patient_id,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("visits" as never)
+        .select("id, opened_at, closed_at, status, reason, chief_complaint, current_stage")
+        .eq("patient_id", visit.data!.patient_id)
+        .order("opened_at", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as { id: string; opened_at: string; closed_at: string | null; status: string; reason: string | null; chief_complaint: string | null; current_stage: string | null }[]) ?? [];
+    },
+  });
+  const activeAdmission = useQuery({
+    queryKey: ["visit-admission", visitId],
+    enabled: !!visit.data,
+    queryFn: async () => {
+      const { data } = await supabase.from("admissions" as never)
+        .select("id, admitted_at, discharged_at, status, bed_id")
+        .eq("visit_id", visitId).order("admitted_at", { ascending: false }).limit(1).maybeSingle();
+      return data as { id: string; admitted_at: string; discharged_at: string | null; status: string; bed_id: string | null } | null;
+    },
+  });
+
   useEffect(() => {
     if (!visit.data || !user || !hasAnyRole(["doctor"])) return;
     if (visit.data.current_stage === "waiting_for_doctor" || visit.data.current_stage === "doctor" || visit.data.status === "open") {
