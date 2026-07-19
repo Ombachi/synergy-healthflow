@@ -2320,6 +2320,36 @@ export type Database = {
         }
         Relationships: []
       }
+      imaging_order_versions: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id?: string
+          snapshot?: Json
+          version_no?: number
+        }
+        Relationships: []
+      }
       imaging_orders: {
         Row: {
           body_part: string | null
@@ -3205,6 +3235,36 @@ export type Database = {
           },
         ]
       }
+      lab_result_value_versions: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id?: string
+          snapshot?: Json
+          version_no?: number
+        }
+        Relationships: []
+      }
       lab_result_values: {
         Row: {
           abnormal_flag: string | null
@@ -3271,6 +3331,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lab_result_versions: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id?: string
+          snapshot?: Json
+          version_no?: number
+        }
+        Relationships: []
       }
       lab_results: {
         Row: {
@@ -4291,6 +4381,36 @@ export type Database = {
           },
         ]
       }
+      pharmacy_dispense_versions: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id?: string
+          snapshot?: Json
+          version_no?: number
+        }
+        Relationships: []
+      }
       pharmacy_dispenses: {
         Row: {
           created_at: string
@@ -4439,6 +4559,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      prescription_versions: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id: string
+          snapshot: Json
+          version_no: number
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          record_id?: string
+          snapshot?: Json
+          version_no?: number
+        }
+        Relationships: []
       }
       prescriptions: {
         Row: {
