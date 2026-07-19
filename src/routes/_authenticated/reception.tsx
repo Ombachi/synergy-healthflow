@@ -155,22 +155,45 @@ function ReceptionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Walk-in dialog
+  // Walk-in / new patient registration — 4-section layout
+  const EMPTY_REG = {
+    // Identification
+    full_name: "", date_of_birth: "", gender: "", blood_type: "",
+    // Contact
+    phone: "", email: "", address: "",
+    // Emergency contact
+    emergency_contact_name: "", emergency_contact_phone: "",
+    // Visit
+    reason: "", payment_method: "cash", payment_location: "",
+    insurance_provider: "", insurance_number: "",
+    allergies: "", chronic_conditions: "",
+  };
   const [walkOpen, setWalkOpen] = useState(false);
-  const [walkForm, setWalkForm] = useState({
-    full_name: "", phone: "", reason: "", payment_method: "cash", payment_location: "",
-  });
+  const [walkForm, setWalkForm] = useState({ ...EMPTY_REG });
+  const [createdMrn, setCreatedMrn] = useState<string | null>(null);
+
   const walkIn = useMutation({
     mutationFn: async () => {
-      if (!walkForm.full_name) throw new Error("Name required");
+      if (!walkForm.full_name.trim()) throw new Error("Full name is required");
       const { data: p, error: pe } = await supabase.from("patients" as never).insert({
-        full_name: walkForm.full_name,
+        full_name: walkForm.full_name.trim(),
+        date_of_birth: walkForm.date_of_birth || null,
+        gender: walkForm.gender || null,
+        blood_type: walkForm.blood_type || null,
         phone: walkForm.phone || null,
-        address: walkForm.payment_location || null,
+        email: walkForm.email || null,
+        address: walkForm.address || walkForm.payment_location || null,
+        emergency_contact_name: walkForm.emergency_contact_name || null,
+        emergency_contact_phone: walkForm.emergency_contact_phone || null,
+        insurance_provider: walkForm.insurance_provider || null,
+        insurance_number: walkForm.insurance_number || null,
+        allergies: walkForm.allergies || null,
+        chronic_conditions: walkForm.chronic_conditions || null,
         created_by: user!.id,
-      } as never).select("id").single();
+      } as never).select("id, medical_record_number").single();
       if (pe) throw pe;
       const pid = (p as { id: string }).id;
+      const mrn = (p as { medical_record_number: string | null }).medical_record_number;
       const { data: v, error: ve } = await supabase.from("visits" as never).insert({
         patient_id: pid,
         opened_by: user!.id,
@@ -183,15 +206,17 @@ function ReceptionPage() {
       if (ve) throw ve;
       const vid = (v as { id: string }).id;
       await supabase.from("visit_queue" as never).insert({ visit_id: vid, queue_type: "triage", priority: 3 } as never);
+      return mrn;
     },
-    onSuccess: () => {
-      setWalkOpen(false);
-      setWalkForm({ full_name: "", phone: "", reason: "", payment_method: "cash", payment_location: "" });
+    onSuccess: (mrn) => {
+      setCreatedMrn(mrn ?? null);
+      setWalkForm({ ...EMPTY_REG });
       qc.invalidateQueries({ queryKey: ["recep-visits"] });
-      toast.success("Walk-in registered & queued");
+      toast.success(mrn ? `Registered · MRN ${mrn}` : "Registered & queued");
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   return (
     <div className="space-y-6">
