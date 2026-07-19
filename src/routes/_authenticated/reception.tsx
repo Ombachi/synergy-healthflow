@@ -225,28 +225,109 @@ function ReceptionPage() {
           <h1 className="flex items-center gap-2 text-2xl font-semibold"><ClipboardCheck className="h-6 w-6 text-primary" /> Reception</h1>
           <p className="text-sm text-muted-foreground">Today's appointments, walk-ins, and active visits.</p>
         </div>
-        <Dialog open={walkOpen} onOpenChange={setWalkOpen}>
-          <DialogTrigger asChild><Button><UserPlus2 className="h-4 w-4" />Walk-in</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Register walk-in patient</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <div><Label>Full name</Label><Input value={walkForm.full_name} onChange={(e) => setWalkForm({ ...walkForm, full_name: e.target.value })} /></div>
-              <div className="grid grid-cols-2 gap-2">
-                <div><Label>Phone</Label><Input value={walkForm.phone} onChange={(e) => setWalkForm({ ...walkForm, phone: e.target.value })} /></div>
-                <div><Label>Location / residence</Label><Input value={walkForm.payment_location} onChange={(e) => setWalkForm({ ...walkForm, payment_location: e.target.value })} placeholder="Town, estate" /></div>
+        <Dialog open={walkOpen} onOpenChange={(v) => { setWalkOpen(v); if (!v) setCreatedMrn(null); }}>
+          <DialogTrigger asChild><Button><UserPlus2 className="h-4 w-4" />New patient</Button></DialogTrigger>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Register new patient</DialogTitle>
+              <p className="text-xs text-muted-foreground">MRN is generated automatically after registration (format LITU-YYYYMM-XX-###).</p>
+            </DialogHeader>
+
+            {createdMrn && (
+              <div className="rounded-md border border-green-500/40 bg-green-500/10 p-3 text-sm">
+                <div className="font-medium text-green-700">Patient registered</div>
+                <div className="text-xs text-muted-foreground">MRN <span className="font-mono">{createdMrn}</span> · queued for triage.</div>
+                <div className="mt-2 flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { setCreatedMrn(null); }}>Register another</Button>
+                  <Button size="sm" onClick={() => { setCreatedMrn(null); setWalkOpen(false); }}>Done</Button>
+                </div>
               </div>
-              <div><Label>Reason</Label><Input value={walkForm.reason} onChange={(e) => setWalkForm({ ...walkForm, reason: e.target.value })} /></div>
-              <div>
-                <Label>Payment method</Label>
-                <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.payment_method} onChange={(e) => setWalkForm({ ...walkForm, payment_method: e.target.value })}>
-                  {PAYMENT_METHODS.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
-                </select>
+            )}
+
+            {!createdMrn && (
+              <div className="space-y-5">
+                {/* Section 1 · Identification */}
+                <section className="rounded-md border">
+                  <header className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2 text-sm font-medium">
+                    <IdCard className="h-4 w-4 text-primary" /> 1 · Identification
+                    <span className="ml-auto rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary">MRN auto-generated</span>
+                  </header>
+                  <div className="grid grid-cols-12 gap-2 p-3">
+                    <div className="col-span-6"><Label className="text-xs">Full name *</Label><Input value={walkForm.full_name} onChange={(e) => setWalkForm({ ...walkForm, full_name: e.target.value })} maxLength={120} /></div>
+                    <div className="col-span-3"><Label className="text-xs">Date of birth</Label><Input type="date" value={walkForm.date_of_birth} onChange={(e) => setWalkForm({ ...walkForm, date_of_birth: e.target.value })} /></div>
+                    <div className="col-span-3"><Label className="text-xs">Gender</Label>
+                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.gender} onChange={(e) => setWalkForm({ ...walkForm, gender: e.target.value })}>
+                        <option value="">—</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div className="col-span-3"><Label className="text-xs">Blood type</Label>
+                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.blood_type} onChange={(e) => setWalkForm({ ...walkForm, blood_type: e.target.value })}>
+                        <option value="">—</option>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((b) => <option key={b}>{b}</option>)}
+                      </select>
+                    </div>
+                    <div className="col-span-9"><Label className="text-xs">Known allergies</Label><Input value={walkForm.allergies} onChange={(e) => setWalkForm({ ...walkForm, allergies: e.target.value })} placeholder="Penicillin, latex…" /></div>
+                    <div className="col-span-12"><Label className="text-xs">Chronic conditions</Label><Input value={walkForm.chronic_conditions} onChange={(e) => setWalkForm({ ...walkForm, chronic_conditions: e.target.value })} placeholder="Hypertension, diabetes…" /></div>
+                  </div>
+                </section>
+
+                {/* Section 2 · Contact */}
+                <section className="rounded-md border">
+                  <header className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2 text-sm font-medium">
+                    <Phone className="h-4 w-4 text-primary" /> 2 · Contact
+                  </header>
+                  <div className="grid grid-cols-12 gap-2 p-3">
+                    <div className="col-span-4"><Label className="text-xs">Phone</Label><Input value={walkForm.phone} onChange={(e) => setWalkForm({ ...walkForm, phone: e.target.value })} maxLength={30} /></div>
+                    <div className="col-span-4"><Label className="text-xs">Email</Label><Input type="email" value={walkForm.email} onChange={(e) => setWalkForm({ ...walkForm, email: e.target.value })} maxLength={255} /></div>
+                    <div className="col-span-4"><Label className="text-xs">Residence (town/estate)</Label><Input value={walkForm.address} onChange={(e) => setWalkForm({ ...walkForm, address: e.target.value })} /></div>
+                  </div>
+                </section>
+
+                {/* Section 3 · Emergency Contact */}
+                <section className="rounded-md border">
+                  <header className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2 text-sm font-medium">
+                    <ShieldAlert className="h-4 w-4 text-primary" /> 3 · Emergency contact
+                  </header>
+                  <div className="grid grid-cols-12 gap-2 p-3">
+                    <div className="col-span-7"><Label className="text-xs">Contact name</Label><Input value={walkForm.emergency_contact_name} onChange={(e) => setWalkForm({ ...walkForm, emergency_contact_name: e.target.value })} /></div>
+                    <div className="col-span-5"><Label className="text-xs">Contact phone</Label><Input value={walkForm.emergency_contact_phone} onChange={(e) => setWalkForm({ ...walkForm, emergency_contact_phone: e.target.value })} /></div>
+                  </div>
+                </section>
+
+                {/* Section 4 · Visit info */}
+                <section className="rounded-md border">
+                  <header className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2 text-sm font-medium">
+                    <Stethoscope className="h-4 w-4 text-primary" /> 4 · Visit information
+                  </header>
+                  <div className="grid grid-cols-12 gap-2 p-3">
+                    <div className="col-span-12"><Label className="text-xs">Reason for visit</Label><Textarea rows={2} value={walkForm.reason} onChange={(e) => setWalkForm({ ...walkForm, reason: e.target.value })} placeholder="Chief complaint" /></div>
+                    <div className="col-span-4"><Label className="text-xs">Mode of payment</Label>
+                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.payment_method} onChange={(e) => setWalkForm({ ...walkForm, payment_method: e.target.value })}>
+                        {PAYMENT_METHODS.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
+                      </select>
+                    </div>
+                    <div className="col-span-8"><Label className="text-xs">Payment location / employer</Label><Input value={walkForm.payment_location} onChange={(e) => setWalkForm({ ...walkForm, payment_location: e.target.value })} /></div>
+                    {walkForm.payment_method === "insurance" && (
+                      <>
+                        <div className="col-span-6"><Label className="text-xs">Insurance provider</Label><Input value={walkForm.insurance_provider} onChange={(e) => setWalkForm({ ...walkForm, insurance_provider: e.target.value })} /></div>
+                        <div className="col-span-6"><Label className="text-xs">Insurance / policy number</Label><Input value={walkForm.insurance_number} onChange={(e) => setWalkForm({ ...walkForm, insurance_number: e.target.value })} /></div>
+                      </>
+                    )}
+                  </div>
+                </section>
+
+                <DuplicatePatientCheck name={walkForm.full_name} phone={walkForm.phone} />
               </div>
-              <DuplicatePatientCheck name={walkForm.full_name} phone={walkForm.phone} />
-            </div>
-            <DialogFooter><Button onClick={() => walkIn.mutate()} disabled={walkIn.isPending}>Register & queue</Button></DialogFooter>
+            )}
+
+            {!createdMrn && (
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setWalkOpen(false)}>Cancel</Button>
+                <Button onClick={() => walkIn.mutate()} disabled={walkIn.isPending || !walkForm.full_name.trim()}>Register & queue for triage</Button>
+              </DialogFooter>
+            )}
           </DialogContent>
         </Dialog>
+
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
