@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ClipboardCheck, UserPlus2, Search } from "lucide-react";
+import { ClipboardCheck, UserPlus2, Search, IdCard, Phone, ShieldAlert, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { DuplicatePatientCheck } from "@/components/duplicate-patient-check";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/reception")({ component: ReceptionPage });
+
 
 interface Patient { id: string; full_name: string; phone: string | null; medical_record_number: string | null; address: string | null }
 interface Appointment { id: string; patient_id: string; scheduled_at: string; status: string; reason: string | null; visit_id: string | null }
