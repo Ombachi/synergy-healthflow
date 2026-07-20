@@ -202,8 +202,13 @@ export function NurseStation() {
     mutationFn: async () => {
       if (!selectedVisit || !selectedEntry) throw new Error("No patient selected");
       if (!v.doctor_id) throw new Error("Assign a doctor first");
-      // Save final vitals snapshot too
-      if (v.systolic_bp || v.heart_rate || v.temperature_c) {
+      // Autosave vitals snapshot if ANY vital was entered — nurses often forget the Save button.
+      const anyVital = [
+        v.temperature_c, v.heart_rate, v.respiratory_rate,
+        v.systolic_bp, v.diastolic_bp, v.oxygen_saturation,
+        v.weight_kg, v.height_cm, v.pain_level,
+      ].some((x) => x !== "" && x != null);
+      if (anyVital || v.notes) {
         await supabase.from("vitals" as never).insert({
           visit_id: selectedVisit.id, patient_id: selectedVisit.patient_id, captured_by: user!.id,
           temperature_c: num(v.temperature_c), heart_rate: num(v.heart_rate), respiratory_rate: num(v.respiratory_rate),
