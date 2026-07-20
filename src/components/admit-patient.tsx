@@ -117,7 +117,7 @@ export function AdmitPatientButton({
               </SelectContent>
             </Select>
             <p className="mt-1 text-xs text-muted-foreground">
-              The first available bed in the ward will be assigned automatically.
+              A new inpatient encounter will be opened on this patient's MRN with the first available bed. Demographics, allergies, chronic conditions, history, diagnoses, medications, labs and imaging are carried forward automatically.
             </p>
           </div>
           <div>
