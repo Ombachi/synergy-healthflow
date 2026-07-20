@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BedDouble } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export function AdmitPatientButton({
   disabled?: boolean;
 }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [wardId, setWardId] = useState<string>("");
   const [reason, setReason] = useState("");
@@ -60,21 +62,23 @@ export function AdmitPatientButton({
   const admit = useMutation({
     mutationFn: async () => {
       if (!wardId) throw new Error("Pick a ward");
-      const { data, error } = await supabase.rpc("admit_patient" as never, {
-        _visit_id: visitId,
+      const { data, error } = await supabase.rpc("admit_patient_inpatient" as never, {
+        _source_visit: visitId,
         _ward_id: wardId,
         _reason: reason || null,
       } as never);
       if (error) throw error;
-      return (data as unknown as { bed_code: string }[])?.[0];
+      return (data as unknown as { inpatient_visit_id: string; bed_code: string }[])?.[0];
     },
     onSuccess: (row) => {
-      toast.success(`Admitted to bed ${row?.bed_code ?? "assigned"}`);
+      toast.success(`Inpatient encounter opened · bed ${row?.bed_code ?? "assigned"}`);
       setOpen(false);
       setWardId("");
       setReason("");
-      qc.invalidateQueries({ queryKey: ["visit", visitId] });
-      qc.invalidateQueries({ queryKey: ["admissions", visitId] });
+      qc.invalidateQueries();
+      if (row?.inpatient_visit_id) {
+        navigate({ to: "/visits/$visitId", params: { visitId: row.inpatient_visit_id } });
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -113,7 +117,7 @@ export function AdmitPatientButton({
               </SelectContent>
             </Select>
             <p className="mt-1 text-xs text-muted-foreground">
-              The first available bed in the ward will be assigned automatically.
+              A new inpatient encounter will be opened on this patient's MRN with the first available bed. Demographics, allergies, chronic conditions, history, diagnoses, medications, labs and imaging are carried forward automatically.
             </p>
           </div>
           <div>
