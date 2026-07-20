@@ -276,28 +276,6 @@ function ReceptionPage() {
                   </div>
                 </section>
 
-                {/* Section 4 · Visit info */}
-                <section className="rounded-md border">
-                  <header className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2 text-sm font-medium">
-                    <Stethoscope className="h-4 w-4 text-primary" /> 4 · Visit information
-                  </header>
-                  <div className="grid grid-cols-12 gap-2 p-3">
-                    <div className="col-span-12"><Label className="text-xs">Reason for visit</Label><Textarea rows={2} value={walkForm.reason} onChange={(e) => setWalkForm({ ...walkForm, reason: e.target.value })} placeholder="Chief complaint" /></div>
-                    <div className="col-span-4"><Label className="text-xs">Mode of payment</Label>
-                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.payment_method} onChange={(e) => setWalkForm({ ...walkForm, payment_method: e.target.value })}>
-                        {PAYMENT_METHODS.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-8"><Label className="text-xs">Payment location / employer</Label><Input value={walkForm.payment_location} onChange={(e) => setWalkForm({ ...walkForm, payment_location: e.target.value })} /></div>
-                    {walkForm.payment_method === "insurance" && (
-                      <>
-                        <div className="col-span-6"><Label className="text-xs">Insurance provider</Label><Input value={walkForm.insurance_provider} onChange={(e) => setWalkForm({ ...walkForm, insurance_provider: e.target.value })} /></div>
-                        <div className="col-span-6"><Label className="text-xs">Insurance / policy number</Label><Input value={walkForm.insurance_number} onChange={(e) => setWalkForm({ ...walkForm, insurance_number: e.target.value })} /></div>
-                      </>
-                    )}
-                  </div>
-                </section>
-
                 <DuplicatePatientCheck name={walkForm.full_name} phone={walkForm.phone} />
               </div>
             )}
