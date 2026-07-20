@@ -6728,6 +6728,15 @@ export type Database = {
           bed_id: string
         }[]
       }
+      admit_patient_inpatient: {
+        Args: { _reason?: string; _source_visit: string; _ward_id: string }
+        Returns: {
+          admission_id: string
+          bed_code: string
+          bed_id: string
+          inpatient_visit_id: string
+        }[]
+      }
       approve_credit_note: {
         Args: {
           _credit_note_id: string
