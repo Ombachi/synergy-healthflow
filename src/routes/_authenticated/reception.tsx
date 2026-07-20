@@ -251,8 +251,6 @@ function ReceptionPage() {
                       </select>
                     </div>
                   </div>
-                </section>{/*close-identification*/}
-                  </div>
                 </section>
 
                 {/* Section 2 · Contact */}
