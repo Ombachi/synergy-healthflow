@@ -586,7 +586,7 @@ function VisitDetail() {
                   <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Nursing procedures</h2>
                   <ul className="mt-3 space-y-1 text-sm">
                     {procedureOrders.data?.length === 0 && <li className="text-muted-foreground">No procedures ordered.</li>}
-                    {procedureOrders.data?.map((o) => (
+                    {(procedureOrders.data?.length ?? 0) > 0 && procedureOrders.data?.map((o) => (
                       <li key={o.id} className="flex justify-between rounded border p-2">
                         <div>
                           <div className="font-medium">{o.procedure_name}</div>
