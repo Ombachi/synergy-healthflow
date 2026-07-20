@@ -155,18 +155,14 @@ function ReceptionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Walk-in / new patient registration — 4-section layout
+  // Walk-in / new patient registration — trimmed layout
   const EMPTY_REG = {
     // Identification
-    full_name: "", date_of_birth: "", gender: "", blood_type: "",
+    full_name: "", date_of_birth: "", gender: "",
     // Contact
     phone: "", email: "", address: "",
     // Emergency contact
     emergency_contact_name: "", emergency_contact_phone: "",
-    // Visit
-    reason: "", payment_method: "cash", payment_location: "",
-    insurance_provider: "", insurance_number: "",
-    allergies: "", chronic_conditions: "",
   };
   const [walkOpen, setWalkOpen] = useState(false);
   const [walkForm, setWalkForm] = useState({ ...EMPTY_REG });
@@ -179,16 +175,11 @@ function ReceptionPage() {
         full_name: walkForm.full_name.trim(),
         date_of_birth: walkForm.date_of_birth || null,
         gender: walkForm.gender || null,
-        blood_type: walkForm.blood_type || null,
         phone: walkForm.phone || null,
         email: walkForm.email || null,
-        address: walkForm.address || walkForm.payment_location || null,
+        address: walkForm.address || null,
         emergency_contact_name: walkForm.emergency_contact_name || null,
         emergency_contact_phone: walkForm.emergency_contact_phone || null,
-        insurance_provider: walkForm.insurance_provider || null,
-        insurance_number: walkForm.insurance_number || null,
-        allergies: walkForm.allergies || null,
-        chronic_conditions: walkForm.chronic_conditions || null,
         created_by: user!.id,
       } as never).select("id, medical_record_number").single();
       if (pe) throw pe;
@@ -197,11 +188,10 @@ function ReceptionPage() {
       const { data: v, error: ve } = await supabase.from("visits" as never).insert({
         patient_id: pid,
         opened_by: user!.id,
-        reason: walkForm.reason || "Walk-in",
+        reason: null,
         status: "open",
         current_stage: "checked_in",
-        payment_method: walkForm.payment_method,
-        payment_location: walkForm.payment_location || null,
+        payment_method: "cash",
       } as never).select("id").single();
       if (ve) throw ve;
       const vid = (v as { id: string }).id;
