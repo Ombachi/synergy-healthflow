@@ -159,9 +159,12 @@ export function NurseStation() {
   // Reset form when selection changes
   useEffect(() => {
     if (selectedVisit && selectedPatient) {
+      const cc = selectedVisit.chief_complaint ?? "";
+      // Never autopopulate the chief complaint from generic reasons like "Walk-in".
+      const prior = /^\s*walk[- ]?in\s*$/i.test(cc) ? "" : cc;
       setV((s) => ({
         ...s,
-        chief_complaint: selectedVisit.chief_complaint ?? selectedVisit.reason ?? "",
+        chief_complaint: prior,
         allergies: selectedPatient.allergies ?? "",
         triage: selectedVisit.triage_level === "emergent" ? "emergency" : selectedVisit.triage_level === "urgent" ? "urgent" : "normal",
       }));
