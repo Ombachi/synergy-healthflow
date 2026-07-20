@@ -155,18 +155,14 @@ function ReceptionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Walk-in / new patient registration — 4-section layout
+  // Walk-in / new patient registration — trimmed layout
   const EMPTY_REG = {
     // Identification
-    full_name: "", date_of_birth: "", gender: "", blood_type: "",
+    full_name: "", date_of_birth: "", gender: "",
     // Contact
     phone: "", email: "", address: "",
     // Emergency contact
     emergency_contact_name: "", emergency_contact_phone: "",
-    // Visit
-    reason: "", payment_method: "cash", payment_location: "",
-    insurance_provider: "", insurance_number: "",
-    allergies: "", chronic_conditions: "",
   };
   const [walkOpen, setWalkOpen] = useState(false);
   const [walkForm, setWalkForm] = useState({ ...EMPTY_REG });
@@ -179,16 +175,11 @@ function ReceptionPage() {
         full_name: walkForm.full_name.trim(),
         date_of_birth: walkForm.date_of_birth || null,
         gender: walkForm.gender || null,
-        blood_type: walkForm.blood_type || null,
         phone: walkForm.phone || null,
         email: walkForm.email || null,
-        address: walkForm.address || walkForm.payment_location || null,
+        address: walkForm.address || null,
         emergency_contact_name: walkForm.emergency_contact_name || null,
         emergency_contact_phone: walkForm.emergency_contact_phone || null,
-        insurance_provider: walkForm.insurance_provider || null,
-        insurance_number: walkForm.insurance_number || null,
-        allergies: walkForm.allergies || null,
-        chronic_conditions: walkForm.chronic_conditions || null,
         created_by: user!.id,
       } as never).select("id, medical_record_number").single();
       if (pe) throw pe;
@@ -197,11 +188,10 @@ function ReceptionPage() {
       const { data: v, error: ve } = await supabase.from("visits" as never).insert({
         patient_id: pid,
         opened_by: user!.id,
-        reason: walkForm.reason || "Walk-in",
+        reason: null,
         status: "open",
         current_stage: "checked_in",
-        payment_method: walkForm.payment_method,
-        payment_location: walkForm.payment_location || null,
+        payment_method: "cash",
       } as never).select("id").single();
       if (ve) throw ve;
       const vid = (v as { id: string }).id;
@@ -260,13 +250,6 @@ function ReceptionPage() {
                         <option value="">—</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option>
                       </select>
                     </div>
-                    <div className="col-span-3"><Label className="text-xs">Blood type</Label>
-                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.blood_type} onChange={(e) => setWalkForm({ ...walkForm, blood_type: e.target.value })}>
-                        <option value="">—</option>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((b) => <option key={b}>{b}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-9"><Label className="text-xs">Known allergies</Label><Input value={walkForm.allergies} onChange={(e) => setWalkForm({ ...walkForm, allergies: e.target.value })} placeholder="Penicillin, latex…" /></div>
-                    <div className="col-span-12"><Label className="text-xs">Chronic conditions</Label><Input value={walkForm.chronic_conditions} onChange={(e) => setWalkForm({ ...walkForm, chronic_conditions: e.target.value })} placeholder="Hypertension, diabetes…" /></div>
                   </div>
                 </section>
 
@@ -290,28 +273,6 @@ function ReceptionPage() {
                   <div className="grid grid-cols-12 gap-2 p-3">
                     <div className="col-span-7"><Label className="text-xs">Contact name</Label><Input value={walkForm.emergency_contact_name} onChange={(e) => setWalkForm({ ...walkForm, emergency_contact_name: e.target.value })} /></div>
                     <div className="col-span-5"><Label className="text-xs">Contact phone</Label><Input value={walkForm.emergency_contact_phone} onChange={(e) => setWalkForm({ ...walkForm, emergency_contact_phone: e.target.value })} /></div>
-                  </div>
-                </section>
-
-                {/* Section 4 · Visit info */}
-                <section className="rounded-md border">
-                  <header className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2 text-sm font-medium">
-                    <Stethoscope className="h-4 w-4 text-primary" /> 4 · Visit information
-                  </header>
-                  <div className="grid grid-cols-12 gap-2 p-3">
-                    <div className="col-span-12"><Label className="text-xs">Reason for visit</Label><Textarea rows={2} value={walkForm.reason} onChange={(e) => setWalkForm({ ...walkForm, reason: e.target.value })} placeholder="Chief complaint" /></div>
-                    <div className="col-span-4"><Label className="text-xs">Mode of payment</Label>
-                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.payment_method} onChange={(e) => setWalkForm({ ...walkForm, payment_method: e.target.value })}>
-                        {PAYMENT_METHODS.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-8"><Label className="text-xs">Payment location / employer</Label><Input value={walkForm.payment_location} onChange={(e) => setWalkForm({ ...walkForm, payment_location: e.target.value })} /></div>
-                    {walkForm.payment_method === "insurance" && (
-                      <>
-                        <div className="col-span-6"><Label className="text-xs">Insurance provider</Label><Input value={walkForm.insurance_provider} onChange={(e) => setWalkForm({ ...walkForm, insurance_provider: e.target.value })} /></div>
-                        <div className="col-span-6"><Label className="text-xs">Insurance / policy number</Label><Input value={walkForm.insurance_number} onChange={(e) => setWalkForm({ ...walkForm, insurance_number: e.target.value })} /></div>
-                      </>
-                    )}
                   </div>
                 </section>
 

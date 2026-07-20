@@ -530,7 +530,22 @@ function VisitDetail() {
                       </div>
                     </div>
                   )}
-                  <div className="mt-2 text-xs text-muted-foreground">{labOrders.data?.length ?? 0} lab order(s) on this encounter — view results in the Results tab.</div>
+                  {(labOrders.data?.length ?? 0) > 0 && (
+                    <ul className="mt-3 space-y-1 text-sm">
+                      {labOrders.data!.map((o) => {
+                        const t = labTests.data?.find((x) => x.id === o.test_id);
+                        return (
+                          <li key={o.id} className="flex items-center justify-between rounded border p-2">
+                            <div>
+                              <div className="font-medium">{t?.name ?? "Lab test"}</div>
+                              {t?.code && <div className="text-xs text-muted-foreground">{t.code}{o.priority ? ` · ${o.priority}` : ""}</div>}
+                            </div>
+                            <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status ?? "ordered"}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </div>
               )}
 
@@ -550,25 +565,38 @@ function VisitDetail() {
                       <Button className="col-span-1" size="sm" onClick={() => addImg.mutate()}>Order</Button>
                     </div>
                   )}
-                  <div className="mt-2 text-xs text-muted-foreground">{imgOrders.data?.length ?? 0} imaging order(s) — reports in the Results tab.</div>
+                  {(imgOrders.data?.length ?? 0) > 0 && (
+                    <ul className="mt-3 space-y-1 text-sm">
+                      {imgOrders.data!.map((o) => (
+                        <li key={o.id} className="flex items-center justify-between rounded border p-2">
+                          <div>
+                            <div className="font-medium">{o.modality}{o.body_part ? ` · ${o.body_part}` : ""}</div>
+                            {o.clinical_question && <div className="text-xs text-muted-foreground">{o.clinical_question}</div>}
+                          </div>
+                          <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status ?? "ordered"}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 
               {(canOrder || (procedureOrders.data?.length ?? 0) > 0) && (
                 <div className="rounded-lg border bg-card p-5">
                   <h2 className="flex items-center gap-2 font-medium"><Stethoscope className="h-4 w-4 text-primary" /> Nursing procedures</h2>
-                  <ul className="mt-3 space-y-1 text-sm">
-                    {procedureOrders.data?.length === 0 && <li className="text-muted-foreground">No procedures ordered.</li>}
-                    {procedureOrders.data?.map((o) => (
-                      <li key={o.id} className="flex justify-between rounded border p-2">
-                        <div>
-                          <div className="font-medium">{o.procedure_name}</div>
-                          {o.notes && <div className="text-xs text-muted-foreground">{o.notes}</div>}
-                        </div>
-                        <span className="self-start rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {(procedureOrders.data?.length ?? 0) > 0 && (
+                    <ul className="mt-3 space-y-1 text-sm">
+                      {procedureOrders.data!.map((o) => (
+                        <li key={o.id} className="flex justify-between rounded border p-2">
+                          <div>
+                            <div className="font-medium">{o.procedure_name}</div>
+                            {o.notes && <div className="text-xs text-muted-foreground">{o.notes}</div>}
+                          </div>
+                          <span className="self-start rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   {canOrder && !finalized && (
                     <div className="mt-3 space-y-2">
                       <ProcedurePickerInline
