@@ -250,13 +250,8 @@ function ReceptionPage() {
                         <option value="">—</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option>
                       </select>
                     </div>
-                    <div className="col-span-3"><Label className="text-xs">Blood type</Label>
-                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.blood_type} onChange={(e) => setWalkForm({ ...walkForm, blood_type: e.target.value })}>
-                        <option value="">—</option>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((b) => <option key={b}>{b}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-9"><Label className="text-xs">Known allergies</Label><Input value={walkForm.allergies} onChange={(e) => setWalkForm({ ...walkForm, allergies: e.target.value })} placeholder="Penicillin, latex…" /></div>
-                    <div className="col-span-12"><Label className="text-xs">Chronic conditions</Label><Input value={walkForm.chronic_conditions} onChange={(e) => setWalkForm({ ...walkForm, chronic_conditions: e.target.value })} placeholder="Hypertension, diabetes…" /></div>
+                  </div>
+                </section>{/*close-identification*/}
                   </div>
                 </section>
 
