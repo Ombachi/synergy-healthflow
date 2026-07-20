@@ -565,7 +565,19 @@ function VisitDetail() {
                       <Button className="col-span-1" size="sm" onClick={() => addImg.mutate()}>Order</Button>
                     </div>
                   )}
-                  <div className="mt-2 text-xs text-muted-foreground">{imgOrders.data?.length ?? 0} imaging order(s) — reports in the Results tab.</div>
+                  {(imgOrders.data?.length ?? 0) > 0 && (
+                    <ul className="mt-3 space-y-1 text-sm">
+                      {imgOrders.data!.map((o) => (
+                        <li key={o.id} className="flex items-center justify-between rounded border p-2">
+                          <div>
+                            <div className="font-medium">{o.modality}{o.body_part ? ` · ${o.body_part}` : ""}</div>
+                            {o.clinical_question && <div className="text-xs text-muted-foreground">{o.clinical_question}</div>}
+                          </div>
+                          <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700">{o.status ?? "ordered"}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 
