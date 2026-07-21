@@ -167,47 +167,57 @@ function MyInpatientsPage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
-              {rows.map((r) => (
-                <Link
-                  key={r.id}
-                  to="/visits/$visitId"
-                  params={{ visitId: r.visit_id ?? "" }}
-                  disabled={!r.visit_id}
-                  className="flex items-center justify-between gap-4 px-4 py-3 text-sm hover:bg-accent/40"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 font-medium">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      {r.patient?.full_name ?? r.patient_id.slice(0, 8)}
-                      {r.patient?.medical_record_number && (
-                        <span className="text-xs text-muted-foreground">· {r.patient.medical_record_number}</span>
-                      )}
-                      {acuityBadge(r.acuity)}
-                      {r.isolation_required && (
-                        <Badge className="bg-purple-600"><AlertTriangle className="mr-1 h-3 w-3" />Isolation</Badge>
-                      )}
-                    </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                      {r.bed && <span>Bed {r.bed.code}</span>}
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> LOS {daysBetween(r.admitted_at)}d
-                      </span>
-                      <span>Admitted {new Date(r.admitted_at).toLocaleDateString()}</span>
-                      {r.primary_diagnosis && (
+              {rows.map((r) => {
+                const inner = (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 font-medium">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        {r.patient?.full_name ?? r.patient_id.slice(0, 8)}
+                        {r.patient?.medical_record_number && (
+                          <span className="text-xs text-muted-foreground">· {r.patient.medical_record_number}</span>
+                        )}
+                        {acuityBadge(r.acuity)}
+                        {r.isolation_required && (
+                          <Badge className="bg-purple-600"><AlertTriangle className="mr-1 h-3 w-3" />Isolation</Badge>
+                        )}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        {r.bed && <span>Bed {r.bed.code}</span>}
                         <span className="inline-flex items-center gap-1">
-                          <Stethoscope className="h-3 w-3" /> {r.primary_diagnosis}
+                          <Clock className="h-3 w-3" /> LOS {daysBetween(r.admitted_at)}d
                         </span>
-                      )}
-                      {r.expected_discharge_date && (
-                        <span>Est. discharge {new Date(r.expected_discharge_date).toLocaleDateString()}</span>
-                      )}
+                        <span>Admitted {new Date(r.admitted_at).toLocaleDateString()}</span>
+                        {r.primary_diagnosis && (
+                          <span className="inline-flex items-center gap-1">
+                            <Stethoscope className="h-3 w-3" /> {r.primary_diagnosis}
+                          </span>
+                        )}
+                        {r.expected_discharge_date && (
+                          <span>Est. discharge {new Date(r.expected_discharge_date).toLocaleDateString()}</span>
+                        )}
+                      </div>
                     </div>
+                    <Button size="sm" variant="ghost" disabled={!r.visit_id}>
+                      Open chart →
+                    </Button>
+                  </>
+                );
+                return r.visit_id ? (
+                  <Link
+                    key={r.id}
+                    to="/visits/$visitId"
+                    params={{ visitId: r.visit_id }}
+                    className="flex items-center justify-between gap-4 px-4 py-3 text-sm hover:bg-accent/40"
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  <div key={r.id} className="flex items-center justify-between gap-4 px-4 py-3 text-sm opacity-60">
+                    {inner}
                   </div>
-                  <Button size="sm" variant="ghost" disabled={!r.visit_id}>
-                    Open chart →
-                  </Button>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
