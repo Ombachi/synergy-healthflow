@@ -77,7 +77,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   pharmacist: [
     "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
     "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/coming-soon/my-inpatients", "/emar",
+    "/coming-soon/ward-board", "/my-inpatients", "/emar",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
     ...SUBDOMAIN_PREFIXES,
@@ -85,7 +85,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   physio: [
     "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
     "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/coming-soon/my-inpatients", "/emar",
+    "/coming-soon/ward-board", "/my-inpatients", "/emar",
     "/care-plans", "/ward-rounds",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
@@ -94,7 +94,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   nutritionist: [
     "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
     "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/coming-soon/my-inpatients",
+    "/coming-soon/ward-board", "/my-inpatients",
     "/care-plans", "/coming-soon/inpatient-imaging",
     "/allied-health",
     "/sports",
@@ -103,7 +103,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   radiologist: [
     "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
     "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/coming-soon/my-inpatients", "/emar",
+    "/coming-soon/ward-board", "/my-inpatients", "/emar",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
     ...SUBDOMAIN_PREFIXES,
@@ -115,7 +115,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/coming-soon/visit-history",
     // Inpatient trims
     "/admissions", "/beds", "/nursing-station",
-    "/coming-soon/ward-board", "/coming-soon/my-inpatients",
+    "/coming-soon/ward-board", "/my-inpatients",
     "/care-plans", "/coming-soon/inpatient-imaging",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
     "/inpatient-procedures", "/discharge-planning", "/emar", "/ward-rounds",
@@ -218,7 +218,7 @@ const GROUPS: Group[] = [
       { title: "Bed management", url: "/beds", icon: Bed },
       { title: "Ward board", url: stub("ward-board"), icon: LayoutDashboard },
       { title: "Ward census", url: "/nursing-station", icon: HeartPulse },
-      { title: "My patients", url: stub("my-inpatients"), icon: User },
+      { title: "My patients", url: "/my-inpatients", icon: User },
       { title: "Nursing care", url: "/care-plans", icon: ClipboardList },
       { title: "Ward rounds", url: "/ward-rounds", icon: Stethoscope },
       { title: "Medication administration", url: "/emar", icon: Pill },

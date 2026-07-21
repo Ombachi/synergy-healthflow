@@ -36,6 +36,7 @@ import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
 import { Route as AuthenticatedNutritionRouteImport } from './routes/_authenticated/nutrition'
 import { Route as AuthenticatedNursingStationRouteImport } from './routes/_authenticated/nursing-station'
+import { Route as AuthenticatedMyInpatientsRouteImport } from './routes/_authenticated/my-inpatients'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedMedicalRouteImport } from './routes/_authenticated/medical'
@@ -225,6 +226,12 @@ const AuthenticatedNursingStationRoute =
   AuthenticatedNursingStationRouteImport.update({
     id: '/nursing-station',
     path: '/nursing-station',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMyInpatientsRoute =
+  AuthenticatedMyInpatientsRouteImport.update({
+    id: '/my-inpatients',
+    path: '/my-inpatients',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMonitoringRoute = AuthenticatedMonitoringRouteImport.update({
@@ -544,6 +551,7 @@ export interface FileRoutesByFullPath {
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/my-inpatients': typeof AuthenticatedMyInpatientsRoute
   '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
@@ -623,6 +631,7 @@ export interface FileRoutesByTo {
   '/medical': typeof AuthenticatedMedicalRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/my-inpatients': typeof AuthenticatedMyInpatientsRoute
   '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
@@ -704,6 +713,7 @@ export interface FileRoutesById {
   '/_authenticated/medical': typeof AuthenticatedMedicalRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
+  '/_authenticated/my-inpatients': typeof AuthenticatedMyInpatientsRoute
   '/_authenticated/nursing-station': typeof AuthenticatedNursingStationRoute
   '/_authenticated/nutrition': typeof AuthenticatedNutritionRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
@@ -785,6 +795,7 @@ export interface FileRouteTypes {
     | '/medical'
     | '/messages'
     | '/monitoring'
+    | '/my-inpatients'
     | '/nursing-station'
     | '/nutrition'
     | '/pharmacy'
@@ -864,6 +875,7 @@ export interface FileRouteTypes {
     | '/medical'
     | '/messages'
     | '/monitoring'
+    | '/my-inpatients'
     | '/nursing-station'
     | '/nutrition'
     | '/pharmacy'
@@ -944,6 +956,7 @@ export interface FileRouteTypes {
     | '/_authenticated/medical'
     | '/_authenticated/messages'
     | '/_authenticated/monitoring'
+    | '/_authenticated/my-inpatients'
     | '/_authenticated/nursing-station'
     | '/_authenticated/nutrition'
     | '/_authenticated/pharmacy'
@@ -1186,6 +1199,13 @@ declare module '@tanstack/react-router' {
       path: '/nursing-station'
       fullPath: '/nursing-station'
       preLoaderRoute: typeof AuthenticatedNursingStationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-inpatients': {
+      id: '/_authenticated/my-inpatients'
+      path: '/my-inpatients'
+      fullPath: '/my-inpatients'
+      preLoaderRoute: typeof AuthenticatedMyInpatientsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/monitoring': {
@@ -1592,6 +1612,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMedicalRoute: typeof AuthenticatedMedicalRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
+  AuthenticatedMyInpatientsRoute: typeof AuthenticatedMyInpatientsRoute
   AuthenticatedNursingStationRoute: typeof AuthenticatedNursingStationRoute
   AuthenticatedNutritionRoute: typeof AuthenticatedNutritionRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
@@ -1667,6 +1688,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMedicalRoute: AuthenticatedMedicalRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
+  AuthenticatedMyInpatientsRoute: AuthenticatedMyInpatientsRoute,
   AuthenticatedNursingStationRoute: AuthenticatedNursingStationRoute,
   AuthenticatedNutritionRoute: AuthenticatedNutritionRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
@@ -1724,13 +1746,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
