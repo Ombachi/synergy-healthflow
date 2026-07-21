@@ -66,7 +66,7 @@ function MyInpatientsPage() {
   });
 
   const patientIds = admissions.data?.map((a) => a.patient_id) ?? [];
-  const bedIds = admissions.data?.map((a) => a.bed_id).filter(Boolean) as string[];
+  const bedIds = (admissions.data?.map((a) => a.bed_id).filter(Boolean) ?? []) as string[];
 
   const patients = useQuery({
     queryKey: ["my-inpatients-patients", patientIds.join(",")],
