@@ -76,6 +76,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
   // Removed from clinical-staff nav — kept for admins only.
   "/beds": ["nurse", "doctor", "receptionist", "admissions_officer"],
+  "/my-inpatients": ["doctor", "nurse", "admissions_officer"],
 
   // ========= HAIMS (Hospital Admission & Inpatient Management) =========
   "/haims": [], // admin only

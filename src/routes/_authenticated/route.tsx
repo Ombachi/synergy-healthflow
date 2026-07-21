@@ -218,7 +218,7 @@ const GROUPS: Group[] = [
       { title: "Bed management", url: "/beds", icon: Bed },
       { title: "Ward board", url: stub("ward-board"), icon: LayoutDashboard },
       { title: "Ward census", url: "/nursing-station", icon: HeartPulse },
-      { title: "My patients", url: stub("my-inpatients"), icon: User },
+      { title: "My patients", url: "/my-inpatients", icon: User },
       { title: "Nursing care", url: "/care-plans", icon: ClipboardList },
       { title: "Ward rounds", url: "/ward-rounds", icon: Stethoscope },
       { title: "Medication administration", url: "/emar", icon: Pill },
