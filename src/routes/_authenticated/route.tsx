@@ -67,6 +67,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   nurse: [
     "/coming-soon/nursing-triage", "/visits", "/lab-order",
     "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+    "/coming-soon/outpatient-procedures",
     "/admissions", "/beds", "/coming-soon/ward-board", "/nursing-station",
     "/care-plans", "/ward-rounds", "/emar",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
