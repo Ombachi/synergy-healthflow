@@ -1853,6 +1853,7 @@ export type Database = {
           id: string
           instructions: string | null
           medication_class: string | null
+          unit_price_cents: number
           updated_at: string
         }
         Insert: {
@@ -1867,6 +1868,7 @@ export type Database = {
           id?: string
           instructions?: string | null
           medication_class?: string | null
+          unit_price_cents?: number
           updated_at?: string
         }
         Update: {
@@ -1881,6 +1883,7 @@ export type Database = {
           id?: string
           instructions?: string | null
           medication_class?: string | null
+          unit_price_cents?: number
           updated_at?: string
         }
         Relationships: []
@@ -2897,6 +2900,7 @@ export type Database = {
           reorder_threshold: number
           sku: string | null
           supplier: string | null
+          unit_price_cents: number
           updated_at: string
         }
         Insert: {
@@ -2909,6 +2913,7 @@ export type Database = {
           reorder_threshold?: number
           sku?: string | null
           supplier?: string | null
+          unit_price_cents?: number
           updated_at?: string
         }
         Update: {
@@ -2921,6 +2926,7 @@ export type Database = {
           reorder_threshold?: number
           sku?: string | null
           supplier?: string | null
+          unit_price_cents?: number
           updated_at?: string
         }
         Relationships: []

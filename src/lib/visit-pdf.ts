@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { drawBrandHeader, ORG_NAME, ORG_ADDRESS } from "./pdf-brand";
 
 interface VisitData {
   visit: {
@@ -16,15 +17,14 @@ interface VisitData {
   discharge: { summary: string; treatment_plan: string | null; follow_up: string | null } | null;
 }
 
-export function exportVisitPDF(d: VisitData) {
+export async function exportVisitPDF(d: VisitData) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
-  let y = 16;
-
-  doc.setFontSize(16).setFont("helvetica", "bold");
-  doc.text("Visit Summary", 14, y); y += 6;
+  let y = await drawBrandHeader(doc, { title: "Visit Summary", accent: [30, 90, 168] });
+  y += 2;
   doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(120);
-  doc.text(`Generated ${new Date().toLocaleString()}`, 14, y); y += 8;
+  doc.text(`${ORG_NAME}  ·  ${ORG_ADDRESS}`, 14, y); y += 4;
+  doc.text(`Generated ${new Date().toLocaleString()}`, 14, y); y += 6;
   doc.setTextColor(0);
 
   doc.setFontSize(11).setFont("helvetica", "bold").text("Patient", 14, y); y += 5;
