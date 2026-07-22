@@ -287,7 +287,7 @@ function VisitDetail() {
       const r = labResults.data?.find((x) => x.order_id === o.id);
       return { test: t?.name ?? o.test_id, result: r?.result_value ?? null, units: r?.units ?? null, flag: r?.abnormal_flag ?? null, performed_at: r?.performed_at ?? null };
     });
-    exportVisitPDF({
+    void exportVisitPDF({
       visit: visit.data,
       patient: { full_name: patient.data.full_name, medical_record_number: patient.data.medical_record_number, date_of_birth: patient.data.date_of_birth, blood_type: patient.data.blood_type, allergies: patient.data.allergies },
       vitals: (vitals.data ?? []).slice().reverse(),
