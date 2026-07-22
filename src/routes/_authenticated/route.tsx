@@ -109,6 +109,9 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
     ...SUBDOMAIN_PREFIXES,
   ],
+  store_keeper: [
+    "/orders/stock-requests",
+  ],
   admin: [
     // Outpatient trims
     "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
