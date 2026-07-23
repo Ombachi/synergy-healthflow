@@ -220,8 +220,8 @@ function ReceptionPage() {
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Register new patient</DialogTitle>
-              <p className="text-xs text-muted-foreground">MRN is generated automatically after registration (format LITU-YYYYMM-XX-###).</p>
             </DialogHeader>
+
 
             {createdMrn && (
               <div className="rounded-md border border-green-500/40 bg-green-500/10 p-3 text-sm">
@@ -240,8 +240,8 @@ function ReceptionPage() {
                 <section className="rounded-md border">
                   <header className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2 text-sm font-medium">
                     <IdCard className="h-4 w-4 text-primary" /> 1 · Identification
-                    <span className="ml-auto rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary">MRN auto-generated</span>
                   </header>
+
                   <div className="grid grid-cols-12 gap-2 p-3">
                     <div className="col-span-6"><Label className="text-xs">Full name *</Label><Input value={walkForm.full_name} onChange={(e) => setWalkForm({ ...walkForm, full_name: e.target.value })} maxLength={120} /></div>
                     <div className="col-span-3"><Label className="text-xs">Date of birth</Label><Input type="date" value={walkForm.date_of_birth} onChange={(e) => setWalkForm({ ...walkForm, date_of_birth: e.target.value })} /></div>
