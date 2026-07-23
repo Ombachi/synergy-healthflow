@@ -46,11 +46,6 @@ function Landing() {
 
       <main className="container mx-auto flex min-h-[calc(100vh-4rem)] items-center px-4 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-widest text-slate-300">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Vault-grade health records
-          </div>
-
           <div className="mx-auto mb-8 flex h-32 w-32 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.03] p-3 shadow-2xl">
             <img src={logoUrl} alt="Litu Vault logo" className="h-full w-full" />
           </div>
@@ -58,9 +53,6 @@ function Landing() {
           <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
             Welcome to <span className="text-white">Litu Vault</span>
           </h1>
-          <p className="mt-6 text-lg text-slate-300">
-            Open the vault — sign in to access your records.
-          </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="bg-white text-slate-900 hover:bg-slate-100">
@@ -78,19 +70,10 @@ function Landing() {
               <Link to="/auth">Create an account</Link>
             </Button>
           </div>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-slate-400">
-            <div className="flex items-center gap-2"><FileLock2 className="h-4 w-4 text-emerald-400" /> Encrypted</div>
-            <div className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-emerald-400" /> Role-based access</div>
-            <div className="flex items-center gap-2"><Activity className="h-4 w-4 text-emerald-400" /> Full audit trail</div>
-          </div>
         </div>
       </main>
-
-      <footer className="border-t border-white/10 py-6 text-center text-xs text-slate-500">
-        Trusted like a bank vault. Built for clinicians, athletes, and administrators.
-      </footer>
     </div>
   );
 }
+
 

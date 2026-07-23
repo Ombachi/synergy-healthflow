@@ -55,6 +55,7 @@ import { Route as AuthenticatedDischargePlanningRouteImport } from './routes/_au
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
+import { Route as AuthenticatedCompletedRouteImport } from './routes/_authenticated/completed'
 import { Route as AuthenticatedCashReconciliationRouteImport } from './routes/_authenticated/cash-reconciliation'
 import { Route as AuthenticatedCarePlansRouteImport } from './routes/_authenticated/care-plans'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
@@ -330,6 +331,11 @@ const AuthenticatedControlledDrugsRoute =
     path: '/controlled-drugs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompletedRoute = AuthenticatedCompletedRouteImport.update({
+  id: '/completed',
+  path: '/completed',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCashReconciliationRoute =
   AuthenticatedCashReconciliationRouteImport.update({
     id: '/cash-reconciliation',
@@ -533,6 +539,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AuthenticatedBillingRoute
   '/care-plans': typeof AuthenticatedCarePlansRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
+  '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -613,6 +620,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/care-plans': typeof AuthenticatedCarePlansRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
+  '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -695,6 +703,7 @@ export interface FileRoutesById {
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/care-plans': typeof AuthenticatedCarePlansRoute
   '/_authenticated/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
+  '/_authenticated/completed': typeof AuthenticatedCompletedRoute
   '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -777,6 +786,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/care-plans'
     | '/cash-reconciliation'
+    | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
     | '/dashboard'
@@ -857,6 +867,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/care-plans'
     | '/cash-reconciliation'
+    | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
     | '/dashboard'
@@ -938,6 +949,7 @@ export interface FileRouteTypes {
     | '/_authenticated/billing'
     | '/_authenticated/care-plans'
     | '/_authenticated/cash-reconciliation'
+    | '/_authenticated/completed'
     | '/_authenticated/controlled-drugs'
     | '/_authenticated/credit-notes'
     | '/_authenticated/dashboard'
@@ -1334,6 +1346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedControlledDrugsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/completed': {
+      id: '/_authenticated/completed'
+      path: '/completed'
+      fullPath: '/completed'
+      preLoaderRoute: typeof AuthenticatedCompletedRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cash-reconciliation': {
       id: '/_authenticated/cash-reconciliation'
       path: '/cash-reconciliation'
@@ -1594,6 +1613,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCarePlansRoute: typeof AuthenticatedCarePlansRoute
   AuthenticatedCashReconciliationRoute: typeof AuthenticatedCashReconciliationRoute
+  AuthenticatedCompletedRoute: typeof AuthenticatedCompletedRoute
   AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1670,6 +1690,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCarePlansRoute: AuthenticatedCarePlansRoute,
   AuthenticatedCashReconciliationRoute: AuthenticatedCashReconciliationRoute,
+  AuthenticatedCompletedRoute: AuthenticatedCompletedRoute,
   AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1746,13 +1767,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

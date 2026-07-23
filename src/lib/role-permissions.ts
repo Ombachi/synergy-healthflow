@@ -123,6 +123,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/cash-reconciliation": ["cashier", "billing_officer"],
   "/credit-notes": ["cashier", "billing_officer"],
 
+  // Completed reports archive (searchable, all clinical + finance roles)
+  "/completed": ["doctor", "nurse", "pharmacist", "lab_tech", "radiologist", "physio", "nutritionist", "cashier", "billing_officer", "admissions_officer"],
+
   // Compliance & audit (admin-only)
   "/admin/soft-deleted": [],
   "/admin/consent": [],
@@ -130,6 +133,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/admin/access-reviews": [],
   "/admin/errors": [],
 };
+
 
 
 

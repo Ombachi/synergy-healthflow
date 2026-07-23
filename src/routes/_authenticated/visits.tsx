@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +59,7 @@ function Visits() {
   const canOpen = hasAnyRole(["receptionist", "nurse", "admin"]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState("");
 
 
   const visits = useQuery({
@@ -85,8 +86,21 @@ function Visits() {
     },
   });
 
-  const patientName = (id: string) =>
-    patients.data?.find((p) => p.id === id)?.full_name ?? id.slice(0, 8);
+  const patientById = (id: string) => patients.data?.find((p) => p.id === id);
+  const patientName = (id: string) => patientById(id)?.full_name ?? id.slice(0, 8);
+  const patientMrn = (id: string) => patientById(id)?.medical_record_number ?? "";
+
+  const filteredVisits = (visits.data ?? []).filter((v) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      patientName(v.patient_id).toLowerCase().includes(q) ||
+      patientMrn(v.patient_id).toLowerCase().includes(q) ||
+      (v.reason ?? "").toLowerCase().includes(q) ||
+      (v.chief_complaint ?? "").toLowerCase().includes(q)
+    );
+  });
+
 
   const create = useMutation({
     mutationFn: async () => {
@@ -194,6 +208,16 @@ function Visits() {
         )}
       </div>
 
+      <div className="relative max-w-md">
+        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search patient, MRN, reason, or complaint…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8"
+        />
+      </div>
+
       <div className="overflow-hidden rounded-lg border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left">
@@ -210,26 +234,33 @@ function Visits() {
             {visits.isLoading && (
               <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">Loading...</td></tr>
             )}
-            {visits.data?.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No visits yet.</td></tr>
+            {!visits.isLoading && filteredVisits.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{search ? "No matches." : "No visits yet."}</td></tr>
             )}
-            {visits.data?.map((v) => (
-              <tr key={v.id} className="border-t">
-                <td className="px-4 py-2">{patientName(v.patient_id)}</td>
-                <td className="px-4 py-2">{v.reason ?? "—"}</td>
-                <td className="px-4 py-2">{triageBadge(v.triage_level)}</td>
-                <td className="px-4 py-2">{statusBadge(v.status)}</td>
-                <td className="px-4 py-2 text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</td>
-                <td className="px-4 py-2 text-right">
-                  <Button asChild variant="ghost" size="sm">
-                    <Link to="/visits/$visitId" params={{ visitId: v.id }}>Open visit</Link>
-                  </Button>
-                </td>
-              </tr>
-            ))}
+            {filteredVisits.map((v) => {
+              const mrn = patientMrn(v.patient_id);
+              return (
+                <tr key={v.id} className="border-t">
+                  <td className="px-4 py-2">
+                    <div>{patientName(v.patient_id)}</div>
+                    {mrn && <div className="font-mono text-[10px] text-muted-foreground">{mrn}</div>}
+                  </td>
+                  <td className="px-4 py-2">{v.reason ?? "—"}</td>
+                  <td className="px-4 py-2">{triageBadge(v.triage_level)}</td>
+                  <td className="px-4 py-2">{statusBadge(v.status)}</td>
+                  <td className="px-4 py-2 text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">
+                    <Button asChild variant="ghost" size="sm">
+                      <Link to="/visits/$visitId" params={{ visitId: v.id }}>Open visit</Link>
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
     </div>
+
   );
 }
