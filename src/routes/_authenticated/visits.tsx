@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +59,7 @@ function Visits() {
   const canOpen = hasAnyRole(["receptionist", "nurse", "admin"]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState("");
 
 
   const visits = useQuery({
@@ -85,8 +86,21 @@ function Visits() {
     },
   });
 
-  const patientName = (id: string) =>
-    patients.data?.find((p) => p.id === id)?.full_name ?? id.slice(0, 8);
+  const patientById = (id: string) => patients.data?.find((p) => p.id === id);
+  const patientName = (id: string) => patientById(id)?.full_name ?? id.slice(0, 8);
+  const patientMrn = (id: string) => patientById(id)?.medical_record_number ?? "";
+
+  const filteredVisits = (visits.data ?? []).filter((v) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      patientName(v.patient_id).toLowerCase().includes(q) ||
+      patientMrn(v.patient_id).toLowerCase().includes(q) ||
+      (v.reason ?? "").toLowerCase().includes(q) ||
+      (v.chief_complaint ?? "").toLowerCase().includes(q)
+    );
+  });
+
 
   const create = useMutation({
     mutationFn: async () => {
