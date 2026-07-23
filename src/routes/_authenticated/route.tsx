@@ -341,7 +341,9 @@ const GROUPS: Group[] = [
 const STANDALONE: Item[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Messages", url: "/messages", icon: MessageSquare },
+  { title: "Completed reports", url: "/completed", icon: Archive },
 ];
+
 
 const STORAGE_KEY = "litu-vault:sidebar:open-groups";
 
