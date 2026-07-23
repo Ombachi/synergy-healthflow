@@ -58,12 +58,14 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   doctor: [
     "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
     "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
+    "/admissions",
     "/beds", "/coming-soon/ward-board", "/nursing-station", "/emar",
     "/inpatient-procedures", "/coming-soon/inpatient-imaging",
     "/care-plans", "/ward-rounds",
     "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
     ...SUBDOMAIN_PREFIXES,
   ],
+
   nurse: [
     "/coming-soon/nursing-triage", "/visits", "/lab-order",
     "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
