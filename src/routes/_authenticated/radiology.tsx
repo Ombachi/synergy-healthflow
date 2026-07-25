@@ -25,7 +25,7 @@ function RadPortal() {
   const { user, hasAnyRole } = useAuth();
   const canWork = hasAnyRole(["radiologist", "admin"]);
   const encMap = useEncounterMap();
-  const [encFilter, setEncFilter] = useState<EncounterFilter>("all");
+  const [encFilter, setEncFilter] = useState<EncounterFilter>("outpatient");
 
   const orders = useQuery({
     queryKey: ["img-orders"],
