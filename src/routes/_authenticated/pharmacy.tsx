@@ -29,7 +29,7 @@ function PharmacyPortal() {
   const canDispense = hasAnyRole(["pharmacist", "admin"]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "dispensed">("pending");
-  const [encFilter, setEncFilter] = useState<EncounterFilter>("all");
+  const [encFilter, setEncFilter] = useState<EncounterFilter>("outpatient");
   const [search, setSearch] = useState("");
   const encMap = useEncounterMap();
 

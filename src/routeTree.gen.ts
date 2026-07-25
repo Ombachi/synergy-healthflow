@@ -71,6 +71,7 @@ import { Route as AuthenticatedAlliedHealthRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdmissionsRouteImport } from './routes/_authenticated/admissions'
 import { Route as AuthenticatedAdminKpiRouteImport } from './routes/_authenticated/admin-kpi'
 import { Route as VerifyRxRxIdRouteImport } from './routes/verify.rx.$rxId'
+import { Route as VerifyTypeIdRouteImport } from './routes/verify.$type.$id'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_authenticated/orders.stock-requests'
 import { Route as AuthenticatedHrPayslipsRouteImport } from './routes/_authenticated/hr.payslips'
@@ -417,6 +418,11 @@ const VerifyRxRxIdRoute = VerifyRxRxIdRouteImport.update({
   path: '/verify/rx/$rxId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyTypeIdRoute = VerifyTypeIdRouteImport.update({
+  id: '/verify/$type/$id',
+  path: '/verify/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedVisitsVisitIdRoute =
   AuthenticatedVisitsVisitIdRouteImport.update({
     id: '/$visitId',
@@ -597,6 +603,7 @@ export interface FileRoutesByFullPath {
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
+  '/verify/$type/$id': typeof VerifyTypeIdRoute
   '/verify/rx/$rxId': typeof VerifyRxRxIdRoute
   '/print/drug/$batchId': typeof AuthenticatedPrintDrugBatchIdRoute
   '/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
@@ -678,6 +685,7 @@ export interface FileRoutesByTo {
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
+  '/verify/$type/$id': typeof VerifyTypeIdRoute
   '/verify/rx/$rxId': typeof VerifyRxRxIdRoute
   '/print/drug/$batchId': typeof AuthenticatedPrintDrugBatchIdRoute
   '/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
@@ -761,6 +769,7 @@ export interface FileRoutesById {
   '/_authenticated/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/_authenticated/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
+  '/verify/$type/$id': typeof VerifyTypeIdRoute
   '/verify/rx/$rxId': typeof VerifyRxRxIdRoute
   '/_authenticated/print/drug/$batchId': typeof AuthenticatedPrintDrugBatchIdRoute
   '/_authenticated/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
@@ -844,6 +853,7 @@ export interface FileRouteTypes {
     | '/hr/payslips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
+    | '/verify/$type/$id'
     | '/verify/rx/$rxId'
     | '/print/drug/$batchId'
     | '/print/prescription/$rxId'
@@ -925,6 +935,7 @@ export interface FileRouteTypes {
     | '/hr/payslips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
+    | '/verify/$type/$id'
     | '/verify/rx/$rxId'
     | '/print/drug/$batchId'
     | '/print/prescription/$rxId'
@@ -1007,6 +1018,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/payslips'
     | '/_authenticated/orders/stock-requests'
     | '/_authenticated/visits/$visitId'
+    | '/verify/$type/$id'
     | '/verify/rx/$rxId'
     | '/_authenticated/print/drug/$batchId'
     | '/_authenticated/print/prescription/$rxId'
@@ -1019,6 +1031,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DisplayQueueRoute: typeof DisplayQueueRoute
+  VerifyTypeIdRoute: typeof VerifyTypeIdRoute
   VerifyRxRxIdRoute: typeof VerifyRxRxIdRoute
 }
 
@@ -1458,6 +1471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyRxRxIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify/$type/$id': {
+      id: '/verify/$type/$id'
+      path: '/verify/$type/$id'
+      fullPath: '/verify/$type/$id'
+      preLoaderRoute: typeof VerifyTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/visits/$visitId': {
       id: '/_authenticated/visits/$visitId'
       path: '/$visitId'
@@ -1762,6 +1782,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DisplayQueueRoute: DisplayQueueRoute,
+  VerifyTypeIdRoute: VerifyTypeIdRoute,
   VerifyRxRxIdRoute: VerifyRxRxIdRoute,
 }
 export const routeTree = rootRouteImport
