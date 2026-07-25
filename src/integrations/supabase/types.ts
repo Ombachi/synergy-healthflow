@@ -3990,7 +3990,7 @@ export type Database = {
       }
       nutrition_plans: {
         Row: {
-          athlete_id: string
+          athlete_id: string | null
           compliance_pct: number | null
           created_at: string
           encounter_id: string | null
@@ -3999,12 +3999,13 @@ export type Database = {
           id: string
           notes: string | null
           nutritionist_id: string | null
+          patient_id: string | null
           plan: Json
           start_date: string | null
           updated_at: string
         }
         Insert: {
-          athlete_id: string
+          athlete_id?: string | null
           compliance_pct?: number | null
           created_at?: string
           encounter_id?: string | null
@@ -4013,12 +4014,13 @@ export type Database = {
           id?: string
           notes?: string | null
           nutritionist_id?: string | null
+          patient_id?: string | null
           plan?: Json
           start_date?: string | null
           updated_at?: string
         }
         Update: {
-          athlete_id?: string
+          athlete_id?: string | null
           compliance_pct?: number | null
           created_at?: string
           encounter_id?: string | null
@@ -4027,6 +4029,7 @@ export type Database = {
           id?: string
           notes?: string | null
           nutritionist_id?: string | null
+          patient_id?: string | null
           plan?: Json
           start_date?: string | null
           updated_at?: string
@@ -4037,6 +4040,13 @@ export type Database = {
             columns: ["athlete_id"]
             isOneToOne: false
             referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nutrition_plans_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
