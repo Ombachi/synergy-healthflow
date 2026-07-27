@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import type { AppRole } from "@/hooks/use-auth";
+import { LabDocumentBrowser } from "@/components/lab-document-viewer";
 
 export const Route = createFileRoute("/_authenticated/completed")({
   head: () => ({
@@ -297,60 +298,66 @@ function CompletedReports() {
         </TabsList>
         {visibleTabs.map((k) => (
           <TabsContent key={k} value={k} className="mt-4 space-y-4">
-            {active?.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
-            {!active?.isLoading && groups.length === 0 && (
-              <p className="text-sm text-muted-foreground">No completed {TAB_META[k].label.toLowerCase()} records{q ? " matching your search" : ""}.</p>
-            )}
-            {groups.map((g) => (
-              <div key={g.date} className="rounded-lg border bg-card">
-                <div className="border-b bg-muted/40 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {g.date} · {g.items.length}
-                </div>
-                <ul className="divide-y">
-                  {g.items.map((it) => {
-                    const isOpen = expanded.has(it.id);
-                    return (
-                      <li key={it.id} className="text-sm">
-                        <button
-                          type="button"
-                          onClick={() => toggle(it.id)}
-                          className="flex w-full items-start justify-between gap-3 px-3 py-2 text-left hover:bg-accent/40"
-                        >
-                          <div className="flex min-w-0 items-start gap-2">
-                            <ChevronRight className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`} />
-                            <div className="min-w-0">
-                              <div className="truncate font-medium">
-                                {it.patientName ?? "Unknown patient"}
-                                {it.patientMrn && <span className="ml-2 font-mono text-xs text-muted-foreground">{it.patientMrn}</span>}
-                              </div>
-                              <div className="truncate text-xs text-muted-foreground">
-                                {it.primary}{it.secondary ? ` · ${it.secondary}` : ""}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="shrink-0 text-xs text-muted-foreground">{new Date(it.when).toLocaleTimeString()}</div>
-                        </button>
-                        {isOpen && (
-                          <div className="border-t bg-muted/20 px-8 py-3">
-                            <dl className="grid grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
-                              {it.details.filter((d) => d.value).map((d) => (
-                                <div key={d.label} className="text-xs">
-                                  <dt className="font-medium uppercase tracking-wide text-muted-foreground">{d.label}</dt>
-                                  <dd className="mt-0.5 whitespace-pre-wrap">{d.value}</dd>
+            {k === "lab" ? (
+              <LabDocumentBrowser />
+            ) : (
+              <>
+                {active?.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+                {!active?.isLoading && groups.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No completed {TAB_META[k].label.toLowerCase()} records{q ? " matching your search" : ""}.</p>
+                )}
+                {groups.map((g) => (
+                  <div key={g.date} className="rounded-lg border bg-card">
+                    <div className="border-b bg-muted/40 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {g.date} · {g.items.length}
+                    </div>
+                    <ul className="divide-y">
+                      {g.items.map((it) => {
+                        const isOpen = expanded.has(it.id);
+                        return (
+                          <li key={it.id} className="text-sm">
+                            <button
+                              type="button"
+                              onClick={() => toggle(it.id)}
+                              className="flex w-full items-start justify-between gap-3 px-3 py-2 text-left hover:bg-accent/40"
+                            >
+                              <div className="flex min-w-0 items-start gap-2">
+                                <ChevronRight className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`} />
+                                <div className="min-w-0">
+                                  <div className="truncate font-medium">
+                                    {it.patientName ?? "Unknown patient"}
+                                    {it.patientMrn && <span className="ml-2 font-mono text-xs text-muted-foreground">{it.patientMrn}</span>}
+                                  </div>
+                                  <div className="truncate text-xs text-muted-foreground">
+                                    {it.primary}{it.secondary ? ` · ${it.secondary}` : ""}
+                                  </div>
                                 </div>
-                              ))}
-                              {it.details.every((d) => !d.value) && (
-                                <div className="text-xs text-muted-foreground">No additional details recorded.</div>
-                              )}
-                            </dl>
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+                              </div>
+                              <div className="shrink-0 text-xs text-muted-foreground">{new Date(it.when).toLocaleTimeString()}</div>
+                            </button>
+                            {isOpen && (
+                              <div className="border-t bg-muted/20 px-8 py-3">
+                                <dl className="grid grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
+                                  {it.details.filter((d) => d.value).map((d) => (
+                                    <div key={d.label} className="text-xs">
+                                      <dt className="font-medium uppercase tracking-wide text-muted-foreground">{d.label}</dt>
+                                      <dd className="mt-0.5 whitespace-pre-wrap">{d.value}</dd>
+                                    </div>
+                                  ))}
+                                  {it.details.every((d) => !d.value) && (
+                                    <div className="text-xs text-muted-foreground">No additional details recorded.</div>
+                                  )}
+                                </dl>
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </>
+            )}
           </TabsContent>
         ))}
       </Tabs>

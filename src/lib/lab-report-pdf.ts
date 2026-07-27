@@ -24,7 +24,7 @@ export interface LabReportInput {
   facility?: string;
 }
 
-export async function exportLabReportPDF(r: LabReportInput) {
+export async function buildLabReportPDF(r: LabReportInput): Promise<jsPDF> {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
@@ -116,6 +116,15 @@ export async function exportLabReportPDF(r: LabReportInput) {
   doc.setTextColor(0);
 
   await drawVerifyQR(doc, `${siteOrigin()}/verify/lab/${r.order_id}`);
+  return doc;
+}
 
+export async function exportLabReportPDF(r: LabReportInput) {
+  const doc = await buildLabReportPDF(r);
   doc.save(`lab-${r.test_name.replace(/\s+/g, "_")}-${r.order_id.slice(0, 8)}.pdf`);
+}
+
+export async function previewLabReportPDF(r: LabReportInput): Promise<string> {
+  const doc = await buildLabReportPDF(r);
+  return doc.output("bloburl") as unknown as string;
 }
