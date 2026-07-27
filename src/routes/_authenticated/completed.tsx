@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import type { AppRole } from "@/hooks/use-auth";
+import { LabDocumentBrowser } from "@/components/lab-document-viewer";
 
 export const Route = createFileRoute("/_authenticated/completed")({
   head: () => ({
