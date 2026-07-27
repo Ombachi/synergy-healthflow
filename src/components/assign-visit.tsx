@@ -19,6 +19,11 @@ interface Props {
   assignedNurseId: string | null;
 }
 
+const CLINICIAN_ROLES = ["doctor", "nurse", "nutritionist", "physio"] as const;
+const CLINICIAN_LABEL: Record<string, string> = {
+  doctor: "Doctor", nurse: "Nurse", nutritionist: "Nutritionist", physio: "Physiotherapist",
+};
+
 interface StaffOpt { id: string; full_name: string | null; role: string }
 
 export function AssignVisit({ visitId, assignedDoctorId, assignedNurseId }: Props) {
@@ -35,7 +40,7 @@ export function AssignVisit({ visitId, assignedDoctorId, assignedNurseId }: Prop
     queryFn: async () => {
       const { data, error } = await supabase.rpc("list_messageable_users" as never);
       if (error) throw error;
-      return ((data as unknown as StaffOpt[]) ?? []).filter((s) => s.role === "doctor" || s.role === "nurse");
+      return ((data as unknown as StaffOpt[]) ?? []).filter((s) => (CLINICIAN_ROLES as readonly string[]).includes(s.role));
     },
   });
 
@@ -69,7 +74,8 @@ export function AssignVisit({ visitId, assignedDoctorId, assignedNurseId }: Prop
 
   if (!canAssign) return null;
 
-  const docs = (staff.data ?? []).filter((s) => s.role === "doctor");
+  // Doctor slot accepts doctor / nutritionist / physio (patients can be routed to any consultant).
+  const consultants = (staff.data ?? []).filter((s) => s.role === "doctor" || s.role === "nutritionist" || s.role === "physio");
   const nurses = (staff.data ?? []).filter((s) => s.role === "nurse");
 
   return (
@@ -81,13 +87,15 @@ export function AssignVisit({ visitId, assignedDoctorId, assignedNurseId }: Prop
         <DialogHeader><DialogTitle>Assign clinicians</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label>Doctor</Label>
+            <Label>Consultant (Doctor · Nutritionist · Physio)</Label>
             <Select value={doc || "__none__"} onValueChange={(v) => setDoc(v === "__none__" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">Unassigned</SelectItem>
-                {docs.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>{s.full_name ?? s.id.slice(0, 8)}</SelectItem>
+                {consultants.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.full_name ?? s.id.slice(0, 8)} · {CLINICIAN_LABEL[s.role] ?? s.role}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

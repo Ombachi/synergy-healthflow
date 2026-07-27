@@ -85,7 +85,10 @@ export function NurseStation() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("list_messageable_users" as never);
       if (error) throw error;
-      return ((data as unknown as Doctor[]) ?? []).filter((u) => u.role === "doctor");
+      // Patients can be routed to a doctor, nutritionist, or physiotherapist.
+      return ((data as unknown as Doctor[]) ?? []).filter(
+        (u) => u.role === "doctor" || u.role === "nutritionist" || u.role === "physio",
+      );
     },
   });
   const procedures = useQuery({
