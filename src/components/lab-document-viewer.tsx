@@ -52,11 +52,11 @@ export function LabDocumentBrowser() {
     queryKey: ["lab-doc-browser"],
     queryFn: async (): Promise<LabDoc[]> => {
       const { data: results } = await supabase.from("lab_results" as never)
-        .select("id, order_id, performed_at, comments, verified_at, verified_by")
+        .select("id, order_id, performed_at, comments, verified_by, performed_by")
         .not("performed_at", "is", null)
         .order("performed_at", { ascending: false })
         .limit(500);
-      const rArr = (results as unknown as Array<{ id: string; order_id: string; performed_at: string; comments: string | null; verified_at: string | null; verified_by: string | null }>) ?? [];
+      const rArr = (results as unknown as Array<{ id: string; order_id: string; performed_at: string; comments: string | null; verified_by: string | null; performed_by: string | null }>) ?? [];
       const orderIds = rArr.map((r) => r.order_id).filter(Boolean);
       if (!orderIds.length) return [];
 
@@ -66,12 +66,12 @@ export function LabDocumentBrowser() {
       const oArr = (orders as unknown as Array<{ id: string; patient_id: string; test_id: string | null; status: string; ordered_by: string | null; created_at: string; visit_id: string | null; clinical_notes: string | null }>) ?? [];
       const om = new Map(oArr.map((o) => [o.id, o]));
 
-      // Samples for collection date & container
+      // Sample collection time
       const { data: samples } = await supabase.from("lab_samples" as never)
-        .select("order_id, collected_at, container, specimen_type")
+        .select("order_id, collected_at, sample_code, condition")
         .in("order_id", orderIds as never);
-      const sm = new Map<string, { collected_at: string | null; container: string | null; specimen_type: string | null }>();
-      ((samples as unknown as Array<{ order_id: string; collected_at: string | null; container: string | null; specimen_type: string | null }>) ?? []).forEach((s) => sm.set(s.order_id, s));
+      const sm = new Map<string, { collected_at: string | null; sample_code: string | null; condition: string | null }>();
+      ((samples as unknown as Array<{ order_id: string; collected_at: string | null; sample_code: string | null; condition: string | null }>) ?? []).forEach((s) => sm.set(s.order_id, s));
 
       const patientIds = Array.from(new Set(oArr.map((o) => o.patient_id)));
       const { data: patients } = patientIds.length
