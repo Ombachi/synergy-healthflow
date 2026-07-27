@@ -503,12 +503,14 @@ export function NurseStation() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs">Assign to doctor</Label>
+                    <Label className="text-xs">Assign to clinician</Label>
                     <Select value={v.doctor_id} onValueChange={(x) => setV({ ...v, doctor_id: x })}>
-                      <SelectTrigger><SelectValue placeholder="Select doctor" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Doctor · Nutritionist · Physio" /></SelectTrigger>
                       <SelectContent>
                         {doctors.data?.map((d) => (
-                          <SelectItem key={d.id} value={d.id}>{d.full_name ?? "Doctor"}</SelectItem>
+                          <SelectItem key={d.id} value={d.id}>
+                            {d.full_name ?? "Clinician"} · {d.role === "doctor" ? "Doctor" : d.role === "nutritionist" ? "Nutritionist" : d.role === "physio" ? "Physio" : d.role}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

@@ -697,19 +697,7 @@ function VisitDetail() {
 
         {/* Right rail: patient snapshot */}
         <div className="space-y-4">
-          <div className="rounded-lg border bg-card p-5">
-            <h2 className="font-medium">Patient details</h2>
-            {p ? (
-              <dl className="mt-3 space-y-2 text-sm">
-                {p.date_of_birth && <div><dt className="text-muted-foreground">DOB</dt><dd>{p.date_of_birth}</dd></div>}
-                {p.chronic_conditions && <div><dt className="text-muted-foreground">Chronic conditions</dt><dd>{p.chronic_conditions}</dd></div>}
-                {p.emergency_contact_name && <div><dt className="text-muted-foreground">Emergency contact</dt><dd>{p.emergency_contact_name}{p.emergency_contact_phone ? ` · ${p.emergency_contact_phone}` : ""}</dd></div>}
-                {!p.date_of_birth && !p.chronic_conditions && !p.emergency_contact_name && (
-                  <p className="text-xs text-muted-foreground">All key details are shown in the banner above.</p>
-                )}
-              </dl>
-            ) : <p className="mt-2 text-sm text-muted-foreground">Loading…</p>}
-          </div>
+          {/* Patient details card intentionally removed — all key details live in the sticky banner. */}
 
           {encList.length > 1 && (
             <div className="rounded-lg border bg-card p-5">
