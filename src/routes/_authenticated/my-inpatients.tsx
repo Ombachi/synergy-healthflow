@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BedDouble, User, Clock, Stethoscope, AlertTriangle } from "lucide-react";
+import { BedDouble, User, Clock, Stethoscope, AlertTriangle, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/my-inpatients")({
   component: () => (
@@ -45,21 +47,20 @@ function daysBetween(fromISO: string, toISO?: string | null) {
 function MyInpatientsPage() {
   const { user, hasAnyRole } = useAuth();
   const isDoctor = hasAnyRole(["doctor"]);
+  const [search, setSearch] = useState("");
+  const [wardFilter, setWardFilter] = useState<string>("all");
+  const [acuityFilter, setAcuityFilter] = useState<string>("all");
+  const [mineOnly, setMineOnly] = useState(false);
 
   const admissions = useQuery({
-    queryKey: ["my-inpatients", user?.id, isDoctor],
+    queryKey: ["inpatients", user?.id, isDoctor],
     enabled: !!user,
     queryFn: async () => {
-      let q = supabase
+      const { data, error } = await supabase
         .from("admissions" as never)
         .select("id, patient_id, visit_id, bed_id, admitted_at, discharged_at, status, acuity, primary_diagnosis, admission_reason, admitting_consultant, isolation_required, expected_discharge_date")
         .is("discharged_at", null)
         .order("admitted_at", { ascending: false });
-      // Doctors see only their own inpatients by default; admins/nurses see all.
-      if (isDoctor && !hasAnyRole(["admin", "nurse"])) {
-        q = q.eq("admitting_consultant", user!.id);
-      }
-      const { data, error } = await q;
       if (error) throw error;
       return (data as unknown as AdmissionRow[]) ?? [];
     },
@@ -69,7 +70,7 @@ function MyInpatientsPage() {
   const bedIds = (admissions.data?.map((a) => a.bed_id).filter(Boolean) ?? []) as string[];
 
   const patients = useQuery({
-    queryKey: ["my-inpatients-patients", patientIds.join(",")],
+    queryKey: ["inpatients-patients", patientIds.join(",")],
     enabled: patientIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -82,7 +83,7 @@ function MyInpatientsPage() {
   });
 
   const beds = useQuery({
-    queryKey: ["my-inpatients-beds", bedIds.join(",")],
+    queryKey: ["inpatients-beds", bedIds.join(",")],
     enabled: bedIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -96,7 +97,7 @@ function MyInpatientsPage() {
 
   const wardIds = [...new Set((beds.data ?? []).map((b) => b.ward_id))];
   const wards = useQuery({
-    queryKey: ["my-inpatients-wards", wardIds.join(",")],
+    queryKey: ["inpatients-wards", wardIds.join(",")],
     enabled: wardIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -112,19 +113,28 @@ function MyInpatientsPage() {
     const pMap = new Map((patients.data ?? []).map((p) => [p.id, p]));
     const bMap = new Map((beds.data ?? []).map((b) => [b.id, b]));
     const wMap = new Map((wards.data ?? []).map((w) => [w.id, w]));
+    const q = search.trim().toLowerCase();
 
     const buckets = new Map<string, { ward: Ward | null; rows: (AdmissionRow & { patient?: Patient; bed?: Bed })[] }>();
     (admissions.data ?? []).forEach((a) => {
+      if (mineOnly && a.admitting_consultant !== user?.id) return;
+      if (acuityFilter !== "all" && (a.acuity ?? "") !== acuityFilter) return;
       const bed = a.bed_id ? bMap.get(a.bed_id) : undefined;
       const ward = bed ? wMap.get(bed.ward_id) ?? null : null;
+      if (wardFilter !== "all" && (ward?.id ?? "__unassigned") !== wardFilter) return;
+      const patient = pMap.get(a.patient_id);
+      if (q) {
+        const hay = `${patient?.full_name ?? ""} ${patient?.medical_record_number ?? ""} ${a.primary_diagnosis ?? ""} ${bed?.code ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return;
+      }
       const key = ward?.id ?? "__unassigned";
       if (!buckets.has(key)) buckets.set(key, { ward, rows: [] });
-      buckets.get(key)!.rows.push({ ...a, patient: pMap.get(a.patient_id), bed });
+      buckets.get(key)!.rows.push({ ...a, patient, bed });
     });
     return Array.from(buckets.values()).sort((a, b) =>
       (a.ward?.name ?? "zz").localeCompare(b.ward?.name ?? "zz"),
     );
-  }, [admissions.data, patients.data, beds.data, wards.data]);
+  }, [admissions.data, patients.data, beds.data, wards.data, search, wardFilter, acuityFilter, mineOnly, user?.id]);
 
   const acuityBadge = (a: string | null) => {
     if (!a) return null;
@@ -135,22 +145,63 @@ function MyInpatientsPage() {
     return <Badge className={cls}>{a}</Badge>;
   };
 
+  const totalShown = grouped.reduce((s, g) => s + g.rows.length, 0);
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <BedDouble className="h-6 w-6 text-primary" /> My inpatients
+          <BedDouble className="h-6 w-6 text-primary" /> Inpatients
         </h1>
         <p className="text-sm text-muted-foreground">
-          Active inpatient encounters {isDoctor && !hasAnyRole(["admin", "nurse"]) ? "assigned to you " : ""}grouped by ward. Click any patient to open the inpatient workspace.
+          Active inpatient encounters grouped by ward. Click any patient to open the inpatient workspace.
         </p>
       </div>
 
+      <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3">
+        <div className="relative min-w-[220px] flex-1">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search patient, MRN, diagnosis, bed…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+        <div>
+          <Select value={wardFilter} onValueChange={setWardFilter}>
+            <SelectTrigger className="w-[180px]"><SelectValue placeholder="Ward" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All wards</SelectItem>
+              {(wards.data ?? []).map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
+              <SelectItem value="__unassigned">Unassigned bed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Select value={acuityFilter} onValueChange={setAcuityFilter}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Acuity" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All acuity</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="stable">Stable</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {isDoctor && (
+          <Button variant={mineOnly ? "default" : "outline"} size="sm" onClick={() => setMineOnly((v) => !v)}>
+            {mineOnly ? "My patients only" : "All inpatients"}
+          </Button>
+        )}
+        <span className="ml-auto text-xs text-muted-foreground">{totalShown} patient{totalShown === 1 ? "" : "s"}</span>
+      </div>
+
       {admissions.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
-      {admissions.data?.length === 0 && (
+      {!admissions.isLoading && totalShown === 0 && (
         <Card>
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            No active inpatients {isDoctor && !hasAnyRole(["admin", "nurse"]) ? "under your care" : ""} right now.
+            No inpatients match your filters.
           </CardContent>
         </Card>
       )}

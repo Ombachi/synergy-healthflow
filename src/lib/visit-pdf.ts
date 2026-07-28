@@ -2,19 +2,48 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { drawBrandHeader, ORG_NAME, ORG_ADDRESS } from "./pdf-brand";
 
+interface LabTest {
+  test: string;
+  performed_at: string | null;
+  overall_flag?: string | null;
+  interpretation?: string | null;
+  parameters: Array<{
+    name: string;
+    result: string | null;
+    units: string | null;
+    reference: string | null;
+    flag: string | null;
+  }>;
+}
+
 interface VisitData {
   visit: {
     id: string; opened_at: string; closed_at: string | null; status: string;
     reason: string | null; chief_complaint: string | null; triage_level: string | null;
     notes: string | null;
   };
-  patient: { full_name: string; medical_record_number: string | null; date_of_birth: string | null; blood_type: string | null; allergies: string | null };
+  patient: {
+    full_name: string;
+    medical_record_number: string | null;
+    date_of_birth: string | null;
+    gender?: string | null;
+    blood_type: string | null;
+    allergies: string | null;
+  };
   vitals: Array<{ captured_at: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null; respiratory_rate: number | null }>;
   diagnoses: Array<{ diagnosis: string; icd_code: string | null; is_primary: boolean }>;
   prescriptions: Array<{ medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null }>;
-  labs?: Array<{ test: string; result: string | null; units: string | null; flag: string | null; performed_at: string | null }>;
+  labs?: LabTest[];
   imaging?: Array<{ modality: string; body_part: string | null; report: string | null; performed_at: string | null }>;
   discharge: { summary: string; treatment_plan: string | null; follow_up: string | null } | null;
+}
+
+function ageFromDob(dob: string | null): string {
+  if (!dob) return "—";
+  const d = new Date(dob);
+  if (isNaN(+d)) return "—";
+  const y = Math.floor((Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000));
+  return `${y}y`;
 }
 
 export async function exportVisitPDF(d: VisitData) {
@@ -30,6 +59,7 @@ export async function exportVisitPDF(d: VisitData) {
   doc.setFontSize(11).setFont("helvetica", "bold").text("Patient", 14, y); y += 5;
   doc.setFontSize(9).setFont("helvetica", "normal");
   doc.text(`${d.patient.full_name}${d.patient.medical_record_number ? `  ·  MRN ${d.patient.medical_record_number}` : ""}`, 14, y); y += 4;
+  doc.text(`Age / Sex: ${ageFromDob(d.patient.date_of_birth)}  ·  ${d.patient.gender ?? "—"}`, 14, y); y += 4;
   if (d.patient.date_of_birth) { doc.text(`DOB: ${d.patient.date_of_birth}`, 14, y); y += 4; }
   if (d.patient.blood_type) { doc.text(`Blood type: ${d.patient.blood_type}`, 14, y); y += 4; }
   if (d.patient.allergies) { doc.text(`Allergies: ${d.patient.allergies}`, 14, y); y += 4; }
@@ -57,7 +87,6 @@ export async function exportVisitPDF(d: VisitData) {
         v.temperature_c ?? "—", v.oxygen_saturation ?? "—",
       ]),
       styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
-      didDrawPage: () => {},
     });
     // @ts-expect-error lastAutoTable types
     y = doc.lastAutoTable.finalY + 6;
@@ -86,17 +115,63 @@ export async function exportVisitPDF(d: VisitData) {
   }
 
   if (d.labs && d.labs.length) {
-    doc.setFontSize(11).setFont("helvetica", "bold").text("Lab results", 14, y); y += 1;
-    autoTable(doc, {
-      startY: y + 2, head: [["Test", "Result", "Units", "Flag", "When"]],
-      body: d.labs.map((l) => [l.test, l.result ?? "pending", l.units ?? "", l.flag ?? "", l.performed_at ? new Date(l.performed_at).toLocaleString() : ""]),
-      styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
-    });
-    // @ts-expect-error lastAutoTable types
-    y = doc.lastAutoTable.finalY + 6;
+    doc.setFontSize(11).setFont("helvetica", "bold").text("Laboratory results", 14, y); y += 4;
+    for (const t of d.labs) {
+      if (y > 250) { doc.addPage(); y = 16; }
+      doc.setFontSize(10).setFont("helvetica", "bold").text(t.test, 14, y);
+      if (t.performed_at) {
+        doc.setFontSize(8).setFont("helvetica", "normal").setTextColor(120);
+        doc.text(new Date(t.performed_at).toLocaleString(), w - 14, y, { align: "right" });
+        doc.setTextColor(0);
+      }
+      y += 2;
+      if (t.parameters.length === 0) {
+        doc.setFontSize(9).setFont("helvetica", "italic").setTextColor(120);
+        doc.text("Pending result.", 14, y + 4); doc.setTextColor(0);
+        y += 8; continue;
+      }
+      autoTable(doc, {
+        startY: y + 2,
+        head: [["Parameter", "Result", "Units", "Reference Range", "Flag"]],
+        body: t.parameters.map((p) => [
+          p.name,
+          p.result ?? "—",
+          p.units ?? "",
+          p.reference ?? "",
+          p.flag ? p.flag.toUpperCase() : "",
+        ]),
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [30, 64, 175] },
+        columnStyles: {
+          0: { cellWidth: 55, fontStyle: "bold" },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 45 },
+          4: { cellWidth: 24 },
+        },
+        didParseCell: (data) => {
+          if (data.section === "body" && data.column.index === 4) {
+            const raw = String(data.cell.raw ?? "").toLowerCase();
+            if (raw.includes("critical")) data.cell.styles.textColor = [200, 30, 30];
+            else if (raw === "high" || raw === "low") data.cell.styles.textColor = [200, 110, 0];
+          }
+        },
+      });
+      // @ts-expect-error lastAutoTable types
+      y = doc.lastAutoTable.finalY + 3;
+      if (t.interpretation) {
+        doc.setFontSize(8).setFont("helvetica", "italic").setTextColor(80);
+        const lines = doc.splitTextToSize(`Interpretation: ${t.interpretation}`, w - 28);
+        doc.text(lines, 14, y + 2);
+        y += lines.length * 4 + 2;
+        doc.setTextColor(0);
+      }
+      y += 4;
+    }
   }
 
   if (d.imaging && d.imaging.length) {
+    if (y > 250) { doc.addPage(); y = 16; }
     doc.setFontSize(11).setFont("helvetica", "bold").text("Imaging", 14, y); y += 1;
     autoTable(doc, {
       startY: y + 2, head: [["Modality", "Body part", "Report", "When"]],
@@ -135,7 +210,6 @@ export async function exportVisitPDF(d: VisitData) {
     }
   }
 
-  // Page numbers
   const pages = doc.getNumberOfPages();
   for (let i = 1; i <= pages; i++) {
     doc.setPage(i);

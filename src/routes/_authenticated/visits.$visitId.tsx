@@ -20,12 +20,13 @@ import { LabResultsViewer } from "@/components/lab-results-viewer";
 import { ImagingViewer } from "@/components/imaging-viewer";
 import { CatalogSearch } from "@/components/catalog-search";
 import { DrugPickerInline } from "@/components/drug-picker";
+import { SystemsExamination } from "@/components/systems-examination";
 
 
 export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
 
-interface Visit { id: string; patient_id: string; status: string; reason: string | null; chief_complaint: string | null; triage_level: string | null; notes: string | null; opened_at: string; closed_at: string | null; assigned_doctor_id: string | null; assigned_nurse_id: string | null; current_stage: string | null }
-interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth: string | null; blood_type: string | null; allergies: string | null; chronic_conditions: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null }
+interface Visit { id: string; patient_id: string; status: string; reason: string | null; chief_complaint: string | null; triage_level: string | null; notes: string | null; opened_at: string; closed_at: string | null; assigned_doctor_id: string | null; assigned_nurse_id: string | null; current_stage: string | null; examination: unknown | null }
+interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth: string | null; gender: string | null; blood_type: string | null; allergies: string | null; chronic_conditions: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null }
 interface Vital { id: string; visit_id: string; captured_at: string; systolic_bp: number | null; diastolic_bp: number | null; heart_rate: number | null; respiratory_rate: number | null; temperature_c: number | null; oxygen_saturation: number | null; weight_kg: number | null; height_cm: number | null; pain_level: number | null; glucose_mg_dl: number | null; notes: string | null }
 interface Diagnosis { id: string; visit_id: string; diagnosis: string; icd_code: string | null; notes: string | null; is_primary: boolean }
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null }
@@ -50,7 +51,7 @@ function VisitDetail() {
     if (error) throw error; return data as unknown as Visit | null;
   }});
   const patient = useQuery({ queryKey: ["patient", visit.data?.patient_id], enabled: !!visit.data?.patient_id, queryFn: async () => {
-    const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number, date_of_birth, blood_type, allergies, chronic_conditions, emergency_contact_name, emergency_contact_phone").eq("id", visit.data!.patient_id).maybeSingle();
+    const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number, date_of_birth, gender, blood_type, allergies, chronic_conditions, emergency_contact_name, emergency_contact_phone").eq("id", visit.data!.patient_id).maybeSingle();
     if (error) throw error; return data as unknown as Patient | null;
   }});
   const vitals = useQuery({ queryKey: ["vitals", visitId], queryFn: async () => {
@@ -85,6 +86,14 @@ function VisitDetail() {
     const ids = labOrders.data!.map((o) => o.id);
     const { data, error } = await supabase.from("lab_results" as never).select("*").in("order_id", ids as never);
     if (error) throw error; return (data as unknown as LabResult[]) ?? [];
+  }});
+  const labResultValues = useQuery({ queryKey: ["lab-result-values-v", visitId], enabled: (labOrders.data?.length ?? 0) > 0, queryFn: async () => {
+    const ids = labOrders.data!.map((o) => o.id);
+    const { data, error } = await supabase.from("lab_result_values" as never)
+      .select("order_id, parameter_name, value_text, units, reference_range, abnormal_flag")
+      .in("order_id", ids as never);
+    if (error) throw error;
+    return (data as unknown as Array<{ order_id: string; parameter_name: string; value_text: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null }>) ?? [];
   }});
   const imgOrders = useQuery({ queryKey: ["img-orders-v", visitId], queryFn: async () => {
     const { data, error } = await supabase.from("imaging_orders" as never).select("*").eq("visit_id", visitId);
@@ -279,17 +288,47 @@ function VisitDetail() {
     mutationFn: async (notes: string) => { const { error } = await supabase.from("visits" as never).update({ notes } as never).eq("id", visitId); if (error) throw error; },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["visit", visitId] }); toast.success("Notes saved"); },
   });
+  const saveExamination = useMutation({
+    mutationFn: async (examination: unknown) => {
+      const { error } = await supabase.from("visits" as never).update({ examination } as never).eq("id", visitId);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["visit", visitId] }); toast.success("Examination saved"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   function handleExport() {
     if (!visit.data || !patient.data) return;
     const labRows = (labOrders.data ?? []).map((o) => {
       const t = labTests.data?.find((x) => x.id === o.test_id);
       const r = labResults.data?.find((x) => x.order_id === o.id);
-      return { test: t?.name ?? o.test_id, result: r?.result_value ?? null, units: r?.units ?? null, flag: r?.abnormal_flag ?? null, performed_at: r?.performed_at ?? null };
+      const paramRows = (labResultValues.data ?? []).filter((v) => v.order_id === o.id).map((v) => ({
+        name: v.parameter_name,
+        result: v.value_text,
+        units: v.units,
+        reference: v.reference_range,
+        flag: v.abnormal_flag,
+      }));
+      const parameters = paramRows.length
+        ? paramRows
+        : (r ? [{ name: t?.name ?? "Result", result: r.result_value, units: r.units, reference: r.reference_range, flag: r.abnormal_flag }] : []);
+      return {
+        test: t?.name ?? o.test_id,
+        performed_at: r?.performed_at ?? null,
+        interpretation: r?.comments ?? null,
+        parameters,
+      };
     });
     void exportVisitPDF({
       visit: visit.data,
-      patient: { full_name: patient.data.full_name, medical_record_number: patient.data.medical_record_number, date_of_birth: patient.data.date_of_birth, blood_type: patient.data.blood_type, allergies: patient.data.allergies },
+      patient: {
+        full_name: patient.data.full_name,
+        medical_record_number: patient.data.medical_record_number,
+        date_of_birth: patient.data.date_of_birth,
+        gender: patient.data.gender,
+        blood_type: patient.data.blood_type,
+        allergies: patient.data.allergies,
+      },
       vitals: (vitals.data ?? []).slice().reverse(),
       diagnoses: diagnoses.data ?? [],
       prescriptions: prescriptions.data ?? [],
@@ -467,8 +506,21 @@ function VisitDetail() {
 
           {tab === "notes" && (
             <>
+              {canEditVisit && (
+                <div className="rounded-lg border bg-card p-5">
+                  <SystemsExamination
+                    value={v.examination}
+                    onSave={(exam) => saveExamination.mutate(exam)}
+                    disabled={saveExamination.isPending || finalized}
+                    ctx={{
+                      isFemale: (p?.gender ?? "").toLowerCase().startsWith("f"),
+                      isPediatric: patientAge != null && patientAge < 16,
+                    }}
+                  />
+                </div>
+              )}
               <div className="rounded-lg border bg-card p-5">
-                <h2 className="font-medium">Clinical notes</h2>
+                <h2 className="font-medium">Clinical notes (free text)</h2>
                 {canEditVisit && <NotesEditor initial={v.notes ?? ""} onSave={(t) => saveNotes.mutate(t)} disabled={saveNotes.isPending} />}
               </div>
               {(canClose || (diagnoses.data?.length ?? 0) > 0) && (
