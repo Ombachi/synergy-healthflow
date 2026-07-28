@@ -56,8 +56,12 @@ export function DoctorStation() {
     },
   });
 
-  // Filter to only patients assigned to this doctor (or unassigned for admins)
-  const myVisits = (visits.data ?? []).filter((v) => !v.assigned_doctor_id || v.assigned_doctor_id === user?.id);
+  // Filter out patients assigned to other doctors, and any visits that are already closed/completed.
+  const myVisits = (visits.data ?? []).filter((v) =>
+    (!v.assigned_doctor_id || v.assigned_doctor_id === user?.id) &&
+    v.current_stage !== "closed" &&
+    v.current_stage !== "completed",
+  );
   const myQueueIds = new Set(myVisits.map((v) => v.id));
   const myQueue = (queue.data ?? []).filter((q) => myQueueIds.has(q.visit_id));
 

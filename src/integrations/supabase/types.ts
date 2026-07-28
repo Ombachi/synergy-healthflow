@@ -6257,6 +6257,7 @@ export type Database = {
           deleted_by: string | null
           deletion_reason: string | null
           doctor_id: string | null
+          examination: Json | null
           id: string
           notes: string | null
           opened_at: string
@@ -6282,6 +6283,7 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           doctor_id?: string | null
+          examination?: Json | null
           id?: string
           notes?: string | null
           opened_at?: string
@@ -6307,6 +6309,7 @@ export type Database = {
           deleted_by?: string | null
           deletion_reason?: string | null
           doctor_id?: string | null
+          examination?: Json | null
           id?: string
           notes?: string | null
           opened_at?: string
