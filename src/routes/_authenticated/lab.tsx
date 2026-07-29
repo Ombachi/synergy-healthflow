@@ -68,7 +68,11 @@ function LabPortal() {
   const filtered = useMemo(() => {
     const inp = encMap.data?.inpatientVisitIds;
     return (orders.data ?? []).filter((o) => {
-      if (filter !== "all" && o.status !== filter) return false;
+      if (filter !== "all") {
+        if (filter === "pending") {
+          if (o.status !== "pending" && o.status !== "ordered") return false;
+        } else if (o.status !== filter) return false;
+      }
       if (encFilter !== "all") {
         const isInp = !!(o.visit_id && inp?.has(o.visit_id));
         if (encFilter === "inpatient" && !isInp) return false;
