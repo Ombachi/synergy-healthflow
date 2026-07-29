@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { drawBrandHeader, ORG_NAME, ORG_ADDRESS } from "./pdf-brand";
+import { drawBrandHeader } from "./pdf-brand";
 
 interface LabTest {
   test: string;
@@ -50,20 +50,25 @@ export async function exportVisitPDF(d: VisitData) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
   let y = await drawBrandHeader(doc, { title: "Visit Summary", accent: [30, 90, 168] });
-  y += 2;
-  doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(120);
-  doc.text(`${ORG_NAME}  ·  ${ORG_ADDRESS}`, 14, y); y += 4;
-  doc.text(`Generated ${new Date().toLocaleString()}`, 14, y); y += 6;
-  doc.setTextColor(0);
+  y += 4;
 
-  doc.setFontSize(11).setFont("helvetica", "bold").text("Patient", 14, y); y += 5;
-  doc.setFontSize(9).setFont("helvetica", "normal");
-  doc.text(`${d.patient.full_name}${d.patient.medical_record_number ? `  ·  MRN ${d.patient.medical_record_number}` : ""}`, 14, y); y += 4;
-  doc.text(`Age / Sex: ${ageFromDob(d.patient.date_of_birth)}  ·  ${d.patient.gender ?? "—"}`, 14, y); y += 4;
-  if (d.patient.date_of_birth) { doc.text(`DOB: ${d.patient.date_of_birth}`, 14, y); y += 4; }
-  if (d.patient.blood_type) { doc.text(`Blood type: ${d.patient.blood_type}`, 14, y); y += 4; }
-  if (d.patient.allergies) { doc.text(`Allergies: ${d.patient.allergies}`, 14, y); y += 4; }
-  y += 2;
+  // Patient block — tabulated like the lab report header
+  autoTable(doc, {
+    startY: y,
+    head: [["Patient", "MRN", "Age / Sex", "DOB", "Blood", "Allergies"]],
+    body: [[
+      d.patient.full_name,
+      d.patient.medical_record_number ?? "—",
+      `${ageFromDob(d.patient.date_of_birth)} · ${d.patient.gender ?? "—"}`,
+      d.patient.date_of_birth ?? "—",
+      d.patient.blood_type ?? "—",
+      d.patient.allergies ?? "—",
+    ]],
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [30, 64, 175], textColor: 255 },
+  });
+  // @ts-expect-error lastAutoTable types
+  y = doc.lastAutoTable.finalY + 4;
 
   doc.setFontSize(11).setFont("helvetica", "bold").text("Visit", 14, y); y += 5;
   doc.setFontSize(9).setFont("helvetica", "normal");
