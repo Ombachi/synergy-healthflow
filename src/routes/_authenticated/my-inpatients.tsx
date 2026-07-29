@@ -60,6 +60,7 @@ function MyInpatientsPage() {
         .from("admissions" as never)
         .select("id, patient_id, visit_id, bed_id, admitted_at, discharged_at, status, acuity, primary_diagnosis, admission_reason, admitting_consultant, isolation_required, expected_discharge_date")
         .is("discharged_at", null)
+        .eq("status", "active")
         .order("admitted_at", { ascending: false });
       if (error) throw error;
       return (data as unknown as AdmissionRow[]) ?? [];

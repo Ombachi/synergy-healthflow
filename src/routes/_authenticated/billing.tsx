@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { exportInvoicePDF } from "@/lib/invoice-pdf";
 
 export const Route = createFileRoute("/_authenticated/billing")({ component: BillingPage });
 
@@ -302,8 +303,30 @@ function InvoiceDocumentDialog({
   const paid = payments.reduce((s, p) => s + p.amount_cents, 0);
   const balance = invoice.total_cents - paid;
 
-  function handlePrint() {
-    window.print();
+  async function handlePrint() {
+    await exportInvoicePDF({
+      id: invoice.id,
+      created_at: invoice.created_at,
+      status: invoice.status,
+      total_cents: invoice.total_cents,
+      patient_name: patient?.full_name ?? "—",
+      patient_mrn: patient?.medical_record_number ?? null,
+      clinician: doctorName,
+      items: items.map((i) => ({
+        description: i.description,
+        kind: i.kind,
+        qty: i.qty,
+        unit_price_cents: i.unit_price_cents,
+        amount_cents: i.amount_cents,
+      })),
+      payments: payments.map((p) => ({
+        received_at: p.received_at,
+        method: p.method,
+        reference: p.reference,
+        cashier: cashierNameFor(p.received_by),
+        amount_cents: p.amount_cents,
+      })),
+    });
   }
 
   return (

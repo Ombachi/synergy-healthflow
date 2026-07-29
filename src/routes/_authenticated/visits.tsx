@@ -148,9 +148,6 @@ function Visits() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Visits</h1>
-          <p className="text-sm text-muted-foreground">
-            Patient visits flow from intake → vitals → diagnosis.
-          </p>
         </div>
         {canOpen && (
           <Dialog open={open} onOpenChange={setOpen}>
