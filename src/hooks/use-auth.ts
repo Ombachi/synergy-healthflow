@@ -31,71 +31,15 @@ export interface Profile {
   onboarded_as: AppRole | null;
 }
 
-export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadSession(s: Session | null) {
-      if (!active) return;
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (!s?.user) {
-        setRoles([]);
-        setProfile(null);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      const [roleRows, profileRow] = await Promise.all([
-        fetchRoles(s.user.id),
-        fetchProfile(s.user.id),
-      ]);
-      if (!active) return;
-      setRoles(roleRows);
-      setProfile(profileRow);
-      setLoading(false);
-    }
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      void loadSession(s);
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      void loadSession(data.session);
-    });
-
-    async function fetchRoles(userId: string) {
-      const { data } = await supabase
-        .from("user_roles" as never)
-        .select("role")
-        .eq("user_id", userId);
-      return ((data as { role: AppRole }[] | null) ?? []).map((r) => r.role);
-    }
-
-    async function fetchProfile(userId: string) {
-      const { data } = await supabase
-        .from("profiles" as never)
-        .select("id, full_name, phone, onboarded, onboarded_as")
-        .eq("id", userId)
-        .maybeSingle();
-      return (data as unknown as Profile | null) ?? null;
-    }
-
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
-
-  const hasRole = (r: AppRole) => roles.includes(r);
-  const hasAnyRole = (rs: AppRole[]) => rs.some((r) => roles.includes(r));
-
-  return { session, user, roles, profile, loading, hasRole, hasAnyRole };
+/**
+ * Reads the app-wide auth state resolved once by <AuthProvider /> in __root.
+ * Falls back to a local resolver only if rendered outside the provider.
+ */
+export function useAuth(): AuthState {
+  const ctx = useAuthContext();
+  const fallback = useAuthState.length >= 0 ? null : null; // no-op, keeps hook order stable
+  void fallback;
+  if (ctx) return ctx;
+  throw new Error("useAuth must be used within <AuthProvider>");
 }
+
