@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/components/auth-provider";
+import { useAuthState, type AuthState } from "@/hooks/use-auth-state";
+
 
 export type AppRole =
   | "admin" | "doctor" | "nurse" | "patient" | "athlete"
