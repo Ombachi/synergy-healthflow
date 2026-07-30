@@ -388,6 +388,17 @@ function AuthedLayout() {
     setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
+  // Single bootstrap gate: never render role-dependent chrome (or the page
+  // beneath it) until roles are resolved. This is what stops the sidebar and
+  // dashboards from flashing the previous/incorrect role view.
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
