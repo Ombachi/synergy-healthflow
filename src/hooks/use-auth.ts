@@ -1,5 +1,7 @@
 import { useAuthContext } from "@/components/auth-provider";
-import { useAuthState, type AuthState } from "@/hooks/use-auth-state";
+import type { AuthState } from "@/hooks/use-auth-state";
+export type { AuthState };
+
 
 
 export type AppRole =
