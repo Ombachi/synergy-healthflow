@@ -26,9 +26,12 @@ function ageOf(dob: string | null) {
   return `${y}y`;
 }
 
+type DocView = "waiting" | "seen" | "completed" | "results" | "assigned";
+
 export function DoctorStation() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [view, setView] = useState<DocView>("waiting");
 
   const queue = useQuery({
     queryKey: ["doc-queue", user?.id],
