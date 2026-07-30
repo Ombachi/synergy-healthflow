@@ -398,6 +398,60 @@ export type Database = {
           },
         ]
       }
+      aefi_events: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          immunization_id: string | null
+          onset_at: string
+          outcome: string | null
+          patient_id: string
+          reported_by: string | null
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          immunization_id?: string | null
+          onset_at?: string
+          outcome?: string | null
+          patient_id: string
+          reported_by?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          immunization_id?: string | null
+          onset_at?: string
+          outcome?: string | null
+          patient_id?: string
+          reported_by?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aefi_events_immunization_id_fkey"
+            columns: ["immunization_id"]
+            isOneToOne: false
+            referencedRelation: "immunizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aefi_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       allied_health_notes: {
         Row: {
           admission_id: string
@@ -2434,6 +2488,96 @@ export type Database = {
           },
         ]
       }
+      immunizations: {
+        Row: {
+          administered_at: string
+          antigen: string | null
+          batch_number: string | null
+          comments: string | null
+          created_at: string
+          dose_number: number
+          encounter_id: string | null
+          encounter_type: string | null
+          expiry_date: string | null
+          facility: string | null
+          id: string
+          immediate_reaction: string | null
+          manufacturer: string | null
+          patient_id: string
+          route: string | null
+          site: string | null
+          status: string
+          updated_at: string
+          vaccinator_id: string | null
+          vaccinator_name: string | null
+          vaccine_id: string | null
+          vaccine_name: string
+        }
+        Insert: {
+          administered_at?: string
+          antigen?: string | null
+          batch_number?: string | null
+          comments?: string | null
+          created_at?: string
+          dose_number?: number
+          encounter_id?: string | null
+          encounter_type?: string | null
+          expiry_date?: string | null
+          facility?: string | null
+          id?: string
+          immediate_reaction?: string | null
+          manufacturer?: string | null
+          patient_id: string
+          route?: string | null
+          site?: string | null
+          status?: string
+          updated_at?: string
+          vaccinator_id?: string | null
+          vaccinator_name?: string | null
+          vaccine_id?: string | null
+          vaccine_name: string
+        }
+        Update: {
+          administered_at?: string
+          antigen?: string | null
+          batch_number?: string | null
+          comments?: string | null
+          created_at?: string
+          dose_number?: number
+          encounter_id?: string | null
+          encounter_type?: string | null
+          expiry_date?: string | null
+          facility?: string | null
+          id?: string
+          immediate_reaction?: string | null
+          manufacturer?: string | null
+          patient_id?: string
+          route?: string | null
+          site?: string | null
+          status?: string
+          updated_at?: string
+          vaccinator_id?: string | null
+          vaccinator_name?: string | null
+          vaccine_id?: string | null
+          vaccine_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "immunizations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "immunizations_vaccine_id_fkey"
+            columns: ["vaccine_id"]
+            isOneToOne: false
+            referencedRelation: "vaccine_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       infection_control_alerts: {
         Row: {
           admission_id: string
@@ -3102,6 +3246,50 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "item_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kepi_schedule: {
+        Row: {
+          created_at: string
+          dose_number: number
+          due_age_days: number
+          id: string
+          label: string
+          programme: string
+          updated_at: string
+          vaccine_id: string
+          window_days: number
+        }
+        Insert: {
+          created_at?: string
+          dose_number?: number
+          due_age_days?: number
+          id?: string
+          label: string
+          programme?: string
+          updated_at?: string
+          vaccine_id: string
+          window_days?: number
+        }
+        Update: {
+          created_at?: string
+          dose_number?: number
+          due_age_days?: number
+          id?: string
+          label?: string
+          programme?: string
+          updated_at?: string
+          vaccine_id?: string
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kepi_schedule_vaccine_id_fkey"
+            columns: ["vaccine_id"]
+            isOneToOne: false
+            referencedRelation: "vaccine_catalog"
             referencedColumns: ["id"]
           },
         ]
@@ -6073,6 +6261,104 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vaccine_catalog: {
+        Row: {
+          active: boolean
+          antigen: string
+          code: string
+          created_at: string
+          default_route: string
+          default_site: string
+          doses_required: number
+          id: string
+          manufacturer: string | null
+          name: string
+          target_group: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          antigen: string
+          code: string
+          created_at?: string
+          default_route?: string
+          default_site?: string
+          doses_required?: number
+          id?: string
+          manufacturer?: string | null
+          name: string
+          target_group?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          antigen?: string
+          code?: string
+          created_at?: string
+          default_route?: string
+          default_site?: string
+          doses_required?: number
+          id?: string
+          manufacturer?: string | null
+          name?: string
+          target_group?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vaccine_stock: {
+        Row: {
+          batch_number: string
+          cold_chain_ok: boolean
+          created_at: string
+          expiry_date: string | null
+          id: string
+          last_temp_check: string | null
+          quantity: number
+          reorder_level: number
+          storage_location: string | null
+          storage_temp_c: number | null
+          updated_at: string
+          vaccine_id: string
+        }
+        Insert: {
+          batch_number: string
+          cold_chain_ok?: boolean
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          last_temp_check?: string | null
+          quantity?: number
+          reorder_level?: number
+          storage_location?: string | null
+          storage_temp_c?: number | null
+          updated_at?: string
+          vaccine_id: string
+        }
+        Update: {
+          batch_number?: string
+          cold_chain_ok?: boolean
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          last_temp_check?: string | null
+          quantity?: number
+          reorder_level?: number
+          storage_location?: string | null
+          storage_temp_c?: number | null
+          updated_at?: string
+          vaccine_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccine_stock_vaccine_id_fkey"
+            columns: ["vaccine_id"]
+            isOneToOne: false
+            referencedRelation: "vaccine_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       visit_assignments: {
         Row: {
