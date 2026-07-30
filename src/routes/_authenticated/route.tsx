@@ -350,9 +350,10 @@ const STORAGE_KEY = "litu-vault:sidebar:open-groups";
 function AuthedLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user, roles } = useAuth();
+  const { user, roles, loading: authLoading } = useAuth();
   const work = useWorkCounts();
   const isAdmin = roles.includes("admin");
+
 
   // Hydration-safe: initialize empty on server & first client render, then load from localStorage.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
