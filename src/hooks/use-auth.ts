@@ -33,13 +33,11 @@ export interface Profile {
 
 /**
  * Reads the app-wide auth state resolved once by <AuthProvider /> in __root.
- * Falls back to a local resolver only if rendered outside the provider.
  */
 export function useAuth(): AuthState {
   const ctx = useAuthContext();
-  const fallback = useAuthState.length >= 0 ? null : null; // no-op, keeps hook order stable
-  void fallback;
-  if (ctx) return ctx;
-  throw new Error("useAuth must be used within <AuthProvider>");
+  if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");
+  return ctx;
 }
+
 
