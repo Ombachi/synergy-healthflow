@@ -205,6 +205,7 @@ const GROUPS: Group[] = [
       { title: "Reception", url: "/reception", icon: ClipboardCheck, dept: "reception" },
       { title: "Queue board", url: "/queue", icon: ListOrdered },
       { title: "Nursing triage", url: stub("nursing-triage"), icon: HeartPulse },
+      { title: "Immunization", url: "/immunization", icon: Syringe },
       { title: "Consultation", url: "/visits", icon: ClipboardList, hideForAdmin: true },
       { title: "My health", url: "/me", icon: Stethoscope, hideForAdmin: true },
       { title: "Procedures", url: stub("outpatient-procedures"), icon: Bandage },
@@ -350,9 +351,10 @@ const STORAGE_KEY = "litu-vault:sidebar:open-groups";
 function AuthedLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user, roles } = useAuth();
+  const { user, roles, loading: authLoading } = useAuth();
   const work = useWorkCounts();
   const isAdmin = roles.includes("admin");
+
 
   // Hydration-safe: initialize empty on server & first client render, then load from localStorage.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -385,6 +387,17 @@ function AuthedLayout() {
 
   function toggle(key: string) {
     setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  // Single bootstrap gate: never render role-dependent chrome (or the page
+  // beneath it) until roles are resolved. This is what stops the sidebar and
+  // dashboards from flashing the previous/incorrect role view.
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
   }
 
   return (

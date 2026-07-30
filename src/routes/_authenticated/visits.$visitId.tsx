@@ -751,26 +751,8 @@ function VisitDetail() {
         <div className="space-y-4">
           {/* Patient details card intentionally removed — all key details live in the sticky banner. */}
 
-          {encList.length > 1 && (
-            <div className="rounded-lg border bg-card p-5">
-              <h2 className="font-medium">Prior encounters</h2>
-              <ul className="mt-2 space-y-1 text-sm">
-                {encList.filter((e) => e.id !== visitId).slice(0, 8).map((e) => (
-                  <li key={e.id}>
-                    <Link
-                      to="/visits/$visitId"
-                      params={{ visitId: e.id }}
-                      preload="intent"
-                      className="flex items-center justify-between rounded px-2 py-1 hover:bg-muted"
-                    >
-                      <span>{new Date(e.opened_at).toLocaleDateString()} · {e.reason ?? e.chief_complaint ?? "—"}</span>
-                      <span className="text-xs capitalize text-muted-foreground">{e.status.replace("_"," ")}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Prior-encounter list intentionally removed — the encounter timeline above owns navigation. */}
+
         </div>
       </div>
     </div>

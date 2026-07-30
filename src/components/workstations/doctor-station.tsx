@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Stethoscope, ChevronRight } from "lucide-react";
@@ -26,9 +26,12 @@ function ageOf(dob: string | null) {
   return `${y}y`;
 }
 
+type DocView = "waiting" | "seen" | "completed" | "results" | "assigned";
+
 export function DoctorStation() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [view, setView] = useState<DocView>("waiting");
 
   const queue = useQuery({
     queryKey: ["doc-queue", user?.id],
@@ -144,33 +147,84 @@ export function DoctorStation() {
     return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`;
   };
 
-  // Summary stats for the doctor dashboard panel
+  // ---------------- KPI data ----------------
+  const startOfToday = () => { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString(); };
+
   const seenToday = useQuery({
     queryKey: ["doc-seen-today", user?.id], enabled: !!user,
     queryFn: async () => {
-      const start = new Date(); start.setHours(0,0,0,0);
-      const { count } = await supabase.from("visits" as never).select("*", { count:"exact", head:true })
-        .eq("assigned_doctor_id", user!.id).gte("opened_at", start.toISOString());
-      return count ?? 0;
+      const { data } = await supabase.from("visits" as never)
+        .select("id, patient_id, reason, chief_complaint, status, opened_at, closed_at")
+        .eq("assigned_doctor_id", user!.id).gte("opened_at", startOfToday())
+        .order("opened_at", { ascending: false });
+      return (data as unknown as VisitRow[]) ?? [];
     },
   });
-  const completed = useQuery({
-    queryKey: ["doc-completed-today", user?.id], enabled: !!user,
+  const completedVisits = useQuery({
+    queryKey: ["doc-completed", user?.id], enabled: !!user,
     queryFn: async () => {
-      const start = new Date(); start.setHours(0,0,0,0);
-      const { count } = await supabase.from("visits" as never).select("*", { count:"exact", head:true })
-        .eq("assigned_doctor_id", user!.id).eq("status","closed").gte("closed_at", start.toISOString());
-      return count ?? 0;
+      const { data } = await supabase.from("visits" as never)
+        .select("id, patient_id, reason, chief_complaint, status, opened_at, closed_at")
+        .eq("assigned_doctor_id", user!.id).in("status", ["closed", "completed"] as never)
+        .order("closed_at", { ascending: false }).limit(100);
+      return (data as unknown as VisitRow[]) ?? [];
     },
   });
-  const pendingResults = useQuery({
-    queryKey: ["doc-pending-results", user?.id], enabled: !!user,
+  const assignedVisits = useQuery({
+    queryKey: ["doc-assigned", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { count } = await supabase.from("lab_orders" as never).select("*", { count:"exact", head:true })
-        .eq("ordered_by", user!.id).neq("status","resulted");
-      return count ?? 0;
+      const { data } = await supabase.from("visits" as never)
+        .select("id, patient_id, reason, chief_complaint, status, opened_at, closed_at")
+        .eq("assigned_doctor_id", user!.id).not("status", "in", "(closed,completed)")
+        .order("opened_at", { ascending: false });
+      return (data as unknown as VisitRow[]) ?? [];
     },
   });
+  const pendingLabs = useQuery({
+    queryKey: ["doc-pending-labs", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("lab_orders" as never)
+        .select("id, visit_id, status, ordered_at, test_id")
+        .eq("ordered_by", user!.id).neq("status", "resulted")
+        .order("ordered_at", { ascending: false }).limit(100);
+      return (data as unknown as PendingOrder[]) ?? [];
+    },
+  });
+  const pendingImaging = useQuery({
+    queryKey: ["doc-pending-imaging", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("imaging_orders" as never)
+        .select("id, visit_id, status, modality, body_part, ordered_at")
+        .eq("ordered_by", user!.id).neq("status", "reported")
+        .order("ordered_at", { ascending: false }).limit(100);
+      return (data as unknown as PendingImaging[]) ?? [];
+    },
+  });
+
+  const pendingCount = (pendingLabs.data?.length ?? 0) + (pendingImaging.data?.length ?? 0);
+
+  // Names for visits that are not in the live queue
+  const extraPatientIds = Array.from(new Set([
+    ...(seenToday.data ?? []), ...(completedVisits.data ?? []), ...(assignedVisits.data ?? []),
+  ].map((v) => v.patient_id)));
+  const extraPatients = useQuery({
+    queryKey: ["doc-extra-patients", extraPatientIds.join(",")],
+    enabled: extraPatientIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("patients" as never)
+        .select("id, full_name, date_of_birth, gender, medical_record_number, allergies")
+        .in("id", extraPatientIds as never);
+      return (data as unknown as Patient[]) ?? [];
+    },
+  });
+  const nameOf = (pid: string) =>
+    patients.data?.find((p) => p.id === pid)?.full_name
+    ?? extraPatients.data?.find((p) => p.id === pid)?.full_name
+    ?? "—";
+  const mrnOf = (pid: string) =>
+    extraPatients.data?.find((p) => p.id === pid)?.medical_record_number
+    ?? patients.data?.find((p) => p.id === pid)?.medical_record_number
+    ?? "—";
 
   return (
     <div className="space-y-4">
@@ -181,16 +235,22 @@ export function DoctorStation() {
         </div>
       </div>
 
-      {/* Summary panel */}
+      {/* Interactive KPI widgets */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <SummaryStat label="Patients waiting" value={myQueue.length} tone="amber" />
-        <SummaryStat label="Seen today" value={seenToday.data ?? "—"} tone="sky" />
-        <SummaryStat label="Completed" value={completed.data ?? "—"} tone="emerald" />
-        <SummaryStat label="Pending results" value={pendingResults.data ?? "—"} tone="rose" />
-        <SummaryStat label="Assigned queue" value={myQueue.length} tone="violet" />
+        <KPIWidget label="Patients waiting" value={myQueue.length} tone="amber" active={view === "waiting"} onClick={() => setView("waiting")} />
+        <KPIWidget label="Seen today" value={seenToday.data?.length ?? "—"} tone="sky" active={view === "seen"} onClick={() => setView("seen")} />
+        <KPIWidget label="Completed" value={completedVisits.data?.length ?? "—"} tone="emerald" active={view === "completed"} onClick={() => setView("completed")} />
+        <KPIWidget label="Pending results" value={pendingCount} tone="rose" active={view === "results"} onClick={() => setView("results")} />
+        <KPIWidget label="Assigned queue" value={assignedVisits.data?.length ?? myQueue.length} tone="violet" active={view === "assigned"} onClick={() => setView("assigned")} />
       </div>
 
-      {myQueue.length === 0 ? (
+      {view !== "waiting" && (
+        <button onClick={() => setView("waiting")} className="text-xs text-primary underline">
+          ← Back to waiting queue
+        </button>
+      )}
+
+      {view === "waiting" && (myQueue.length === 0 ? (
         <div className="rounded-lg border bg-card p-10 text-center text-sm text-muted-foreground">
           No patients in your queue. Nurses send patients here after triage.
         </div>
@@ -238,12 +298,140 @@ export function DoctorStation() {
             );
           })}
         </div>
+      ))}
+
+      {view === "seen" && (
+        <VisitList title="Today's encounters" rows={seenToday.data ?? []} nameOf={nameOf} mrnOf={mrnOf} />
+      )}
+      {view === "completed" && (
+        <VisitList title="Completed consultations" rows={completedVisits.data ?? []} nameOf={nameOf} mrnOf={mrnOf} />
+      )}
+      {view === "assigned" && (
+        <VisitList title="Assigned to me" rows={assignedVisits.data ?? []} nameOf={nameOf} mrnOf={mrnOf} />
+      )}
+      {view === "results" && (
+        <div className="space-y-4">
+          <ResultsGroup
+            title="Laboratory"
+            empty="No laboratory investigations awaiting review."
+            rows={(pendingLabs.data ?? []).map((o) => ({
+              id: o.id, visitId: o.visit_id, label: `Lab order · ${o.status}`, at: o.ordered_at,
+            }))}
+            nameOf={nameOf}
+            visitPatient={(vid) => visitPatientId(vid, [seenToday.data, assignedVisits.data, completedVisits.data], myVisits)}
+          />
+          <ResultsGroup
+            title="Radiology"
+            empty="No imaging studies awaiting review."
+            rows={(pendingImaging.data ?? []).map((o) => ({
+              id: o.id, visitId: o.visit_id, label: `${o.modality}${o.body_part ? ` · ${o.body_part}` : ""} · ${o.status}`, at: o.ordered_at,
+            }))}
+            nameOf={nameOf}
+            visitPatient={(vid) => visitPatientId(vid, [seenToday.data, assignedVisits.data, completedVisits.data], myVisits)}
+          />
+          <ResultsGroup title="Histopathology" empty="No histopathology reports pending." rows={[]} nameOf={nameOf} visitPatient={() => null} />
+          <ResultsGroup title="Microbiology" empty="No microbiology reports pending." rows={[]} nameOf={nameOf} visitPatient={() => null} />
+        </div>
       )}
     </div>
   );
 }
 
-function SummaryStat({ label, value, tone }: { label: string; value: number | string; tone: "amber"|"sky"|"emerald"|"rose"|"violet" }) {
+interface VisitRow { id: string; patient_id: string; reason: string | null; chief_complaint: string | null; status: string; opened_at: string; closed_at: string | null }
+interface PendingOrder { id: string; visit_id: string | null; status: string; ordered_at: string; test_id: string | null }
+interface PendingImaging { id: string; visit_id: string | null; status: string; modality: string; body_part: string | null; ordered_at: string }
+
+function visitPatientId(
+  vid: string | null,
+  pools: (VisitRow[] | undefined)[],
+  queueVisits: { id: string; patient_id: string }[],
+): string | null {
+  if (!vid) return null;
+  for (const pool of pools) {
+    const hit = pool?.find((v) => v.id === vid);
+    if (hit) return hit.patient_id;
+  }
+  return queueVisits.find((v) => v.id === vid)?.patient_id ?? null;
+}
+
+function VisitList({ title, rows, nameOf, mrnOf }: {
+  title: string;
+  rows: VisitRow[];
+  nameOf: (id: string) => string;
+  mrnOf: (id: string) => string;
+}) {
+  return (
+    <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="border-b px-4 py-2 text-sm font-medium">{title}</div>
+      {rows.length === 0 ? (
+        <div className="p-8 text-center text-sm text-muted-foreground">Nothing here yet.</div>
+      ) : (
+        <ul className="divide-y">
+          {rows.map((v) => (
+            <li key={v.id}>
+              <Link to="/visits/$visitId" params={{ visitId: v.id }} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50">
+                <div className="flex-1">
+                  <div className="font-medium">{nameOf(v.patient_id)}</div>
+                  <div className="text-xs text-muted-foreground">
+                    MRN {mrnOf(v.patient_id)} · {v.chief_complaint ?? v.reason ?? "—"}
+                  </div>
+                </div>
+                <span className="text-xs capitalize text-muted-foreground">{v.status.replace("_", " ")}</span>
+                <span className="text-xs text-muted-foreground">{new Date(v.closed_at ?? v.opened_at).toLocaleString()}</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ResultsGroup({ title, rows, empty, nameOf, visitPatient }: {
+  title: string;
+  rows: { id: string; visitId: string | null; label: string; at: string }[];
+  empty: string;
+  nameOf: (id: string) => string;
+  visitPatient: (vid: string | null) => string | null;
+}) {
+  return (
+    <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="border-b px-4 py-2 text-sm font-medium">{title}</div>
+      {rows.length === 0 ? (
+        <div className="p-6 text-center text-sm text-muted-foreground">{empty}</div>
+      ) : (
+        <ul className="divide-y">
+          {rows.map((r) => {
+            const pid = visitPatient(r.visitId);
+            const inner = (
+              <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50">
+                <div className="flex-1">
+                  <div className="font-medium">{pid ? nameOf(pid) : "Unassigned patient"}</div>
+                  <div className="text-xs text-muted-foreground">{r.label}</div>
+                </div>
+                <span className="text-xs text-muted-foreground">{new Date(r.at).toLocaleString()}</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            );
+            return (
+              <li key={r.id}>
+                {r.visitId ? (
+                  <Link to="/visits/$visitId" params={{ visitId: r.visitId }}>{inner}</Link>
+                ) : inner}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function KPIWidget({ label, value, tone, active, onClick }: {
+  label: string; value: number | string; tone: "amber"|"sky"|"emerald"|"rose"|"violet";
+  active?: boolean; onClick?: () => void;
+}) {
   const tones: Record<string,string> = {
     amber: "bg-amber-500/10 text-amber-700 border-amber-500/30",
     sky: "bg-sky-500/10 text-sky-700 border-sky-500/30",
@@ -252,9 +440,14 @@ function SummaryStat({ label, value, tone }: { label: string; value: number | st
     violet: "bg-violet-500/10 text-violet-700 border-violet-500/30",
   };
   return (
-    <div className={`rounded-lg border p-3 ${tones[tone]}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-lg border p-3 text-left transition hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tones[tone]} ${active ? "ring-2 ring-primary/60" : ""}`}
+    >
       <div className="text-2xl font-semibold">{value}</div>
       <div className="text-[11px] uppercase tracking-wide">{label}</div>
-    </div>
+    </button>
   );
 }
+
