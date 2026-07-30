@@ -94,6 +94,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/ward-analytics": ["doctor", "nurse"],
   "/preauth": ["insurance_officer", "billing_officer"],
   "/sla": [],
+  "/immunization": ["nurse", "doctor"],
   "/sports-medicine": ["physio"],
   "/anti-doping": ["physio"],
 

@@ -205,6 +205,7 @@ const GROUPS: Group[] = [
       { title: "Reception", url: "/reception", icon: ClipboardCheck, dept: "reception" },
       { title: "Queue board", url: "/queue", icon: ListOrdered },
       { title: "Nursing triage", url: stub("nursing-triage"), icon: HeartPulse },
+      { title: "Immunization", url: "/immunization", icon: Syringe },
       { title: "Consultation", url: "/visits", icon: ClipboardList, hideForAdmin: true },
       { title: "My health", url: "/me", icon: Stethoscope, hideForAdmin: true },
       { title: "Procedures", url: stub("outpatient-procedures"), icon: Bandage },

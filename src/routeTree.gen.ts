@@ -49,6 +49,7 @@ import { Route as AuthenticatedInventoryRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedInpatientProceduresRouteImport } from './routes/_authenticated/inpatient-procedures'
 import { Route as AuthenticatedInfectionControlRouteImport } from './routes/_authenticated/infection-control'
+import { Route as AuthenticatedImmunizationRouteImport } from './routes/_authenticated/immunization'
 import { Route as AuthenticatedHaimsRouteImport } from './routes/_authenticated/haims'
 import { Route as AuthenticatedEmarRouteImport } from './routes/_authenticated/emar'
 import { Route as AuthenticatedDischargePlanningRouteImport } from './routes/_authenticated/discharge-planning'
@@ -297,6 +298,12 @@ const AuthenticatedInfectionControlRoute =
   AuthenticatedInfectionControlRouteImport.update({
     id: '/infection-control',
     path: '/infection-control',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedImmunizationRoute =
+  AuthenticatedImmunizationRouteImport.update({
+    id: '/immunization',
+    path: '/immunization',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHaimsRoute = AuthenticatedHaimsRouteImport.update({
@@ -552,6 +559,7 @@ export interface FileRoutesByFullPath {
   '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/emar': typeof AuthenticatedEmarRoute
   '/haims': typeof AuthenticatedHaimsRoute
+  '/immunization': typeof AuthenticatedImmunizationRoute
   '/infection-control': typeof AuthenticatedInfectionControlRoute
   '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
@@ -634,6 +642,7 @@ export interface FileRoutesByTo {
   '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/emar': typeof AuthenticatedEmarRoute
   '/haims': typeof AuthenticatedHaimsRoute
+  '/immunization': typeof AuthenticatedImmunizationRoute
   '/infection-control': typeof AuthenticatedInfectionControlRoute
   '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
@@ -718,6 +727,7 @@ export interface FileRoutesById {
   '/_authenticated/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/_authenticated/emar': typeof AuthenticatedEmarRoute
   '/_authenticated/haims': typeof AuthenticatedHaimsRoute
+  '/_authenticated/immunization': typeof AuthenticatedImmunizationRoute
   '/_authenticated/infection-control': typeof AuthenticatedInfectionControlRoute
   '/_authenticated/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
@@ -802,6 +812,7 @@ export interface FileRouteTypes {
     | '/discharge-planning'
     | '/emar'
     | '/haims'
+    | '/immunization'
     | '/infection-control'
     | '/inpatient-procedures'
     | '/insurance'
@@ -884,6 +895,7 @@ export interface FileRouteTypes {
     | '/discharge-planning'
     | '/emar'
     | '/haims'
+    | '/immunization'
     | '/infection-control'
     | '/inpatient-procedures'
     | '/insurance'
@@ -967,6 +979,7 @@ export interface FileRouteTypes {
     | '/_authenticated/discharge-planning'
     | '/_authenticated/emar'
     | '/_authenticated/haims'
+    | '/_authenticated/immunization'
     | '/_authenticated/infection-control'
     | '/_authenticated/inpatient-procedures'
     | '/_authenticated/insurance'
@@ -1317,6 +1330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInfectionControlRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/immunization': {
+      id: '/_authenticated/immunization'
+      path: '/immunization'
+      fullPath: '/immunization'
+      preLoaderRoute: typeof AuthenticatedImmunizationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/haims': {
       id: '/_authenticated/haims'
       path: '/haims'
@@ -1640,6 +1660,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDischargePlanningRoute: typeof AuthenticatedDischargePlanningRoute
   AuthenticatedEmarRoute: typeof AuthenticatedEmarRoute
   AuthenticatedHaimsRoute: typeof AuthenticatedHaimsRoute
+  AuthenticatedImmunizationRoute: typeof AuthenticatedImmunizationRoute
   AuthenticatedInfectionControlRoute: typeof AuthenticatedInfectionControlRoute
   AuthenticatedInpatientProceduresRoute: typeof AuthenticatedInpatientProceduresRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
@@ -1717,6 +1738,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDischargePlanningRoute: AuthenticatedDischargePlanningRoute,
   AuthenticatedEmarRoute: AuthenticatedEmarRoute,
   AuthenticatedHaimsRoute: AuthenticatedHaimsRoute,
+  AuthenticatedImmunizationRoute: AuthenticatedImmunizationRoute,
   AuthenticatedInfectionControlRoute: AuthenticatedInfectionControlRoute,
   AuthenticatedInpatientProceduresRoute: AuthenticatedInpatientProceduresRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
