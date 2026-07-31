@@ -78,15 +78,28 @@ function ImmunizationModule() {
       return (data as unknown as ScheduleRow[]) ?? [];
     },
   });
-  const patients = useQuery({
-    queryKey: ["imm-patients"],
+  // Registry & workspace list real patients only — staff accounts that happen to
+  // have a patient row are excluded via a security-definer helper.
+  const staffIds = useQuery({
+    queryKey: ["staff-patient-ids"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("patients" as never)
-        .select("id, full_name, date_of_birth, medical_record_number").order("full_name");
-      if (error) throw error;
-      return (data as unknown as PatientOpt[]) ?? [];
+      const { data, error } = await supabase.rpc("staff_patient_ids" as never);
+      if (error) return [] as string[];
+      return ((data as unknown as string[]) ?? []).map(String);
     },
   });
+  const patients = useQuery({
+    queryKey: ["imm-patients", (staffIds.data ?? []).length],
+    enabled: staffIds.isFetched,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("patients" as never)
+        .select("id, full_name, date_of_birth, gender, medical_record_number").order("full_name");
+      if (error) throw error;
+      const staff = new Set(staffIds.data ?? []);
+      return ((data as unknown as PatientOpt[]) ?? []).filter((p) => !staff.has(p.id));
+    },
+  });
+
   const immunizations = useQuery({
     queryKey: ["immunizations"],
     queryFn: async () => {
