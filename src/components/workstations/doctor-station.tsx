@@ -329,8 +329,6 @@ export function DoctorStation() {
             nameOf={nameOf}
             visitPatient={(vid) => visitPatientId(vid, [seenToday.data, assignedVisits.data, completedVisits.data], myVisits)}
           />
-          <ResultsGroup title="Histopathology" empty="No histopathology reports pending." rows={[]} nameOf={nameOf} visitPatient={() => null} />
-          <ResultsGroup title="Microbiology" empty="No microbiology reports pending." rows={[]} nameOf={nameOf} visitPatient={() => null} />
         </div>
       )}
     </div>
