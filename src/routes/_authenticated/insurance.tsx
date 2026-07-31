@@ -27,7 +27,7 @@ interface Patient { id: string; full_name: string; medical_record_number: string
 interface Submission { id: string; claim_id: string; payer_code: string | null; external_ref: string | null; status: string; submitted_at: string; last_event_at: string }
 interface Batch { id: string; payer_code: string | null; filename: string | null; rows_total: number; rows_matched: number; rows_unmatched: number; total_paid_cents: number; created_at: string }
 
-const money = (c: number | null) => c == null ? "—" : `KES ${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+const money = (c: number | null) => c == null ? "—" : `KES ${(c / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
 function parseRemittanceCsv(text: string): Array<Record<string, string>> {
   const lines = text.trim().split(/\r?\n/).filter(Boolean);
@@ -466,7 +466,7 @@ function InsurancePage() {
                   <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 p-3 text-sm">
                     <div>
                       <div className="font-medium">{pat?.full_name ?? "—"} <span className="text-xs text-muted-foreground">({pat?.medical_record_number ?? "—"})</span></div>
-                      <div className="text-xs text-muted-foreground">{pol?.insurer ?? "—"} · {pol?.member_number ?? "—"} · Pre-auth {c.preauth_code ?? "—"} · {new Date(c.created_at).toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">{pol?.insurer ?? "—"} · {pol?.member_number ?? "—"} · Pre-auth {c.preauth_code ?? "—"} · {new Date(c.created_at).toLocaleString("en-GB")}</div>
                       {c.notes && <div className="mt-1 text-xs italic text-muted-foreground line-clamp-2">{c.notes}</div>}
                     </div>
                     <div className="flex items-center gap-2">
@@ -532,7 +532,7 @@ function InsurancePage() {
                 <div key={s.id} className="flex items-center justify-between p-3 text-sm">
                   <div>
                     <div className="font-medium">{pat?.full_name ?? "—"} <span className="text-xs text-muted-foreground">· {s.payer_code ?? "—"} · ref {s.external_ref ?? "—"}</span></div>
-                    <div className="text-xs text-muted-foreground">{new Date(s.last_event_at).toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(s.last_event_at).toLocaleString("en-GB")}</div>
                   </div>
                   <span className={`rounded px-2 py-0.5 text-xs ${
                     s.status === "paid" ? "bg-blue-500/10 text-blue-700" :
@@ -576,7 +576,7 @@ function InsurancePage() {
               <div key={b.id} className="flex items-center justify-between p-3 text-sm">
                 <div>
                   <div className="font-medium">{b.filename ?? "remittance"} <span className="text-xs text-muted-foreground">· {b.payer_code ?? "—"}</span></div>
-                  <div className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleString()} · {b.rows_total} rows · {b.rows_matched} matched · {b.rows_unmatched} unmatched</div>
+                  <div className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleString("en-GB")} · {b.rows_total} rows · {b.rows_matched} matched · {b.rows_unmatched} unmatched</div>
                 </div>
                 <div className="text-right text-xs">
                   <div className="font-semibold text-blue-700">{money(b.total_paid_cents)} paid</div>

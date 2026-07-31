@@ -138,7 +138,7 @@ function PrescribePage() {
                 const p = patients.data?.find((pt) => pt.id === v.patient_id);
                 return (
                   <option key={v.id} value={v.id}>
-                    {p?.full_name ?? "Patient"} {p?.medical_record_number ? `(${p.medical_record_number})` : ""} · {new Date(v.created_at).toLocaleDateString()}
+                    {p?.full_name ?? "Patient"} {p?.medical_record_number ? `(${p.medical_record_number})` : ""} · {new Date(v.created_at).toLocaleDateString("en-GB")}
                   </option>
                 );
               })}

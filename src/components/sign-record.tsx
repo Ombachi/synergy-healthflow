@@ -81,7 +81,7 @@ export function SignRecord({
         <span>
           Signed by <b>{sig.data.signer_name}</b>
           {sig.data.signer_role && <> ({sig.data.signer_role})</>} on{" "}
-          {new Date(sig.data.signed_at).toLocaleString()}
+          {new Date(sig.data.signed_at).toLocaleString("en-GB")}
         </span>
         <code className="ml-2 rounded bg-background/60 px-1 py-0.5 text-[10px]">
           {sig.data.signature_hash.slice(0, 12)}…

@@ -262,7 +262,7 @@ function LabPortal() {
             <div className="flex items-center justify-between border-b bg-muted/30 p-4">
               <div>
                 <div className="text-lg font-semibold">{testName(selected.test_id)}</div>
-                <div className="text-xs text-muted-foreground">Patient: {patientName(selected.patient_id)} · {new Date(selected.created_at).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Patient: {patientName(selected.patient_id)} · {new Date(selected.created_at).toLocaleString("en-GB")}</div>
               </div>
               <WorkflowChip status={selected.status} />
             </div>

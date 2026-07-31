@@ -89,7 +89,7 @@ function SurgeryPage() {
               <div>
                 <div className="font-medium">{b.procedure_name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {new Date(b.scheduled_at).toLocaleString()} · {b.theatre ?? "Theatre TBC"}
+                  {new Date(b.scheduled_at).toLocaleString("en-GB")} · {b.theatre ?? "Theatre TBC"}
                 </div>
               </div>
               <div className="flex items-center gap-2">

@@ -70,7 +70,7 @@ export function MyActivePatients() {
               <div>
                 <div className="font-medium">{name(v.patient_id)}</div>
                 <div className="text-xs text-muted-foreground">
-                  Opened {new Date(v.opened_at).toLocaleString()}
+                  Opened {new Date(v.opened_at).toLocaleString("en-GB")}
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs">

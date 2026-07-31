@@ -42,7 +42,7 @@ function startOfWeek(d: Date) {
   return x;
 }
 function addDays(d: Date, n: number) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
-function fmtDay(d: Date) { return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+function fmtDay(d: Date) { return d.toLocaleDateString("en-GB", { weekday: "short", month: "short", day: "numeric" }); }
 
 function AppointmentsPage() {
   const qc = useQueryClient();
@@ -208,7 +208,7 @@ function AppointmentsPage() {
                     {list.length === 0 && <div className="text-xs text-muted-foreground">—</div>}
                     {list.sort((a,b) => a.scheduled_at.localeCompare(b.scheduled_at)).map((a) => (
                       <button key={a.id} type="button" onClick={() => openEdit(a)} className="block w-full rounded border bg-background p-1.5 text-left text-xs hover:border-primary">
-                        <div className="font-mono">{new Date(a.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+                        <div className="font-mono">{new Date(a.scheduled_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</div>
                         <div className="truncate font-medium">{patientName(a.patient_id)}</div>
                         <span className={`mt-0.5 inline-block rounded px-1 py-0.5 text-[10px] ${STATUS_COLOR[a.status] ?? STATUS_COLOR.booked}`}>{a.status}</span>
                       </button>
@@ -239,7 +239,7 @@ function AppointmentsPage() {
               {appts.data?.map((a) => (
                 <div key={a.id} className="grid grid-cols-12 items-center gap-2 p-3 text-sm">
                   <div className="col-span-3 font-medium">{patientName(a.patient_id)}</div>
-                  <div className="col-span-3 text-muted-foreground">{new Date(a.scheduled_at).toLocaleString()}</div>
+                  <div className="col-span-3 text-muted-foreground">{new Date(a.scheduled_at).toLocaleString("en-GB")}</div>
                   <div className="col-span-2">{doctorName(a.doctor_id)}</div>
                   <div className="col-span-2"><span className={`rounded px-2 py-0.5 text-xs ${STATUS_COLOR[a.status] ?? STATUS_COLOR.booked}`}>{a.status}</span></div>
                   <div className="col-span-2 flex justify-end gap-1">
@@ -279,7 +279,7 @@ function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, canC
                 {slot.map((a) => (
                   <div key={a.id} className="flex items-center justify-between rounded border p-2">
                     <div>
-                      <div className="font-medium">{patientName(a.patient_id)} <span className="text-xs text-muted-foreground">· {new Date(a.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ({a.duration_minutes ?? 20}m)</span></div>
+                      <div className="font-medium">{patientName(a.patient_id)} <span className="text-xs text-muted-foreground">· {new Date(a.scheduled_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} ({a.duration_minutes ?? 20}m)</span></div>
                       <div className="text-xs text-muted-foreground">{doctorName(a.doctor_id)}{a.reason ? ` · ${a.reason}` : ""}</div>
                     </div>
                     <div className="flex gap-1">

@@ -68,7 +68,7 @@ function ErrorsPage() {
                     onClick={() => setExpanded(expanded === r.id ? null : r.id)}
                     className="cursor-pointer border-t hover:bg-muted/50"
                   >
-                    <td className="p-2 text-xs">{new Date(r.occurred_at).toLocaleString()}</td>
+                    <td className="p-2 text-xs">{new Date(r.occurred_at).toLocaleString("en-GB")}</td>
                     <td className="p-2">
                       <span className="rounded bg-muted px-1.5 py-0.5 text-xs">{r.env}</span>
                     </td>

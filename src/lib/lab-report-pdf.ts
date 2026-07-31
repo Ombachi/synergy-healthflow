@@ -52,9 +52,9 @@ export async function buildLabReportPDF(r: LabReportInput): Promise<jsPDF> {
   doc.setFont("helvetica", "normal").text(`${r.age ?? "—"} · ${r.gender ?? "—"}`, 38, y + 18);
 
   doc.setFont("helvetica", "bold").text("Ordered:", w / 2 + 4, y + 6);
-  doc.setFont("helvetica", "normal").text(new Date(r.ordered_at).toLocaleString(), w / 2 + 26, y + 6);
+  doc.setFont("helvetica", "normal").text(new Date(r.ordered_at).toLocaleString("en-GB"), w / 2 + 26, y + 6);
   doc.setFont("helvetica", "bold").text("Reported:", w / 2 + 4, y + 12);
-  doc.setFont("helvetica", "normal").text(r.performed_at ? new Date(r.performed_at).toLocaleString() : "—", w / 2 + 26, y + 12);
+  doc.setFont("helvetica", "normal").text(r.performed_at ? new Date(r.performed_at).toLocaleString("en-GB") : "—", w / 2 + 26, y + 12);
   doc.setFont("helvetica", "bold").text("Facility:", w / 2 + 4, y + 18);
   doc.setFont("helvetica", "normal").text(r.facility ?? ORG_NAME, w / 2 + 26, y + 18);
   y += 28;

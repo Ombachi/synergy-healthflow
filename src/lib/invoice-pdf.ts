@@ -28,7 +28,7 @@ export interface InvoiceData {
   payments: InvoicePayment[];
 }
 
-const money = (c: number) => (c / 100).toLocaleString(undefined, { style: "currency", currency: "KES" });
+const money = (c: number) => (c / 100).toLocaleString("en-GB", { style: "currency", currency: "KES" });
 
 /**
  * Generates a dedicated invoice PDF from structured data.
@@ -44,7 +44,7 @@ export async function exportInvoicePDF(d: InvoiceData) {
   // Invoice meta row
   doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(80);
   doc.text(`Invoice #: ${invNo}`, 14, y);
-  doc.text(`Issued: ${new Date(d.created_at).toLocaleDateString()}`, w - 14, y, { align: "right" });
+  doc.text(`Issued: ${new Date(d.created_at).toLocaleDateString("en-GB")}`, w - 14, y, { align: "right" });
   y += 4;
   doc.text(`Status: ${d.status.replace(/_/g, " ")}`, 14, y);
   doc.setTextColor(0);
@@ -112,7 +112,7 @@ export async function exportInvoicePDF(d: InvoiceData) {
       startY: y,
       head: [["Date", "Method", "Receipt #", "Cashier", "Amount"]],
       body: d.payments.map((p) => [
-        new Date(p.received_at).toLocaleString(),
+        new Date(p.received_at).toLocaleString("en-GB"),
         p.method,
         p.reference ?? "—",
         p.cashier,

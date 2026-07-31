@@ -75,7 +75,7 @@ function ControlledDrugs() {
             {rows.data?.length === 0 && <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">No entries yet.</td></tr>}
             {rows.data?.map((r) => (
               <tr key={r.id} className="border-t">
-                <td className="px-3 py-2 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
+                <td className="px-3 py-2 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("en-GB")}</td>
                 <td className="px-3 py-2 font-medium">{r.drug_name}</td>
                 <td className="px-3 py-2"><span className="rounded bg-destructive/10 px-1.5 py-0.5 text-xs text-destructive">Sch {r.schedule}</span></td>
                 <td className="px-3 py-2 capitalize">{r.direction}</td>

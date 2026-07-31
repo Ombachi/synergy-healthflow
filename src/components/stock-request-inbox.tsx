@@ -157,7 +157,7 @@ export function StockRequestInbox() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium capitalize">{r.department ?? "department"} · {requesterName(r.requester_id)}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("en-GB")}</div>
                 </div>
                 <WorkflowChip status={r.status} />
               </div>

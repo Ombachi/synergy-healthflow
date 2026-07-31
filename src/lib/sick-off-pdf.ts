@@ -21,7 +21,7 @@ export async function exportSickOffPDF(s: SickOff) {
 
   y += 4;
   doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(120);
-  doc.text(`Issued ${new Date(s.created_at).toLocaleString()}  ·  Ref ${s.id.slice(0, 8).toUpperCase()}`, w / 2, y, { align: "center" });
+  doc.text(`Issued ${new Date(s.created_at).toLocaleString("en-GB")}  ·  Ref ${s.id.slice(0, 8).toUpperCase()}`, w / 2, y, { align: "center" });
   y += 10;
   doc.setTextColor(0);
 

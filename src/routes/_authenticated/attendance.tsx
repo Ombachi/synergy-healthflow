@@ -90,8 +90,8 @@ function AttendancePage() {
             <div className="space-y-1 text-sm">
               {mine.data?.map((a) => (
                 <div key={a.id} className="flex justify-between rounded border p-2">
-                  <span>{a.clock_in ? new Date(a.clock_in).toLocaleString() : "—"}</span>
-                  <span>{a.clock_out ? new Date(a.clock_out).toLocaleString() : "in progress"}</span>
+                  <span>{a.clock_in ? new Date(a.clock_in).toLocaleString("en-GB") : "—"}</span>
+                  <span>{a.clock_out ? new Date(a.clock_out).toLocaleString("en-GB") : "in progress"}</span>
                 </div>
               ))}
             </div>
@@ -109,7 +109,7 @@ function AttendancePage() {
                 {all.data?.slice(0, 50).map((a) => (
                   <div key={a.id} className="flex justify-between rounded border p-2">
                     <span className="font-mono text-xs">{a.user_id.slice(0, 8)}</span>
-                    <span>{a.clock_in ? new Date(a.clock_in).toLocaleString() : "—"} → {a.clock_out ? new Date(a.clock_out).toLocaleTimeString() : "open"}</span>
+                    <span>{a.clock_in ? new Date(a.clock_in).toLocaleString("en-GB") : "—"} → {a.clock_out ? new Date(a.clock_out).toLocaleTimeString("en-GB") : "open"}</span>
                   </div>
                 ))}
               </div>

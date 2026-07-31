@@ -94,7 +94,7 @@ function ConsentAdmin() {
                     </td>
                     <td className="px-4 py-2 text-xs">v{t.version}</td>
                     <td className="px-4 py-2 text-xs">{t.active ? "Active" : "Retired"}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(t.created_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(t.created_at).toLocaleDateString("en-GB")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -120,7 +120,7 @@ function ConsentAdmin() {
                 )}
                 {events.data?.map((e) => (
                   <tr key={e.id} className="border-t">
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString("en-GB")}</td>
                     <td className="px-4 py-2 text-xs">{e.patient_id.slice(0, 8)}</td>
                     <td className="px-4 py-2 text-xs">{e.template_code} v{e.template_version}</td>
                     <td className="px-4 py-2 text-xs capitalize">{e.action}</td>

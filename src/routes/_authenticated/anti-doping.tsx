@@ -198,7 +198,7 @@ function AntiDopingPage() {
               <tbody>
                 {tests.data?.map((row) => (
                   <tr key={row.id} className="border-t">
-                    <td className="p-2">{new Date(row.tested_at).toLocaleDateString()}</td>
+                    <td className="p-2">{new Date(row.tested_at).toLocaleDateString("en-GB")}</td>
                     <td>{aMap[row.athlete_id] ?? row.athlete_id.slice(0,6)}</td>
                     <td className="text-center">{row.test_type}</td>
                     <td className="text-center">{row.in_competition ? "✓" : ""}</td>
@@ -242,7 +242,7 @@ function AntiDopingPage() {
               <tbody>
                 {tues.data?.map((row) => (
                   <tr key={row.id} className="border-t">
-                    <td className="p-2">{new Date(row.created_at).toLocaleDateString()}</td>
+                    <td className="p-2">{new Date(row.created_at).toLocaleDateString("en-GB")}</td>
                     <td>{aMap[row.athlete_id] ?? row.athlete_id.slice(0,6)}</td>
                     <td>{row.substance}</td>
                     <td>{row.diagnosis ?? "—"}</td>

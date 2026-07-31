@@ -33,7 +33,7 @@ const TITLES: Record<DeptKey, string> = {
 function startOfDay(d = new Date()) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
 function startOfWeek(d = new Date()) { const x = startOfDay(d); x.setDate(x.getDate() - x.getDay()); return x; }
 function startOfMonth(d = new Date()) { const x = startOfDay(d); x.setDate(1); return x; }
-const moneyKES = (cents: number) => `KES ${(cents/100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+const moneyKES = (cents: number) => `KES ${(cents/100).toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
 
 type SummaryConfig = { table: string; dateCol: string; pending: string[]; approved: string[]; statusCol?: string; revenueRef?: string };
 const SUMMARY: Record<DeptKey, SummaryConfig> = {

@@ -339,7 +339,7 @@ function ImmunizationModule() {
                         <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-primary" />
                         <div className="text-sm font-medium">{i.vaccine_name} · dose {i.dose_number}</div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(i.administered_at).toLocaleString()} · {i.route ?? "—"} · {i.site ?? "—"}
+                          {new Date(i.administered_at).toLocaleString("en-GB")} · {i.route ?? "—"} · {i.site ?? "—"}
                           {i.batch_number ? ` · batch ${i.batch_number}` : ""}
                           {i.vaccinator_name ? ` · ${i.vaccinator_name}` : ""}
                         </div>
@@ -470,7 +470,7 @@ function ImmunizationModule() {
             <h3 className="pt-3 text-sm font-medium">Recent doses for this patient</h3>
             <ul className="space-y-1 text-xs text-muted-foreground">
               {patientHistory.slice(0, 8).map((i) => (
-                <li key={i.id}>{new Date(i.administered_at).toLocaleDateString()} · {i.vaccine_name} d{i.dose_number}</li>
+                <li key={i.id}>{new Date(i.administered_at).toLocaleDateString("en-GB")} · {i.vaccine_name} d{i.dose_number}</li>
               ))}
               {patientHistory.length === 0 && <li>No history.</li>}
             </ul>
@@ -573,7 +573,7 @@ function ImmunizationModule() {
                     <span className="text-xs capitalize text-muted-foreground">{a.severity}</span>
                   </div>
                   <div className="text-sm text-muted-foreground">{a.description}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(a.onset_at).toLocaleString()}{a.outcome ? ` · ${a.outcome}` : ""}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(a.onset_at).toLocaleString("en-GB")}{a.outcome ? ` · ${a.outcome}` : ""}</div>
                 </li>
               ))}
               {(aefi.data ?? []).length === 0 && <li className="p-6 text-center text-sm text-muted-foreground">No AEFI reports.</li>}

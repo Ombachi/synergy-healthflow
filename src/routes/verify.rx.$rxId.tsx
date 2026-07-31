@@ -54,7 +54,7 @@ function VerifyRx() {
                 {r!.signer_role && <> ({r!.signer_role})</>}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                {r!.signed_at ? new Date(r!.signed_at).toLocaleString() : ""}
+                {r!.signed_at ? new Date(r!.signed_at).toLocaleString("en-GB") : ""}
               </div>
               <div className="mt-2 text-[10px] font-mono text-muted-foreground">
                 Signature hash: {r!.hash_prefix ?? "—"}…

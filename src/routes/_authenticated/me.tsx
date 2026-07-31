@@ -21,7 +21,7 @@ import { ImagingViewer } from "@/components/imaging-viewer";
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
 
 
-const money = (cents: number) => `KES ${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (cents: number) => `KES ${(cents / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth?: string | null; gender?: string | null }
 interface Visit { id: string; opened_at: string; closed_at: string | null; status: string; reason: string | null; notes: string | null; triage_level: string | null }
@@ -165,7 +165,7 @@ function PatientTimeline() {
 
   const chartData = filteredVitals.map((v) => ({
     t: new Date(v.captured_at).getTime(),
-    label: new Date(v.captured_at).toLocaleDateString(),
+    label: new Date(v.captured_at).toLocaleDateString("en-GB"),
     systolic: v.systolic_bp, diastolic: v.diastolic_bp, hr: v.heart_rate, spo2: v.oxygen_saturation, temp: v.temperature_c,
   }));
 
@@ -244,7 +244,7 @@ function PatientTimeline() {
                     <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-primary" />
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <div className="font-medium">{v.reason ?? "Visit"}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(v.opened_at).toLocaleString("en-GB")}</div>
                     </div>
                     <div className="mt-1 text-xs">
                       <span className="capitalize text-muted-foreground">Status: {v.status.replace("_"," ")}</span>
@@ -293,7 +293,7 @@ function PatientTimeline() {
             {appts.data?.map((a) => (
               <div key={a.id} className="flex items-center justify-between gap-2 p-3 text-sm">
                 <div>
-                  <div className="font-medium">{new Date(a.scheduled_at).toLocaleString()}</div>
+                  <div className="font-medium">{new Date(a.scheduled_at).toLocaleString("en-GB")}</div>
                   <div className="text-xs text-muted-foreground">{a.reason ?? "—"}{a.department ? ` · ${a.department}` : ""}</div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ function PatientTimeline() {
             <div key={s.id} className="flex items-center justify-between rounded-lg border bg-card p-3 text-sm">
               <div>
                 <div className="font-medium">{s.days} day(s) — {s.start_date} to {s.end_date}</div>
-                <div className="text-xs text-muted-foreground">Issued {new Date(s.created_at).toLocaleDateString()}{s.diagnosis ? ` · ${s.diagnosis}` : ""}</div>
+                <div className="text-xs text-muted-foreground">Issued {new Date(s.created_at).toLocaleDateString("en-GB")}{s.diagnosis ? ` · ${s.diagnosis}` : ""}</div>
               </div>
               <Button size="sm" variant="outline" onClick={() => exportSickOffPDF({
                 id: s.id, patient_name: patient.data!.full_name, mrn: patient.data!.medical_record_number,
@@ -373,7 +373,7 @@ function PatientTimeline() {
                 <div className="flex items-center justify-between border-b p-3 text-sm">
                   <div>
                     <div className="font-medium">Invoice {inv.id.slice(0, 8)}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString("en-GB")}</div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">{money(inv.total_cents)}</div>

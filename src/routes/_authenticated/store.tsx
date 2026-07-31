@@ -178,7 +178,7 @@ function StoreDashboard() {
                 <div key={g.id} className="flex items-center justify-between rounded border p-3 text-sm">
                   <div>
                     <div className="font-medium">GRN {g.id.slice(0, 8)}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(g.received_at).toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(g.received_at).toLocaleString("en-GB")}</div>
                   </div>
                   <span className="text-xs text-muted-foreground">{g.notes ?? "—"}</span>
                 </div>

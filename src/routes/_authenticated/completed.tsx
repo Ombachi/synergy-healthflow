@@ -46,7 +46,7 @@ async function fetchPatientMap(ids: string[]) {
 function groupByDate(rows: Row[]) {
   const map = new Map<string, Row[]>();
   for (const r of rows) {
-    const d = new Date(r.when).toLocaleDateString();
+    const d = new Date(r.when).toLocaleDateString("en-GB");
     if (!map.has(d)) map.set(d, []);
     map.get(d)!.push(r);
   }
@@ -246,10 +246,10 @@ function CompletedReports() {
         patientName: pm[r.patient_id]?.full_name ?? null,
         patientMrn: pm[r.patient_id]?.mrn ?? null,
         primary: `Invoice · ${r.status}`,
-        secondary: r.total_cents != null ? `KES ${(r.total_cents / 100).toLocaleString()}` : null,
+        secondary: r.total_cents != null ? `KES ${(r.total_cents / 100).toLocaleString("en-GB")}` : null,
         details: [
-          { label: "Total", value: r.total_cents != null ? `KES ${(r.total_cents / 100).toLocaleString()}` : null },
-          { label: "Paid", value: r.paid_cents != null ? `KES ${(r.paid_cents / 100).toLocaleString()}` : null },
+          { label: "Total", value: r.total_cents != null ? `KES ${(r.total_cents / 100).toLocaleString("en-GB")}` : null },
+          { label: "Paid", value: r.paid_cents != null ? `KES ${(r.paid_cents / 100).toLocaleString("en-GB")}` : null },
           { label: "Status", value: r.status },
         ],
       }));
@@ -333,7 +333,7 @@ function CompletedReports() {
                                   </div>
                                 </div>
                               </div>
-                              <div className="shrink-0 text-xs text-muted-foreground">{new Date(it.when).toLocaleTimeString()}</div>
+                              <div className="shrink-0 text-xs text-muted-foreground">{new Date(it.when).toLocaleTimeString("en-GB")}</div>
                             </button>
                             {isOpen && (
                               <div className="border-t bg-muted/20 px-8 py-3">

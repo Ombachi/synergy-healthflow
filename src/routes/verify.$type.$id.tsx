@@ -88,7 +88,7 @@ function VerifyDoc() {
                 {q.data.signer_role && <> ({q.data.signer_role})</>}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                {q.data.signed_at ? new Date(q.data.signed_at).toLocaleString() : ""}
+                {q.data.signed_at ? new Date(q.data.signed_at).toLocaleString("en-GB") : ""}
               </div>
               {q.data.hash_prefix && (
                 <div className="mt-2 text-[10px] font-mono text-muted-foreground">

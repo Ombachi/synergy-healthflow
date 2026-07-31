@@ -382,7 +382,7 @@ function VisitDetail() {
               {patientAge != null && <span className="text-sm text-muted-foreground">{patientAge}y</span>}
               {p?.blood_type && <span className="rounded bg-rose-500/10 px-2 py-0.5 text-xs font-medium text-rose-700 dark:text-rose-300">{p.blood_type}</span>}
               {admissionActive && <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300"><BedDouble className="h-3 w-3" /> Inpatient</span>}
-              <span className="text-xs text-muted-foreground">· Opened {new Date(v.opened_at).toLocaleString()}</span>
+              <span className="text-xs text-muted-foreground">· Opened {new Date(v.opened_at).toLocaleString("en-GB")}</span>
               <span className="text-xs capitalize text-muted-foreground">· {v.status.replace("_"," ")}</span>
             </div>
             {(p?.allergies || p?.chronic_conditions) && (
@@ -405,7 +405,7 @@ function VisitDetail() {
           <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto pb-1">
             {encList.map((enc) => {
               const active = enc.id === visitId;
-              const label = new Date(enc.opened_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" });
+              const label = new Date(enc.opened_at).toLocaleDateString("en-GB", { month: "short", day: "numeric", year: "2-digit" });
               return (
                 <Link
                   key={enc.id}
@@ -469,7 +469,7 @@ function VisitDetail() {
                 <div className="mt-3">
                   {vitals.data?.slice(0, 1).map((vt) => (
                     <div key={vt.id} className="rounded-md border bg-background p-3 text-sm">
-                      <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString()}</div>
+                      <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString("en-GB")}</div>
                       <div className="grid gap-2 sm:grid-cols-4">
                         <VitalReadout label="BP" value={vt.systolic_bp != null && vt.diastolic_bp != null ? `${vt.systolic_bp}/${vt.diastolic_bp}` : "—"} />
                         <VitalReadout label="HR" value={vt.heart_rate != null ? `${vt.heart_rate} bpm` : "—"} />
@@ -490,7 +490,7 @@ function VisitDetail() {
               <div className="mt-3 space-y-2">
                 {vitals.data?.map((vt) => (
                   <div key={vt.id} className="rounded-md border bg-background p-3 text-sm">
-                    <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString()}</div>
+                    <div className="mb-2 text-xs text-muted-foreground">Captured {new Date(vt.captured_at).toLocaleString("en-GB")}</div>
                     <div className="grid gap-2 sm:grid-cols-4">
                       <VitalReadout label="BP" value={vt.systolic_bp != null && vt.diastolic_bp != null ? `${vt.systolic_bp}/${vt.diastolic_bp}` : "—"} />
                       <VitalReadout label="HR" value={vt.heart_rate != null ? `${vt.heart_rate} bpm` : "—"} />

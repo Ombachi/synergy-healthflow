@@ -109,7 +109,7 @@ function RxPrint() {
           </div>
           <div className="text-right text-[11px]">
             <div>Rx #{rx.data.id.slice(0, 8).toUpperCase()}</div>
-            <div>{new Date(rx.data.created_at).toLocaleDateString()}</div>
+            <div>{new Date(rx.data.created_at).toLocaleDateString("en-GB")}</div>
           </div>
         </div>
 

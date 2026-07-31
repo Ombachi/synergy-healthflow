@@ -27,7 +27,7 @@ interface CashSession {
 }
 
 const money = (c: number | null | undefined) =>
-  ((c ?? 0) / 100).toLocaleString(undefined, { style: "currency", currency: "KES" });
+  ((c ?? 0) / 100).toLocaleString("en-GB", { style: "currency", currency: "KES" });
 
 function CashReconPage() {
   const qc = useQueryClient();
@@ -109,7 +109,7 @@ function CashReconPage() {
       {openSession && (
         <div className="rounded-lg border bg-card p-4">
           <div className="mb-2 font-medium">Your open shift</div>
-          <div className="text-sm text-muted-foreground">Opened {new Date(openSession.opened_at).toLocaleString()} · Float {money(openSession.opening_float_cents)}</div>
+          <div className="text-sm text-muted-foreground">Opened {new Date(openSession.opened_at).toLocaleString("en-GB")} · Float {money(openSession.opening_float_cents)}</div>
           <Button className="mt-3" onClick={() => { setClosing(openSession); setDeclared(""); setCloseNotes(""); }}>Close shift</Button>
         </div>
       )}
@@ -120,8 +120,8 @@ function CashReconPage() {
           {rows.length === 0 && <div className="p-4 text-sm text-muted-foreground">No sessions.</div>}
           {rows.map((s) => (
             <div key={s.id} className="grid grid-cols-2 gap-2 p-3 text-sm md:grid-cols-6">
-              <div><div className="text-xs text-muted-foreground">Opened</div>{new Date(s.opened_at).toLocaleString()}</div>
-              <div><div className="text-xs text-muted-foreground">Closed</div>{s.closed_at ? new Date(s.closed_at).toLocaleString() : "—"}</div>
+              <div><div className="text-xs text-muted-foreground">Opened</div>{new Date(s.opened_at).toLocaleString("en-GB")}</div>
+              <div><div className="text-xs text-muted-foreground">Closed</div>{s.closed_at ? new Date(s.closed_at).toLocaleString("en-GB") : "—"}</div>
               <div><div className="text-xs text-muted-foreground">Float</div>{money(s.opening_float_cents)}</div>
               <div><div className="text-xs text-muted-foreground">System</div>{money(s.system_cash_cents)}</div>
               <div><div className="text-xs text-muted-foreground">Declared</div>{money(s.declared_cash_cents)}</div>

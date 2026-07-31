@@ -153,7 +153,7 @@ function EmarPage() {
                   {adminsFor(m.id).map((a) => (
                     <div key={a.id} className="flex justify-between border-b py-1">
                       <span><Badge variant={a.status === "given" ? "default" : "outline"} className="capitalize">{a.status}</Badge> {a.dose_given && `· ${a.dose_given}`} {a.reason_not_given && `· ${a.reason_not_given}`}</span>
-                      <span className="text-muted-foreground">{new Date(a.administered_at).toLocaleString()}</span>
+                      <span className="text-muted-foreground">{new Date(a.administered_at).toLocaleString("en-GB")}</span>
                     </div>
                   ))}
                   {adminsFor(m.id).length === 0 && <p className="text-muted-foreground">No administrations yet.</p>}

@@ -160,7 +160,7 @@ export function StockRequestForm({ department, categoryHint }: { department: "la
           return (
             <div key={r.id} className="p-3 text-sm">
               <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("en-GB")}</div>
                 <WorkflowChip status={r.status} />
               </div>
               <ul className="mt-1 text-xs text-muted-foreground">
