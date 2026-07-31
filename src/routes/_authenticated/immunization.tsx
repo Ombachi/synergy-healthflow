@@ -4,7 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Syringe, CalendarClock, AlertTriangle, Thermometer, Package, Search, ShieldAlert, Activity,
+  Download, Printer, FileDown, Mail,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
