@@ -368,31 +368,46 @@ function PatientTimeline() {
           {invoices.data?.map((inv) => {
             const items = (invoiceItems.data ?? []).filter((it) => it.invoice_id === inv.id);
             const due = inv.total_cents - inv.paid_cents;
+            const open = openInvoice === inv.id;
             return (
               <div key={inv.id} className="rounded-lg border bg-card">
-                <div className="flex items-center justify-between border-b p-3 text-sm">
-                  <div>
-                    <div className="font-medium">Invoice {inv.id.slice(0, 8)}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString("en-GB")}</div>
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setOpenInvoice(open ? null : inv.id)}
+                  className="flex w-full items-center justify-between gap-3 p-3 text-left text-sm hover:bg-muted/40"
+                >
+                  <div className="flex items-center gap-2">
+                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} />
+                    <div>
+                      <div className="font-medium">Invoice {inv.id.slice(0, 8)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(inv.created_at).toLocaleDateString("en-GB")} · {items.length} item{items.length === 1 ? "" : "s"}
+                      </div>
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">{money(inv.total_cents)}</div>
                     <span className={`rounded px-2 py-0.5 text-xs ${inv.status === "paid" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{inv.status}</span>
                     {due > 0 && <div className="mt-0.5 text-xs text-destructive">Due {money(due)}</div>}
                   </div>
-                </div>
-                <ul className="divide-y text-xs">
-                  {items.map((it) => (
-                    <li key={it.id} className="flex justify-between p-2">
-                      <span>{it.description} <span className="text-muted-foreground">× {it.qty}</span></span>
-                      <span className="font-mono">{money(it.amount_cents)}</span>
-                    </li>
-                  ))}
-                </ul>
+                </button>
+                {open && (
+                  <ul className="divide-y border-t text-xs">
+                    {items.length === 0 && <li className="p-2 text-muted-foreground">No billed items on this invoice.</li>}
+                    {items.map((it) => (
+                      <li key={it.id} className="flex justify-between p-2">
+                        <span>{it.description} <span className="text-muted-foreground">× {it.qty}</span></span>
+                        <span className="font-mono">{money(it.amount_cents)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             );
           })}
         </TabsContent>
+
       </Tabs>
     </div>
   );
