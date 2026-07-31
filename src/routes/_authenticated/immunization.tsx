@@ -321,10 +321,33 @@ function ImmunizationModule() {
 
       {tab === "registry" && (
         <div className="space-y-4">
-          <div className="relative max-w-md">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-8" placeholder="Search patient or MRN…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative max-w-md flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input className="pl-8" placeholder="Search patient or MRN…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            {canDownload && (
+              <Button variant="outline" size="sm" onClick={exportRegistryCSV}>
+                <Download className="h-4 w-4" /> Export CSV
+              </Button>
+            )}
+            {canDownload && (
+              <Button variant="outline" size="sm" disabled={!patientId} onClick={() => printCard(false)}>
+                <Printer className="h-4 w-4" /> Print card
+              </Button>
+            )}
+            {canDownload && (
+              <Button variant="outline" size="sm" disabled={!patientId} onClick={() => printCard(true)}>
+                <FileDown className="h-4 w-4" /> Download PDF
+              </Button>
+            )}
+            {canEmail && (
+              <Button variant="outline" size="sm" disabled={!patientId} onClick={emailCard}>
+                <Mail className="h-4 w-4" /> Email
+              </Button>
+            )}
           </div>
+
           <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
             <div className="max-h-[70vh] overflow-auto rounded-lg border bg-card">
               {filteredPatients.map((p) => (
