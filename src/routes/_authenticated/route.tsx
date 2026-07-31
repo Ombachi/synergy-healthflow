@@ -143,8 +143,8 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/assessments", "/messages"],
-  athlete:           ["/me", "/assessments", "/messages"],
+  patient:           ["/me", "/my-vaccines", "/assessments", "/messages"],
+  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
 };
