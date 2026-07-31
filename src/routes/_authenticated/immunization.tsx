@@ -50,7 +50,7 @@ interface StockRow {
   reorder_level: number; storage_location: string | null; storage_temp_c: number | null; cold_chain_ok: boolean; last_temp_check: string | null;
 }
 interface AefiRow { id: string; patient_id: string; onset_at: string; severity: string; description: string; outcome: string | null }
-interface PatientOpt { id: string; full_name: string; date_of_birth: string | null; medical_record_number: string | null }
+interface PatientOpt { id: string; full_name: string; date_of_birth: string | null; gender?: string | null; medical_record_number: string | null }
 
 type Tab = "dashboard" | "registry" | "workspace" | "stock" | "aefi";
 
@@ -58,8 +58,9 @@ const DAY = 24 * 3600 * 1000;
 const ageDays = (dob: string | null) => (dob ? Math.floor((Date.now() - new Date(dob).getTime()) / DAY) : null);
 
 function ImmunizationModule() {
-  const { user, profile } = useAuth();
+  const { user, profile, roles } = useAuth();
   const qc = useQueryClient();
+
   const [tab, setTab] = useState<Tab>("dashboard");
   const [patientId, setPatientId] = useState("");
   const [search, setSearch] = useState("");
