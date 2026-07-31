@@ -71,7 +71,7 @@ function ReceptionPage() {
     queryKey: ["recep-visits"],
     queryFn: async () => {
       const { data, error } = await supabase.from("visits" as never).select("id, patient_id, current_stage, opened_at, status")
-        .neq("status", "closed").order("opened_at", { ascending: false }).limit(50);
+        .in("status", ["open", "in_progress"] as never).is("closed_at", null).order("opened_at", { ascending: false }).limit(50);
       if (error) throw error;
       return (data as unknown as Visit[]) ?? [];
     },
