@@ -208,6 +208,7 @@ const GROUPS: Group[] = [
       { title: "Immunization", url: "/immunization", icon: Syringe },
       { title: "Consultation", url: "/visits", icon: ClipboardList, hideForAdmin: true },
       { title: "My health", url: "/me", icon: Stethoscope, hideForAdmin: true },
+      { title: "My vaccines", url: "/my-vaccines", icon: Syringe, hideForAdmin: true },
       { title: "Procedures", url: stub("outpatient-procedures"), icon: Bandage },
       { title: "Laboratory orders", url: "/lab-order", icon: FlaskConical },
       { title: "Imaging orders", url: stub("outpatient-imaging"), icon: ScanLine },
