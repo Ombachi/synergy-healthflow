@@ -236,6 +236,41 @@ function ImmunizationModule() {
     return p.full_name.toLowerCase().includes(q) || (p.medical_record_number ?? "").toLowerCase().includes(q);
   });
 
+  // ---- Export / print / email (permission based) ----
+  const canDownload = roles.some((r) =>
+    ["admin", "doctor", "nurse", "receptionist", "physio", "nutritionist", "lab_tech"].includes(r),
+  );
+  const canEmail = roles.some((r) => ["admin", "doctor", "nurse"].includes(r));
+
+  function exportRegistryCSV() {
+    const rows = (immunizations.data ?? [])
+      .filter((i) => (patientId ? i.patient_id === patientId : (patients.data ?? []).some((p) => p.id === i.patient_id)))
+      .map((i) => {
+        const p = patientById(i.patient_id);
+        return { ...i, patient_name: p?.full_name ?? "—", mrn: p?.medical_record_number ?? null };
+      });
+    if (rows.length === 0) { toast.error("Nothing to export"); return; }
+    downloadCSV(`immunization-registry-${new Date().toISOString().slice(0, 10)}.csv`, immunizationsToCSV(rows));
+  }
+
+  async function printCard(download: boolean) {
+    const p = patientById(patientId);
+    if (!p) { toast.error("Select a patient first"); return; }
+    await exportVaccinationCardPDF(
+      p,
+      patientHistory,
+      dueFor(patientId).map((r) => `${vaccineById(r.vaccine_id)?.name ?? "?"} dose ${r.dose_number} (${r.label})`),
+    );
+    toast.success(download ? "Vaccination card downloaded" : "Vaccination card ready to print");
+  }
+
+  function emailCard() {
+    const p = patientById(patientId);
+    if (!p) { toast.error("Select a patient first"); return; }
+    emailVaccinationCard(p, patientHistory);
+  }
+
+
   const TABS: { key: Tab; label: string }[] = [
     { key: "dashboard", label: "Dashboard" },
     { key: "registry", label: "Registry" },
