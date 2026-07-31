@@ -15,6 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
+import {
+  exportVaccinationCardPDF, immunizationsToCSV, downloadCSV, emailVaccinationCard,
+} from "@/lib/vaccination-card-pdf";
+
 
 export const Route = createFileRoute("/_authenticated/immunization")({
   head: () => ({
