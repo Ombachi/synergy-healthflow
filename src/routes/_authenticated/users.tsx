@@ -153,7 +153,7 @@ function UsersPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : "Never"}
+                    {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("en-GB") : "Never"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">

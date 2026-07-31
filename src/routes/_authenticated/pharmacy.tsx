@@ -209,7 +209,7 @@ function PharmacyPortal() {
             <div className="flex items-center justify-between border-b bg-muted/30 p-4">
               <div>
                 <div className="text-lg font-semibold">{selected.medication}</div>
-                <div className="text-xs text-muted-foreground">{new Date(selected.created_at).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">{new Date(selected.created_at).toLocaleString("en-GB")}</div>
               </div>
               <WorkflowChip status={selDispense ? "dispensed" : "pending"} />
             </div>
@@ -230,7 +230,7 @@ function PharmacyPortal() {
               {selDispense && (
                 <div className="rounded border border-emerald-500/40 bg-emerald-500/5 p-3 text-xs">
                   <div className="font-medium">Dispensed</div>
-                  <div className="text-muted-foreground">Qty {selDispense.quantity} · {new Date(selDispense.dispensed_at).toLocaleString()}</div>
+                  <div className="text-muted-foreground">Qty {selDispense.quantity} · {new Date(selDispense.dispensed_at).toLocaleString("en-GB")}</div>
                 </div>
               )}
               {canDispense && !selDispense && (

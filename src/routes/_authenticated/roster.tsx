@@ -24,7 +24,7 @@ interface Assignment { id: string; shift_id: string; user_id: string; role: stri
 interface Leave { id: string; user_id: string; starts_at: string; ends_at: string; kind: string; status: string; reason: string | null }
 interface Staff { id: string; full_name: string; role: string }
 
-const fmt = (s: string) => new Date(s).toLocaleString();
+const fmt = (s: string) => new Date(s).toLocaleString("en-GB");
 
 function RosterPage() {
   const qc = useQueryClient();

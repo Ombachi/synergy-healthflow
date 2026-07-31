@@ -27,7 +27,7 @@ interface PA {
 interface Payer { id: string; name: string; requires_preauth: boolean }
 interface Patient { id: string; full_name: string; medical_record_number: string | null }
 
-const money = (c: number | null) => c==null ? "—" : `KES ${(c/100).toLocaleString()}`;
+const money = (c: number | null) => c==null ? "—" : `KES ${(c/100).toLocaleString("en-GB")}`;
 
 function PreauthPage() {
   const qc = useQueryClient();

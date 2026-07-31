@@ -78,7 +78,7 @@ function Section({ title, rows }: { title: string; rows: Row[] }) {
                   <td className="p-2 font-mono text-xs">{r.order_id.slice(0, 8)}</td>
                   <td className="p-2 uppercase">{r.priority}</td>
                   {"modality" in r && <td className="p-2">{r.modality}</td>}
-                  <td className="p-2">{new Date(r.ordered_at).toLocaleString()}</td>
+                  <td className="p-2">{new Date(r.ordered_at).toLocaleString("en-GB")}</td>
                   <td className="p-2 text-right">{r.minutes_elapsed}</td>
                   <td className="p-2 text-right">{r.threshold_minutes}</td>
                   <td className="p-2">

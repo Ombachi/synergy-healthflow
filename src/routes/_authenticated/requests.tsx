@@ -140,7 +140,7 @@ function RequestCard({ r, children }: { r: IRequest; children?: React.ReactNode 
         </div>
       </CardHeader>
       <CardContent className="space-y-1 text-sm">
-        <div className="text-xs text-muted-foreground">{r.category} • {r.priority} • {new Date(r.created_at).toLocaleString()}</div>
+        <div className="text-xs text-muted-foreground">{r.category} • {r.priority} • {new Date(r.created_at).toLocaleString("en-GB")}</div>
         {r.description && <p>{r.description}</p>}
         {r.decision_notes && <p className="text-xs italic text-muted-foreground">Notes: {r.decision_notes}</p>}
         {children}

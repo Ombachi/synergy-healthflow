@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/tenders")({ component: Ten
 interface Tender { id: string; reference: string; title: string; description: string | null; status: string; budget_cents: number | null; closes_at: string; created_by: string }
 interface Bid { id: string; tender_id: string; bidder_id: string; bidder_name: string; amount_cents: number; delivery_days: number | null; proposal: string | null; status: string; review_notes: string | null; created_at: string }
 
-const money = (c: number | null) => `KES ${((c ?? 0) / 100).toLocaleString()}`;
+const money = (c: number | null) => `KES ${((c ?? 0) / 100).toLocaleString("en-GB")}`;
 
 function TendersPage() {
   const { user, hasRole } = useAuth();
@@ -129,7 +129,7 @@ function TendersPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {t.description && <p>{t.description}</p>}
-                <div className="text-xs text-muted-foreground">Budget: {money(t.budget_cents)} • Closes: {new Date(t.closes_at).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Budget: {money(t.budget_cents)} • Closes: {new Date(t.closes_at).toLocaleString("en-GB")}</div>
                 <div className="flex gap-2">
                   <Dialog>
                     <DialogTrigger asChild><Button size="sm" variant="outline">Submit bid</Button></DialogTrigger>

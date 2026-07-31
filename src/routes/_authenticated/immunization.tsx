@@ -4,7 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Syringe, CalendarClock, AlertTriangle, Thermometer, Package, Search, ShieldAlert, Activity,
+  Download, Printer, FileDown, Mail,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
+import {
+  exportVaccinationCardPDF, immunizationsToCSV, downloadCSV, emailVaccinationCard,
+} from "@/lib/vaccination-card-pdf";
+
 
 export const Route = createFileRoute("/_authenticated/immunization")({
   head: () => ({
@@ -48,7 +54,7 @@ interface StockRow {
   reorder_level: number; storage_location: string | null; storage_temp_c: number | null; cold_chain_ok: boolean; last_temp_check: string | null;
 }
 interface AefiRow { id: string; patient_id: string; onset_at: string; severity: string; description: string; outcome: string | null }
-interface PatientOpt { id: string; full_name: string; date_of_birth: string | null; medical_record_number: string | null }
+interface PatientOpt { id: string; full_name: string; date_of_birth: string | null; gender?: string | null; medical_record_number: string | null }
 
 type Tab = "dashboard" | "registry" | "workspace" | "stock" | "aefi";
 
@@ -56,8 +62,9 @@ const DAY = 24 * 3600 * 1000;
 const ageDays = (dob: string | null) => (dob ? Math.floor((Date.now() - new Date(dob).getTime()) / DAY) : null);
 
 function ImmunizationModule() {
-  const { user, profile } = useAuth();
+  const { user, profile, roles } = useAuth();
   const qc = useQueryClient();
+
   const [tab, setTab] = useState<Tab>("dashboard");
   const [patientId, setPatientId] = useState("");
   const [search, setSearch] = useState("");
@@ -78,15 +85,28 @@ function ImmunizationModule() {
       return (data as unknown as ScheduleRow[]) ?? [];
     },
   });
-  const patients = useQuery({
-    queryKey: ["imm-patients"],
+  // Registry & workspace list real patients only — staff accounts that happen to
+  // have a patient row are excluded via a security-definer helper.
+  const staffIds = useQuery({
+    queryKey: ["staff-patient-ids"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("patients" as never)
-        .select("id, full_name, date_of_birth, medical_record_number").order("full_name");
-      if (error) throw error;
-      return (data as unknown as PatientOpt[]) ?? [];
+      const { data, error } = await supabase.rpc("staff_patient_ids" as never);
+      if (error) return [] as string[];
+      return ((data as unknown as string[]) ?? []).map(String);
     },
   });
+  const patients = useQuery({
+    queryKey: ["imm-patients", (staffIds.data ?? []).length],
+    enabled: staffIds.isFetched,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("patients" as never)
+        .select("id, full_name, date_of_birth, gender, medical_record_number").order("full_name");
+      if (error) throw error;
+      const staff = new Set(staffIds.data ?? []);
+      return ((data as unknown as PatientOpt[]) ?? []).filter((p) => !staff.has(p.id));
+    },
+  });
+
   const immunizations = useQuery({
     queryKey: ["immunizations"],
     queryFn: async () => {
@@ -221,6 +241,41 @@ function ImmunizationModule() {
     return p.full_name.toLowerCase().includes(q) || (p.medical_record_number ?? "").toLowerCase().includes(q);
   });
 
+  // ---- Export / print / email (permission based) ----
+  const canDownload = roles.some((r) =>
+    ["admin", "doctor", "nurse", "receptionist", "physio", "nutritionist", "lab_tech"].includes(r),
+  );
+  const canEmail = roles.some((r) => ["admin", "doctor", "nurse"].includes(r));
+
+  function exportRegistryCSV() {
+    const rows = (immunizations.data ?? [])
+      .filter((i) => (patientId ? i.patient_id === patientId : (patients.data ?? []).some((p) => p.id === i.patient_id)))
+      .map((i) => {
+        const p = patientById(i.patient_id);
+        return { ...i, patient_name: p?.full_name ?? "—", mrn: p?.medical_record_number ?? null };
+      });
+    if (rows.length === 0) { toast.error("Nothing to export"); return; }
+    downloadCSV(`immunization-registry-${new Date().toISOString().slice(0, 10)}.csv`, immunizationsToCSV(rows));
+  }
+
+  async function printCard(download: boolean) {
+    const p = patientById(patientId);
+    if (!p) { toast.error("Select a patient first"); return; }
+    await exportVaccinationCardPDF(
+      p,
+      patientHistory,
+      dueFor(patientId).map((r) => `${vaccineById(r.vaccine_id)?.name ?? "?"} dose ${r.dose_number} (${r.label})`),
+    );
+    toast.success(download ? "Vaccination card downloaded" : "Vaccination card ready to print");
+  }
+
+  function emailCard() {
+    const p = patientById(patientId);
+    if (!p) { toast.error("Select a patient first"); return; }
+    emailVaccinationCard(p, patientHistory);
+  }
+
+
   const TABS: { key: Tab; label: string }[] = [
     { key: "dashboard", label: "Dashboard" },
     { key: "registry", label: "Registry" },
@@ -308,10 +363,33 @@ function ImmunizationModule() {
 
       {tab === "registry" && (
         <div className="space-y-4">
-          <div className="relative max-w-md">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-8" placeholder="Search patient or MRN…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative max-w-md flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input className="pl-8" placeholder="Search patient or MRN…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            {canDownload && (
+              <Button variant="outline" size="sm" onClick={exportRegistryCSV}>
+                <Download className="h-4 w-4" /> Export CSV
+              </Button>
+            )}
+            {canDownload && (
+              <Button variant="outline" size="sm" disabled={!patientId} onClick={() => printCard(false)}>
+                <Printer className="h-4 w-4" /> Print card
+              </Button>
+            )}
+            {canDownload && (
+              <Button variant="outline" size="sm" disabled={!patientId} onClick={() => printCard(true)}>
+                <FileDown className="h-4 w-4" /> Download PDF
+              </Button>
+            )}
+            {canEmail && (
+              <Button variant="outline" size="sm" disabled={!patientId} onClick={emailCard}>
+                <Mail className="h-4 w-4" /> Email
+              </Button>
+            )}
           </div>
+
           <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
             <div className="max-h-[70vh] overflow-auto rounded-lg border bg-card">
               {filteredPatients.map((p) => (
@@ -339,7 +417,7 @@ function ImmunizationModule() {
                         <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-primary" />
                         <div className="text-sm font-medium">{i.vaccine_name} · dose {i.dose_number}</div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(i.administered_at).toLocaleString()} · {i.route ?? "—"} · {i.site ?? "—"}
+                          {new Date(i.administered_at).toLocaleString("en-GB")} · {i.route ?? "—"} · {i.site ?? "—"}
                           {i.batch_number ? ` · batch ${i.batch_number}` : ""}
                           {i.vaccinator_name ? ` · ${i.vaccinator_name}` : ""}
                         </div>
@@ -470,7 +548,7 @@ function ImmunizationModule() {
             <h3 className="pt-3 text-sm font-medium">Recent doses for this patient</h3>
             <ul className="space-y-1 text-xs text-muted-foreground">
               {patientHistory.slice(0, 8).map((i) => (
-                <li key={i.id}>{new Date(i.administered_at).toLocaleDateString()} · {i.vaccine_name} d{i.dose_number}</li>
+                <li key={i.id}>{new Date(i.administered_at).toLocaleDateString("en-GB")} · {i.vaccine_name} d{i.dose_number}</li>
               ))}
               {patientHistory.length === 0 && <li>No history.</li>}
             </ul>
@@ -573,7 +651,7 @@ function ImmunizationModule() {
                     <span className="text-xs capitalize text-muted-foreground">{a.severity}</span>
                   </div>
                   <div className="text-sm text-muted-foreground">{a.description}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(a.onset_at).toLocaleString()}{a.outcome ? ` · ${a.outcome}` : ""}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(a.onset_at).toLocaleString("en-GB")}{a.outcome ? ` · ${a.outcome}` : ""}</div>
                 </li>
               ))}
               {(aefi.data ?? []).length === 0 && <li className="p-6 text-center text-sm text-muted-foreground">No AEFI reports.</li>}

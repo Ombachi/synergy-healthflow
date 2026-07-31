@@ -143,8 +143,8 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/assessments", "/messages"],
-  athlete:           ["/me", "/assessments", "/messages"],
+  patient:           ["/me", "/my-vaccines", "/assessments", "/messages"],
+  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
 };
@@ -208,6 +208,7 @@ const GROUPS: Group[] = [
       { title: "Immunization", url: "/immunization", icon: Syringe },
       { title: "Consultation", url: "/visits", icon: ClipboardList, hideForAdmin: true },
       { title: "My health", url: "/me", icon: Stethoscope, hideForAdmin: true },
+      { title: "My vaccines", url: "/my-vaccines", icon: Syringe, hideForAdmin: true },
       { title: "Procedures", url: stub("outpatient-procedures"), icon: Bandage },
       { title: "Laboratory orders", url: "/lab-order", icon: FlaskConical },
       { title: "Imaging orders", url: stub("outpatient-imaging"), icon: ScanLine },

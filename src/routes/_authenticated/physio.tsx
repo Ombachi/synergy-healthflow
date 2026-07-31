@@ -119,7 +119,7 @@ function PhysioDashboard() {
                   <div>
                     <div className="font-medium">{nameOf(inj.athlete_id)} — {inj.body_part}</div>
                     <div className="text-xs text-muted-foreground">
-                      Severity: {inj.severity} • Reported {new Date(inj.reported_at).toLocaleDateString()}
+                      Severity: {inj.severity} • Reported {new Date(inj.reported_at).toLocaleDateString("en-GB")}
                     </div>
                     {inj.notes && <div className="mt-1 text-xs">{inj.notes}</div>}
                   </div>

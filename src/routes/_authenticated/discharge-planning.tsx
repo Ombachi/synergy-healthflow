@@ -77,7 +77,7 @@ function DischargePage() {
     const { rounds, plans, goals, meds, mar } = clinicalData.data;
 
     const primary = sel.primary_diagnosis || rounds[rounds.length - 1]?.assessment || "";
-    const admitDate = new Date(sel.admitted_at).toLocaleDateString();
+    const admitDate = new Date(sel.admitted_at).toLocaleDateString("en-GB");
 
     const courseLines: string[] = [
       `Patient admitted on ${admitDate} to ${sel.ward_name} bed ${sel.bed_code}.`,
@@ -87,7 +87,7 @@ function DischargePage() {
     if (rounds.length > 0) {
       courseLines.push("", "Clinical course from ward rounds:");
       rounds.slice(-6).forEach((r) => {
-        const d = new Date(r.round_at).toLocaleDateString();
+        const d = new Date(r.round_at).toLocaleDateString("en-GB");
         const parts = [r.assessment, r.plan].filter(Boolean).join(" — ");
         if (parts) courseLines.push(`• ${d}: ${parts}`);
       });
@@ -155,7 +155,7 @@ function DischargePage() {
       const { data, error } = await supabase.from("preauth_requests" as never).insert({
         patient_id: sel.patient_id,
         procedure_name: `Inpatient discharge clearance — ${sel.primary_diagnosis ?? "admission"}`,
-        clinical_justification: `Inpatient admission from ${new Date(sel.admitted_at).toLocaleDateString()}. Awaiting insurer sign-off for discharge.`,
+        clinical_justification: `Inpatient admission from ${new Date(sel.admitted_at).toLocaleDateString("en-GB")}. Awaiting insurer sign-off for discharge.`,
         status: "submitted",
         requested_by: user?.id,
       } as never).select("id").single();
@@ -209,7 +209,7 @@ function DischargePage() {
                 onClick={() => setSelected(a.id)}
                 className={`block w-full rounded border p-2 text-left ${selected === a.id ? "bg-primary/10" : ""}`}>
                 <div className="font-medium">{a.patient_name}</div>
-                <div className="text-xs text-muted-foreground">{a.ward_name} {a.bed_code} · admitted {new Date(a.admitted_at).toLocaleDateString()}</div>
+                <div className="text-xs text-muted-foreground">{a.ward_name} {a.bed_code} · admitted {new Date(a.admitted_at).toLocaleDateString("en-GB")}</div>
               </button>
             ))}
             {(admissions.data ?? []).length === 0 && (

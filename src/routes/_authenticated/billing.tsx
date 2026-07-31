@@ -21,7 +21,7 @@ interface Patient { id: string; full_name: string; medical_record_number: string
 interface Visit { id: string; assigned_doctor_id: string | null; current_stage: string | null }
 interface Profile { id: string; full_name: string | null }
 
-const money = (c: number) => (c/100).toLocaleString(undefined, { style: "currency", currency: "KES" });
+const money = (c: number) => (c/100).toLocaleString("en-GB", { style: "currency", currency: "KES" });
 
 function BillingPage() {
   const qc = useQueryClient();
@@ -227,7 +227,7 @@ function BillingPage() {
                   <td className="px-3 py-2 font-medium">{patientName(inv.patient_id)}</td>
                   <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{patientMrn(inv.patient_id) || "—"}</td>
                   <td className="px-3 py-2 text-muted-foreground">{doctorForVisit(inv.visit_id)}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{new Date(inv.created_at).toLocaleDateString("en-GB")}</td>
                   <td className="px-3 py-2 text-right font-semibold">{money(inv.total_cents)}</td>
                   <td className="px-3 py-2 text-right">{money(due)}</td>
                   <td className="px-3 py-2">{statusPill(inv.status)}</td>
@@ -346,7 +346,7 @@ function InvoiceDocumentDialog({
             </div>
             <div className="text-right text-xs">
               <div className="font-mono">INV-{invoice.id.slice(0,8).toUpperCase()}</div>
-              <div className="text-muted-foreground">Issued {new Date(invoice.created_at).toLocaleDateString()}</div>
+              <div className="text-muted-foreground">Issued {new Date(invoice.created_at).toLocaleDateString("en-GB")}</div>
               <div className="mt-1 text-muted-foreground capitalize">Status: {invoice.status.replace("_"," ")}</div>
             </div>
           </div>
@@ -420,7 +420,7 @@ function InvoiceDocumentDialog({
                 <tbody>
                   {payments.map((p) => (
                     <tr key={p.id} className="border-b last:border-0">
-                      <td className="px-2 py-1.5">{new Date(p.received_at).toLocaleString()}</td>
+                      <td className="px-2 py-1.5">{new Date(p.received_at).toLocaleString("en-GB")}</td>
                       <td className="px-2 py-1.5 capitalize">{p.method}</td>
                       <td className="px-2 py-1.5 font-mono text-xs">{p.reference ?? `RCP-${p.id.slice(0,6).toUpperCase()}`}</td>
                       <td className="px-2 py-1.5">{cashierNameFor(p.received_by)}</td>

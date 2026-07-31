@@ -136,7 +136,7 @@ export function PatientContext({ patientId, visitId }: { patientId: string; visi
               <div className="space-y-0.5">
                 <div>BP {vitals.data.systolic_bp ?? "—"}/{vitals.data.diastolic_bp ?? "—"} · HR {vitals.data.heart_rate ?? "—"}</div>
                 <div>SpO₂ {vitals.data.oxygen_saturation ?? "—"}% · T {vitals.data.temperature_c ?? "—"}°C</div>
-                <div className="text-muted-foreground">{new Date(vitals.data.captured_at).toLocaleString()}</div>
+                <div className="text-muted-foreground">{new Date(vitals.data.captured_at).toLocaleString("en-GB")}</div>
               </div>
             ) : <span className="text-muted-foreground">No vitals on file</span>}
           </Block>
@@ -146,7 +146,7 @@ export function PatientContext({ patientId, visitId }: { patientId: string; visi
                 {recentLabs.data.map((r) => (
                   <li key={r.id}>
                     {r.result_value} {r.units} {r.abnormal_flag && <span className="text-destructive font-semibold">{r.abnormal_flag}</span>}
-                    <span className="ml-1 text-muted-foreground">{r.performed_at ? new Date(r.performed_at).toLocaleDateString() : ""}</span>
+                    <span className="ml-1 text-muted-foreground">{r.performed_at ? new Date(r.performed_at).toLocaleDateString("en-GB") : ""}</span>
                   </li>
                 ))}
               </ul>

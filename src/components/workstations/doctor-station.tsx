@@ -329,8 +329,6 @@ export function DoctorStation() {
             nameOf={nameOf}
             visitPatient={(vid) => visitPatientId(vid, [seenToday.data, assignedVisits.data, completedVisits.data], myVisits)}
           />
-          <ResultsGroup title="Histopathology" empty="No histopathology reports pending." rows={[]} nameOf={nameOf} visitPatient={() => null} />
-          <ResultsGroup title="Microbiology" empty="No microbiology reports pending." rows={[]} nameOf={nameOf} visitPatient={() => null} />
         </div>
       )}
     </div>
@@ -377,7 +375,7 @@ function VisitList({ title, rows, nameOf, mrnOf }: {
                   </div>
                 </div>
                 <span className="text-xs capitalize text-muted-foreground">{v.status.replace("_", " ")}</span>
-                <span className="text-xs text-muted-foreground">{new Date(v.closed_at ?? v.opened_at).toLocaleString()}</span>
+                <span className="text-xs text-muted-foreground">{new Date(v.closed_at ?? v.opened_at).toLocaleString("en-GB")}</span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Link>
             </li>
@@ -410,7 +408,7 @@ function ResultsGroup({ title, rows, empty, nameOf, visitPatient }: {
                   <div className="font-medium">{pid ? nameOf(pid) : "Unassigned patient"}</div>
                   <div className="text-xs text-muted-foreground">{r.label}</div>
                 </div>
-                <span className="text-xs text-muted-foreground">{new Date(r.at).toLocaleString()}</span>
+                <span className="text-xs text-muted-foreground">{new Date(r.at).toLocaleString("en-GB")}</span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
             );

@@ -94,7 +94,7 @@ export function exportPayslipPDF(p: PayslipPDFInput) {
   }
 
   doc.setFontSize(8).setTextColor(120);
-  doc.text(`Generated ${new Date().toLocaleString()}  ·  Ref ${p.id.slice(0, 8)}`, 14, doc.internal.pageSize.getHeight() - 8);
+  doc.text(`Generated ${new Date().toLocaleString("en-GB")}  ·  Ref ${p.id.slice(0, 8)}`, 14, doc.internal.pageSize.getHeight() - 8);
 
   doc.save(`payslip-${p.employee_name.replace(/\s+/g, "_")}-${p.period_label.replace(/\s+/g, "_")}.pdf`);
 }

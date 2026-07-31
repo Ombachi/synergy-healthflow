@@ -25,7 +25,7 @@ export interface ClaimInput {
 }
 
 const FACILITY = "Vitalis Medical Centre · Nairobi, Kenya";
-const money = (c?: number | null) => `KES ${((c ?? 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+const money = (c?: number | null) => `KES ${((c ?? 0) / 100).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
 export function exportClaimPDF(c: ClaimInput) {
   const doc = new jsPDF();
@@ -44,7 +44,7 @@ export function exportClaimPDF(c: ClaimInput) {
   doc.setFont("helvetica", "bold").setFontSize(12);
   doc.text(`Claim ${c.claim_id.slice(0, 8).toUpperCase()}`, 14, y);
   doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(110);
-  doc.text(new Date(c.created_at).toLocaleString(), w - 14, y, { align: "right" });
+  doc.text(new Date(c.created_at).toLocaleString("en-GB"), w - 14, y, { align: "right" });
   doc.setTextColor(0);
   y += 6;
 

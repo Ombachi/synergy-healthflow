@@ -93,7 +93,7 @@ function SoftDeletedPage() {
                   <tr key={p.id} className="border-t">
                     <td className="px-4 py-2">{p.full_name}</td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">{p.medical_record_number}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(p.deleted_at).toLocaleString()}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(p.deleted_at).toLocaleString("en-GB")}</td>
                     <td className="px-4 py-2 text-xs">{p.deletion_reason ?? "—"}</td>
                     <td className="px-4 py-2 text-right">
                       <Button size="sm" variant="outline" onClick={() => restore("patient", p.id)}>Restore</Button>
@@ -125,7 +125,7 @@ function SoftDeletedPage() {
                   <tr key={v.id} className="border-t">
                     <td className="px-4 py-2">{v.reason ?? "—"}</td>
                     <td className="px-4 py-2 text-xs">{v.status}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(v.deleted_at).toLocaleString()}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(v.deleted_at).toLocaleString("en-GB")}</td>
                     <td className="px-4 py-2 text-xs">{v.deletion_reason ?? "—"}</td>
                     <td className="px-4 py-2 text-right">
                       <Button size="sm" variant="outline" onClick={() => restore("visit", v.id)}>Restore</Button>

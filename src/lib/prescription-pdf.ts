@@ -45,7 +45,7 @@ export async function exportPrescriptionPDF(r: PrescriptionPdfInput) {
   doc.setFont("helvetica", "bold").text("Age/Sex:", 18, y + 18);
   doc.setFont("helvetica", "normal").text(`${r.age ?? "—"} · ${r.gender ?? "—"}`, 38, y + 18);
   doc.setFont("helvetica", "bold").text("Issued:", w / 2 + 4, y + 6);
-  doc.setFont("helvetica", "normal").text(new Date(r.created_at).toLocaleString(), w / 2 + 26, y + 6);
+  doc.setFont("helvetica", "normal").text(new Date(r.created_at).toLocaleString("en-GB"), w / 2 + 26, y + 6);
   doc.setFont("helvetica", "bold").text("Facility:", w / 2 + 4, y + 12);
   doc.setFont("helvetica", "normal").text(ORG_NAME, w / 2 + 26, y + 12);
   y += 30;

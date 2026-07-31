@@ -182,8 +182,8 @@ export function LabDocumentBrowser() {
                   </td>
                   <td className="p-2 text-muted-foreground">{d.ordering_clinician ?? "—"}</td>
                   <td className="p-2 text-muted-foreground">{d.scientist_name ?? "—"}</td>
-                  <td className="p-2 text-xs text-muted-foreground">{d.collected_at ? new Date(d.collected_at).toLocaleDateString() : "—"}</td>
-                  <td className="p-2 text-xs text-muted-foreground">{d.reported_at ? new Date(d.reported_at).toLocaleDateString() : "—"}</td>
+                  <td className="p-2 text-xs text-muted-foreground">{d.collected_at ? new Date(d.collected_at).toLocaleDateString("en-GB") : "—"}</td>
+                  <td className="p-2 text-xs text-muted-foreground">{d.reported_at ? new Date(d.reported_at).toLocaleDateString("en-GB") : "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -271,7 +271,7 @@ function LabReportViewerDialog({ doc: d, canAmend, onClose }: { doc: LabDoc; can
   async function handleEmail() {
     const subject = encodeURIComponent(`Laboratory report — ${d.test_name} · ${d.patient_name}`);
     const body = encodeURIComponent(
-      `Please find the laboratory report for ${d.patient_name} (MRN ${d.patient_mrn ?? "—"}) attached.\n\nInvestigation: ${d.test_name}\nReported: ${d.reported_at ? new Date(d.reported_at).toLocaleString() : "—"}\n\nDownload the PDF from Litu Vault to attach.`
+      `Please find the laboratory report for ${d.patient_name} (MRN ${d.patient_mrn ?? "—"}) attached.\n\nInvestigation: ${d.test_name}\nReported: ${d.reported_at ? new Date(d.reported_at).toLocaleString("en-GB") : "—"}\n\nDownload the PDF from Litu Vault to attach.`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   }
@@ -318,9 +318,9 @@ function LabReportViewerDialog({ doc: d, canAmend, onClose }: { doc: LabDoc; can
             <MetaRow label="Container" value={d.container ?? "—"} />
             <MetaRow label="Ordering clinician" value={d.ordering_clinician ?? "—"} />
             <MetaRow label="Lab scientist" value={d.scientist_name ?? "—"} />
-            <MetaRow label="Collected" value={d.collected_at ? new Date(d.collected_at).toLocaleString() : "—"} />
-            <MetaRow label="Reported" value={d.reported_at ? new Date(d.reported_at).toLocaleString() : "—"} />
-            <MetaRow label="Verified" value={d.verified_at ? new Date(d.verified_at).toLocaleString() : "—"} />
+            <MetaRow label="Collected" value={d.collected_at ? new Date(d.collected_at).toLocaleString("en-GB") : "—"} />
+            <MetaRow label="Reported" value={d.reported_at ? new Date(d.reported_at).toLocaleString("en-GB") : "—"} />
+            <MetaRow label="Verified" value={d.verified_at ? new Date(d.verified_at).toLocaleString("en-GB") : "—"} />
             <MetaRow label="Status" value={d.status} />
           </aside>
           <div className="h-[75vh] bg-neutral-100">

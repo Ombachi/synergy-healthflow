@@ -7227,6 +7227,7 @@ export type Database = {
         Args: { _reason: string; _visit: string }
         Returns: undefined
       }
+      staff_patient_ids: { Args: never; Returns: string[] }
       verify_prescription: {
         Args: { rx_id: string }
         Returns: {

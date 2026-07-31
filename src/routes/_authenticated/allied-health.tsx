@@ -80,7 +80,7 @@ function AlliedPage() {
                 <CardContent className="p-3 text-sm">
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <Badge variant="secondary" className="capitalize">{n.discipline}</Badge>
-                    <span>{new Date(n.session_at).toLocaleString()}</span>
+                    <span>{new Date(n.session_at).toLocaleString("en-GB")}</span>
                   </div>
                   {n.assessment && <div className="mt-1"><b>Assessment:</b> {n.assessment}</div>}
                   {n.intervention && <div><b>Intervention:</b> {n.intervention}</div>}

@@ -31,7 +31,7 @@ interface CreditNote {
 interface Invoice { id: string; patient_id: string; total_cents: number; paid_cents: number; status: string; created_at: string }
 interface Patient { id: string; full_name: string }
 
-const money = (c: number) => (c/100).toLocaleString(undefined, { style: "currency", currency: "KES" });
+const money = (c: number) => (c/100).toLocaleString("en-GB", { style: "currency", currency: "KES" });
 
 function CreditNotesPage() {
   const qc = useQueryClient();
@@ -146,7 +146,7 @@ function CreditNotesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">{patientName(n.patient_id)} · {money(n.amount_cents)}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString("en-GB")}</div>
                   <div className="mt-1 text-xs">Reason: {n.reason}</div>
                   {n.review_notes && <div className="mt-1 text-xs text-muted-foreground">Review: {n.review_notes}</div>}
                   {n.status === "approved" && n.refund_method && (

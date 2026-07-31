@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download, Pill, ScanLine } from "lucide-react";
+import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download, Pill, ScanLine, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,7 @@ import { ImagingViewer } from "@/components/imaging-viewer";
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
 
 
-const money = (cents: number) => `KES ${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (cents: number) => `KES ${(cents / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth?: string | null; gender?: string | null }
 interface Visit { id: string; opened_at: string; closed_at: string | null; status: string; reason: string | null; notes: string | null; triage_level: string | null }
@@ -129,6 +129,7 @@ function PatientTimeline() {
 
 
 
+  const [openInvoice, setOpenInvoice] = useState<string | null>(null);
   const [bookOpen, setBookOpen] = useState(false);
   const [bookForm, setBookForm] = useState({ doctor_id: "", scheduled_at: "", reason: "" });
   const book = useMutation({
@@ -165,7 +166,7 @@ function PatientTimeline() {
 
   const chartData = filteredVitals.map((v) => ({
     t: new Date(v.captured_at).getTime(),
-    label: new Date(v.captured_at).toLocaleDateString(),
+    label: new Date(v.captured_at).toLocaleDateString("en-GB"),
     systolic: v.systolic_bp, diastolic: v.diastolic_bp, hr: v.heart_rate, spo2: v.oxygen_saturation, temp: v.temperature_c,
   }));
 
@@ -244,7 +245,7 @@ function PatientTimeline() {
                     <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-primary" />
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <div className="font-medium">{v.reason ?? "Visit"}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(v.opened_at).toLocaleString("en-GB")}</div>
                     </div>
                     <div className="mt-1 text-xs">
                       <span className="capitalize text-muted-foreground">Status: {v.status.replace("_"," ")}</span>
@@ -293,7 +294,7 @@ function PatientTimeline() {
             {appts.data?.map((a) => (
               <div key={a.id} className="flex items-center justify-between gap-2 p-3 text-sm">
                 <div>
-                  <div className="font-medium">{new Date(a.scheduled_at).toLocaleString()}</div>
+                  <div className="font-medium">{new Date(a.scheduled_at).toLocaleString("en-GB")}</div>
                   <div className="text-xs text-muted-foreground">{a.reason ?? "—"}{a.department ? ` · ${a.department}` : ""}</div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -351,7 +352,7 @@ function PatientTimeline() {
             <div key={s.id} className="flex items-center justify-between rounded-lg border bg-card p-3 text-sm">
               <div>
                 <div className="font-medium">{s.days} day(s) — {s.start_date} to {s.end_date}</div>
-                <div className="text-xs text-muted-foreground">Issued {new Date(s.created_at).toLocaleDateString()}{s.diagnosis ? ` · ${s.diagnosis}` : ""}</div>
+                <div className="text-xs text-muted-foreground">Issued {new Date(s.created_at).toLocaleDateString("en-GB")}{s.diagnosis ? ` · ${s.diagnosis}` : ""}</div>
               </div>
               <Button size="sm" variant="outline" onClick={() => exportSickOffPDF({
                 id: s.id, patient_name: patient.data!.full_name, mrn: patient.data!.medical_record_number,
@@ -368,31 +369,46 @@ function PatientTimeline() {
           {invoices.data?.map((inv) => {
             const items = (invoiceItems.data ?? []).filter((it) => it.invoice_id === inv.id);
             const due = inv.total_cents - inv.paid_cents;
+            const open = openInvoice === inv.id;
             return (
               <div key={inv.id} className="rounded-lg border bg-card">
-                <div className="flex items-center justify-between border-b p-3 text-sm">
-                  <div>
-                    <div className="font-medium">Invoice {inv.id.slice(0, 8)}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</div>
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setOpenInvoice(open ? null : inv.id)}
+                  className="flex w-full items-center justify-between gap-3 p-3 text-left text-sm hover:bg-muted/40"
+                >
+                  <div className="flex items-center gap-2">
+                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} />
+                    <div>
+                      <div className="font-medium">Invoice {inv.id.slice(0, 8)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(inv.created_at).toLocaleDateString("en-GB")} · {items.length} item{items.length === 1 ? "" : "s"}
+                      </div>
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">{money(inv.total_cents)}</div>
                     <span className={`rounded px-2 py-0.5 text-xs ${inv.status === "paid" ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>{inv.status}</span>
                     {due > 0 && <div className="mt-0.5 text-xs text-destructive">Due {money(due)}</div>}
                   </div>
-                </div>
-                <ul className="divide-y text-xs">
-                  {items.map((it) => (
-                    <li key={it.id} className="flex justify-between p-2">
-                      <span>{it.description} <span className="text-muted-foreground">× {it.qty}</span></span>
-                      <span className="font-mono">{money(it.amount_cents)}</span>
-                    </li>
-                  ))}
-                </ul>
+                </button>
+                {open && (
+                  <ul className="divide-y border-t text-xs">
+                    {items.length === 0 && <li className="p-2 text-muted-foreground">No billed items on this invoice.</li>}
+                    {items.map((it) => (
+                      <li key={it.id} className="flex justify-between p-2">
+                        <span>{it.description} <span className="text-muted-foreground">× {it.qty}</span></span>
+                        <span className="font-mono">{money(it.amount_cents)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             );
           })}
         </TabsContent>
+
       </Tabs>
     </div>
   );

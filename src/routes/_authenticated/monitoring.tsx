@@ -118,7 +118,7 @@ function MonitoringPage() {
                 {(fluids.data ?? []).slice(0, 30).map((f) => (
                   <div key={f.id} className="flex justify-between border-b py-1">
                     <span><Badge variant="outline" className="capitalize">{f.direction}</Badge> {f.route} · {f.volume_ml} ml</span>
-                    <span className="text-muted-foreground">{new Date(f.recorded_at).toLocaleString()}</span>
+                    <span className="text-muted-foreground">{new Date(f.recorded_at).toLocaleString("en-GB")}</span>
                   </div>
                 ))}
               </CardContent>
@@ -134,7 +134,7 @@ function MonitoringPage() {
                   <div key={s.id} className="flex justify-between border-b py-1">
                     <span className="uppercase font-medium">{s.scale}</span>
                     <span>{s.total_score} {riskBadge(s.risk_level)}</span>
-                    <span className="text-muted-foreground">{new Date(s.scored_at).toLocaleString()}</span>
+                    <span className="text-muted-foreground">{new Date(s.scored_at).toLocaleString("en-GB")}</span>
                   </div>
                 ))}
               </CardContent>

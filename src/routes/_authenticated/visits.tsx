@@ -245,7 +245,7 @@ function Visits() {
                   <td className="px-4 py-2">{v.reason ?? "—"}</td>
                   <td className="px-4 py-2">{triageBadge(v.triage_level)}</td>
                   <td className="px-4 py-2">{statusBadge(v.status)}</td>
-                  <td className="px-4 py-2 text-muted-foreground">{new Date(v.opened_at).toLocaleString()}</td>
+                  <td className="px-4 py-2 text-muted-foreground">{new Date(v.opened_at).toLocaleString("en-GB")}</td>
                   <td className="px-4 py-2 text-right">
                     <Button asChild variant="ghost" size="sm">
                       <Link to="/visits/$visitId" params={{ visitId: v.id }}>Open visit</Link>

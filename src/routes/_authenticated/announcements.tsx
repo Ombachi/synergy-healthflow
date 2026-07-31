@@ -109,7 +109,7 @@ function AnnouncementsPage() {
               <CardHeader className="pb-2">
                 <div className="flex justify-between">
                   <CardTitle className="text-base">{a.pinned && "📌 "}{a.title}</CardTitle>
-                  <span className="text-xs text-muted-foreground">{new Date(a.published_at).toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(a.published_at).toLocaleString("en-GB")}</span>
                 </div>
               </CardHeader>
               <CardContent><p className="whitespace-pre-wrap text-sm">{a.body}</p></CardContent>
@@ -123,7 +123,7 @@ function AnnouncementsPage() {
             notifications.map((n) => (
               <div key={n.id} onClick={() => !n.read_at && markRead(n.id)}
                 className={`cursor-pointer rounded border p-3 text-sm ${!n.read_at ? "bg-primary/5" : ""}`}>
-                <div className="flex justify-between"><span className="font-medium">{n.title}</span><span className="text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="font-medium">{n.title}</span><span className="text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString("en-GB")}</span></div>
                 {n.body && <p className="text-xs text-muted-foreground">{n.body}</p>}
               </div>
             ))}

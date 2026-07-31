@@ -39,7 +39,7 @@ function QueueDisplay() {
       <header className="mb-8 flex items-center justify-between">
         <h1 className="text-5xl font-black tracking-tight">Now Serving</h1>
         <div className="text-right text-lg text-slate-400">
-          <div>{new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</div>
+          <div>{new Date().toLocaleDateString("en-GB", { weekday: "long", month: "long", day: "numeric" })}</div>
           <div className="text-sm">Auto-refresh every 15s</div>
         </div>
       </header>

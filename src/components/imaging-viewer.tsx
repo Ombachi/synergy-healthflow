@@ -94,7 +94,7 @@ export function ImagingViewer({ patientId, patientName, mrn }: ImagingViewerProp
               >
                 <span className="font-medium">{o.modality}{o.body_part ? ` · ${o.body_part}` : ""}</span>
                 <span className="text-muted-foreground">
-                  {new Date(o.created_at).toLocaleDateString()} · {reported ? "reported" : o.status}
+                  {new Date(o.created_at).toLocaleDateString("en-GB")} · {reported ? "reported" : o.status}
                 </span>
               </button>
             );
@@ -111,8 +111,8 @@ export function ImagingViewer({ patientId, patientName, mrn }: ImagingViewerProp
               <div>
                 <div className="text-base font-semibold">{selected.modality}{selected.body_part ? ` · ${selected.body_part}` : ""}</div>
                 <div className="text-xs text-muted-foreground">
-                  Ordered {new Date(selected.created_at).toLocaleString()}
-                  {selected.performed_at && ` · Reported ${new Date(selected.performed_at).toLocaleString()}`}
+                  Ordered {new Date(selected.created_at).toLocaleString("en-GB")}
+                  {selected.performed_at && ` · Reported ${new Date(selected.performed_at).toLocaleString("en-GB")}`}
                 </div>
               </div>
               {(selected.report || selected.findings) && (

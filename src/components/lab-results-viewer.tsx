@@ -151,7 +151,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
                   {crit && <AlertTriangle className="h-3 w-3 text-destructive" />}
                 </div>
                 <span className="text-muted-foreground">
-                  {new Date(o.created_at).toLocaleDateString()} · {hasResults ? "resulted" : o.status}
+                  {new Date(o.created_at).toLocaleDateString("en-GB")} · {hasResults ? "resulted" : o.status}
                 </span>
               </button>
             );
@@ -171,8 +171,8 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
               <div>
                 <div className="text-base font-semibold">{testName(selected.test_id)}</div>
                 <div className="text-xs text-muted-foreground">
-                  Ordered {new Date(selected.created_at).toLocaleString()}
-                  {selSummary?.performed_at && ` · Reported ${new Date(selSummary.performed_at).toLocaleString()}`}
+                  Ordered {new Date(selected.created_at).toLocaleString("en-GB")}
+                  {selSummary?.performed_at && ` · Reported ${new Date(selSummary.performed_at).toLocaleString("en-GB")}`}
                 </div>
               </div>
               {(selValues.length > 0 || selSummary) && (
@@ -258,7 +258,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
                       const ref = (tpl?.reference_range ?? "").match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)/);
                       const refLow = ref ? Number(ref[1]) : null;
                       const refHigh = ref ? Number(ref[2]) : null;
-                      const data = arr.map((p) => ({ t: p.t, v: p.v, label: new Date(p.t).toLocaleDateString() }));
+                      const data = arr.map((p) => ({ t: p.t, v: p.v, label: new Date(p.t).toLocaleDateString("en-GB") }));
                       return (
                         <div key={name} className="rounded border bg-background p-2">
                           <div className="text-xs font-medium">{name}</div>

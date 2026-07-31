@@ -385,7 +385,7 @@ function SportsMedicinePage() {
                     <div key={s.id} className="p-3">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium capitalize">{s.sample_type}</span>
-                        <span className="text-xs text-muted-foreground">{new Date(s.collected_at).toLocaleString()} {s.in_competition ? "· in-competition" : ""}{s.lab_reference ? ` · ${s.lab_reference}` : ""}</span>
+                        <span className="text-xs text-muted-foreground">{new Date(s.collected_at).toLocaleString("en-GB")} {s.in_competition ? "· in-competition" : ""}{s.lab_reference ? ` · ${s.lab_reference}` : ""}</span>
                       </div>
                       <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
                         {sb.map((b) => (
@@ -479,7 +479,7 @@ function SportsMedicinePage() {
               if (!stats) return null;
               const base = (baselines.data ?? []).find((b) => b.marker === m && b.status === "approved");
               const popRef = ALL_MARKERS.find((x) => x.key === m);
-              const data = stats.series.map((p) => ({ t: new Date(p.measured_at).toLocaleDateString(), v: Number(p.value) }));
+              const data = stats.series.map((p) => ({ t: new Date(p.measured_at).toLocaleDateString("en-GB"), v: Number(p.value) }));
               const lows = [popRef?.low, base?.personal_low ?? undefined].filter((x) => x != null) as number[];
               const highs = [popRef?.high, base?.personal_high ?? undefined].filter((x) => x != null) as number[];
               const yMin = Math.min(...data.map((d) => d.v), ...lows) * 0.9;
@@ -595,7 +595,7 @@ function SportsMedicinePage() {
                 <tbody>
                   {(phys.data ?? []).slice().reverse().map((p) => (
                     <tr key={p.id} className="border-t text-center">
-                      <td className="p-2 text-left">{new Date(p.measured_at).toLocaleDateString()}</td>
+                      <td className="p-2 text-left">{new Date(p.measured_at).toLocaleDateString("en-GB")}</td>
                       <td>{p.vo2_max ?? "—"}</td><td>{p.hrv_rmssd ?? "—"}</td><td>{p.resting_hr ?? "—"}</td>
                       <td>{p.body_fat_pct ?? "—"}</td><td>{p.wellness_score ?? "—"}</td><td>{p.recovery_score ?? "—"}</td>
                     </tr>
@@ -613,7 +613,7 @@ function SportsMedicinePage() {
               <div key={a.id} className={`rounded border p-3 text-sm ${a.severity === "doping_suspicion" || a.severity === "critical" ? "border-rose-500 bg-rose-500/10" : a.severity === "warning" ? "border-amber-500 bg-amber-500/10" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="font-medium uppercase text-xs">{a.severity}{a.marker ? ` · ${a.marker}` : ""}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString("en-GB")}</span>
                 </div>
                 <div className="mt-1">{a.message}</div>
                 {!a.resolved && canWrite && (

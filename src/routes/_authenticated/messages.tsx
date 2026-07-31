@@ -147,7 +147,7 @@ function Messages() {
             <button key={t.id} onClick={() => setActive(t.id)}
               className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm hover:bg-accent ${active === t.id ? "bg-accent" : ""}`}>
               <span className="font-medium">{t.subject}</span>
-              <span className="text-xs text-muted-foreground">{new Date(t.updated_at).toLocaleString()}</span>
+              <span className="text-xs text-muted-foreground">{new Date(t.updated_at).toLocaleString("en-GB")}</span>
             </button>
           ))}
         </div>
@@ -175,7 +175,7 @@ function Messages() {
                         <span className="opacity-70">{a.size_bytes ? `${Math.round(a.size_bytes/1024)}KB` : ""}</span>
                       </button>
                     ))}
-                    <div className="mt-1 text-[10px] opacity-70">{new Date(m.created_at).toLocaleTimeString()}</div>
+                    <div className="mt-1 text-[10px] opacity-70">{new Date(m.created_at).toLocaleTimeString("en-GB")}</div>
                   </div>
                 );
               })}

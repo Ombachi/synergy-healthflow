@@ -84,7 +84,7 @@ export function exportWadaReportPDF(r: WadaReportInput) {
   }
   for (const t of r.tests) {
     if (y > h - 30) { doc.addPage(); y = 20; }
-    doc.text(new Date(t.tested_at).toLocaleDateString(), 14, y);
+    doc.text(new Date(t.tested_at).toLocaleDateString("en-GB"), 14, y);
     doc.text(t.test_type, 38, y);
     doc.text(t.in_competition ? "Y" : "N", 56, y);
     doc.text((t.collecting_authority ?? "—").slice(0, 18), 64, y);
@@ -113,7 +113,7 @@ export function exportWadaReportPDF(r: WadaReportInput) {
   }
   for (const u of r.tues) {
     if (y > h - 25) { doc.addPage(); y = 20; }
-    doc.text(new Date(u.created_at).toLocaleDateString(), 14, y);
+    doc.text(new Date(u.created_at).toLocaleDateString("en-GB"), 14, y);
     doc.text((u.substance ?? "—").slice(0, 22), 40, y);
     doc.text((u.diagnosis ?? "—").slice(0, 26), 75, y);
     doc.text(`${u.valid_from ?? "—"}→${u.valid_to ?? "—"}`, 115, y);
@@ -176,7 +176,7 @@ export function exportWadaReportPDF(r: WadaReportInput) {
   // Footer with passport link
   doc.setFontSize(8).setTextColor(120);
   doc.text(
-    `Generated ${new Date().toLocaleString()}${r.passport_url ? ` · Passport: ${r.passport_url}` : ""}`,
+    `Generated ${new Date().toLocaleString("en-GB")}${r.passport_url ? ` · Passport: ${r.passport_url}` : ""}`,
     14, h - 8,
   );
 

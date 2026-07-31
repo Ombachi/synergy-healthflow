@@ -36,6 +36,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
   // Patient
   "/me": ["patient"],
+  "/my-vaccines": ["patient", "athlete"],
   // Patient self-service assessments — patient/athlete portal only.
   "/assessments": ["patient", "athlete"],
 

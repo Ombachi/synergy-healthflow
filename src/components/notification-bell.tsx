@@ -49,7 +49,7 @@ export function NotificationBell() {
                 {!n.read_at && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />}
               </div>
               {n.body && <span className="line-clamp-2 text-xs text-muted-foreground">{n.body}</span>}
-              <span className="text-[10px] text-muted-foreground">{new Date(n.created_at).toLocaleString()}</span>
+              <span className="text-[10px] text-muted-foreground">{new Date(n.created_at).toLocaleString("en-GB")}</span>
             </button>
           ))}
         </div>

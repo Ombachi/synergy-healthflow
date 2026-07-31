@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/admin-kpi")({
   component: () => <RoleGate path="/admin-kpi"><AdminKPI /></RoleGate>,
 });
 
-const money = (c: number) => `KES ${(c / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+const money = (c: number) => `KES ${(c / 100).toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
 
 function AdminKPI() {
   const revenue = useQuery({

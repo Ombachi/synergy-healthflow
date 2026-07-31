@@ -94,7 +94,7 @@ function InpatientProceduresPage() {
                       {p.consent_obtained ? <Badge className="bg-emerald-600">Consent</Badge> : <Badge className="bg-amber-500">No consent</Badge>}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {p.scheduled_at && <>Scheduled: {new Date(p.scheduled_at).toLocaleString()}. </>}
+                      {p.scheduled_at && <>Scheduled: {new Date(p.scheduled_at).toLocaleString("en-GB")}. </>}
                       {p.location && <>{p.location}. </>}
                     </div>
                   </div>

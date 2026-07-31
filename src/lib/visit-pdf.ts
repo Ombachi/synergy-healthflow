@@ -72,8 +72,8 @@ export async function exportVisitPDF(d: VisitData) {
 
   doc.setFontSize(11).setFont("helvetica", "bold").text("Visit", 14, y); y += 5;
   doc.setFontSize(9).setFont("helvetica", "normal");
-  doc.text(`Opened: ${new Date(d.visit.opened_at).toLocaleString()}`, 14, y); y += 4;
-  if (d.visit.closed_at) { doc.text(`Closed: ${new Date(d.visit.closed_at).toLocaleString()}`, 14, y); y += 4; }
+  doc.text(`Opened: ${new Date(d.visit.opened_at).toLocaleString("en-GB")}`, 14, y); y += 4;
+  if (d.visit.closed_at) { doc.text(`Closed: ${new Date(d.visit.closed_at).toLocaleString("en-GB")}`, 14, y); y += 4; }
   doc.text(`Status: ${d.visit.status}  ·  Triage: ${d.visit.triage_level ?? "—"}`, 14, y); y += 4;
   if (d.visit.reason) { doc.text(`Reason: ${d.visit.reason}`, 14, y); y += 4; }
   if (d.visit.chief_complaint) {
@@ -86,7 +86,7 @@ export async function exportVisitPDF(d: VisitData) {
     autoTable(doc, {
       startY: y, head: [["When", "BP", "HR", "RR", "Temp °C", "SpO₂"]],
       body: d.vitals.map((v) => [
-        new Date(v.captured_at).toLocaleString(),
+        new Date(v.captured_at).toLocaleString("en-GB"),
         v.systolic_bp && v.diastolic_bp ? `${v.systolic_bp}/${v.diastolic_bp}` : "—",
         v.heart_rate ?? "—", v.respiratory_rate ?? "—",
         v.temperature_c ?? "—", v.oxygen_saturation ?? "—",
@@ -126,7 +126,7 @@ export async function exportVisitPDF(d: VisitData) {
       doc.setFontSize(10).setFont("helvetica", "bold").text(t.test, 14, y);
       if (t.performed_at) {
         doc.setFontSize(8).setFont("helvetica", "normal").setTextColor(120);
-        doc.text(new Date(t.performed_at).toLocaleString(), w - 14, y, { align: "right" });
+        doc.text(new Date(t.performed_at).toLocaleString("en-GB"), w - 14, y, { align: "right" });
         doc.setTextColor(0);
       }
       y += 2;
@@ -180,7 +180,7 @@ export async function exportVisitPDF(d: VisitData) {
     doc.setFontSize(11).setFont("helvetica", "bold").text("Imaging", 14, y); y += 1;
     autoTable(doc, {
       startY: y + 2, head: [["Modality", "Body part", "Report", "When"]],
-      body: d.imaging.map((i) => [i.modality, i.body_part ?? "", i.report ?? "pending", i.performed_at ? new Date(i.performed_at).toLocaleString() : ""]),
+      body: d.imaging.map((i) => [i.modality, i.body_part ?? "", i.report ?? "pending", i.performed_at ? new Date(i.performed_at).toLocaleString("en-GB") : ""]),
       styles: { fontSize: 8 }, headStyles: { fillColor: [30, 64, 175] },
     });
     // @ts-expect-error lastAutoTable types

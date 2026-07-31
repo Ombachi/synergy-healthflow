@@ -71,7 +71,7 @@ function ReceptionPage() {
     queryKey: ["recep-visits"],
     queryFn: async () => {
       const { data, error } = await supabase.from("visits" as never).select("id, patient_id, current_stage, opened_at, status")
-        .neq("status", "closed").order("opened_at", { ascending: false }).limit(50);
+        .in("status", ["open", "in_progress"] as never).is("closed_at", null).order("opened_at", { ascending: false }).limit(50);
       if (error) throw error;
       return (data as unknown as Visit[]) ?? [];
     },
@@ -300,7 +300,7 @@ function ReceptionPage() {
               <div key={a.id} className="flex items-center justify-between gap-2 p-3 text-sm">
                 <div>
                   <div className="font-medium">{apptPatientName(a.patient_id)}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(a.scheduled_at).toLocaleTimeString()} · {a.reason ?? "—"}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(a.scheduled_at).toLocaleTimeString("en-GB")} · {a.reason ?? "—"}</div>
                 </div>
                 <div>
                   {a.status === "booked" ? (
@@ -322,7 +322,7 @@ function ReceptionPage() {
               <div key={v.id} className="flex items-center justify-between gap-2 p-3 text-sm">
                 <div>
                   <div className="font-medium">{visitPatientName(v.patient_id)}</div>
-                  <div className="text-xs text-muted-foreground">{v.current_stage ?? "—"} · {new Date(v.opened_at).toLocaleTimeString()}</div>
+                  <div className="text-xs text-muted-foreground">{v.current_stage ?? "—"} · {new Date(v.opened_at).toLocaleTimeString("en-GB")}</div>
                 </div>
                 <span className="text-xs text-muted-foreground">In progress</span>
               </div>

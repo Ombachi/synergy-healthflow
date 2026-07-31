@@ -103,7 +103,7 @@ function BreachRegister() {
                   <tr key={i.id} className={`cursor-pointer border-t ${selected === i.id ? "bg-muted/40" : ""}`} onClick={() => setSelected(i.id)}>
                     <td className="px-3 py-2">
                       <div className="font-medium">{i.title}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(i.discovered_at).toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(i.discovered_at).toLocaleString("en-GB")}</div>
                     </td>
                     <td className="px-3 py-2"><Badge className={SEVERITY_COLOR[i.severity]}>{i.severity}</Badge></td>
                     <td className="px-3 py-2 text-xs capitalize">{i.status.replace("_"," ")}</td>
@@ -199,7 +199,7 @@ function IncidentDetail({ incident, events, onUpdate }: { incident: any; events:
         <div className="space-y-1 text-xs">
           {events.map((e) => (
             <div key={e.id} className="border-l-2 border-primary/40 pl-2">
-              <span className="text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
+              <span className="text-muted-foreground">{new Date(e.created_at).toLocaleString("en-GB")}</span>
               {" — "}
               <span className="font-medium">{e.event_type}</span>
               {e.from_status && ` (${e.from_status} → ${e.to_status})`}

@@ -167,7 +167,7 @@ function AuditInventory() {
                   const item = items.data?.find((i) => i.id === m.item_id);
                   return (
                     <tr key={m.id} className="border-t">
-                      <td className="py-2 text-xs">{new Date(m.created_at).toLocaleString()}</td>
+                      <td className="py-2 text-xs">{new Date(m.created_at).toLocaleString("en-GB")}</td>
                       <td>{item?.name ?? m.item_id.slice(0, 8)}</td>
                       <td><span className="rounded bg-muted px-1.5 py-0.5 text-xs">{m.kind}</span></td>
                       <td className="text-right">{m.qty}</td>
@@ -189,7 +189,7 @@ function AuditInventory() {
                 <div key={w.id} className="flex items-center justify-between rounded border p-3 text-sm">
                   <div>
                     <div className="font-medium">Batch {w.batch_id.slice(0, 8)}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString()} • {w.reason}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("en-GB")} • {w.reason}</div>
                   </div>
                   <span>{w.qty}</span>
                 </div>

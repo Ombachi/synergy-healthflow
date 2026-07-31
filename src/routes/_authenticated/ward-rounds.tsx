@@ -97,7 +97,7 @@ function WardRoundsPage() {
               <div key={r.id} className="rounded border p-3 text-sm">
                 <div className="mb-1 flex justify-between text-xs text-muted-foreground">
                   <span className="capitalize font-medium">{r.round_type}</span>
-                  <span>{new Date(r.round_at).toLocaleString()}</span>
+                  <span>{new Date(r.round_at).toLocaleString("en-GB")}</span>
                 </div>
                 {r.subjective && <div><b>S:</b> {r.subjective}</div>}
                 {r.objective && <div><b>O:</b> {r.objective}</div>}

@@ -239,14 +239,14 @@ function MyInpatientsPage() {
                         <span className="inline-flex items-center gap-1">
                           <Clock className="h-3 w-3" /> LOS {daysBetween(r.admitted_at)}d
                         </span>
-                        <span>Admitted {new Date(r.admitted_at).toLocaleDateString()}</span>
+                        <span>Admitted {new Date(r.admitted_at).toLocaleDateString("en-GB")}</span>
                         {r.primary_diagnosis && (
                           <span className="inline-flex items-center gap-1">
                             <Stethoscope className="h-3 w-3" /> {r.primary_diagnosis}
                           </span>
                         )}
                         {r.expected_discharge_date && (
-                          <span>Est. discharge {new Date(r.expected_discharge_date).toLocaleDateString()}</span>
+                          <span>Est. discharge {new Date(r.expected_discharge_date).toLocaleDateString("en-GB")}</span>
                         )}
                       </div>
                     </div>

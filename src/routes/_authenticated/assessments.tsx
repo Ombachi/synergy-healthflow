@@ -93,7 +93,7 @@ function AssessmentsPage() {
   const trendsByCode = useMemo(() => {
     const m: Record<string, { t: string; score: number }[]> = {};
     (myResponses.data ?? []).slice().reverse().forEach((r) => {
-      (m[r.template_code] ??= []).push({ t: new Date(r.created_at).toLocaleDateString(), score: Number(r.score ?? 0) });
+      (m[r.template_code] ??= []).push({ t: new Date(r.created_at).toLocaleDateString("en-GB"), score: Number(r.score ?? 0) });
     });
     return m;
   }, [myResponses.data]);
@@ -177,7 +177,7 @@ function AssessmentsPage() {
             <div key={r.id} className={`rounded border p-3 text-sm ${r.alert ? "border-rose-500 bg-rose-500/10" : ""}`}>
               <div className="flex items-center justify-between">
                 <span className="font-medium">{r.template_code}</span>
-                <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("en-GB")}</span>
               </div>
               <div className="mt-1">Score: <strong>{r.score}</strong> · Severity: <strong>{r.severity}</strong>{r.alert ? " · ⚠ flagged" : ""}</div>
             </div>
@@ -208,7 +208,7 @@ function AssessmentsPage() {
               <div key={r.id} className="rounded border border-rose-500 bg-rose-500/10 p-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{r.template_code} · {r.severity}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("en-GB")}</span>
                 </div>
                 <div className="mt-1 text-xs">User: {r.user_id.slice(0,8)} · Score {r.score}</div>
               </div>
