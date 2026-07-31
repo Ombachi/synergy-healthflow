@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download, Pill, ScanLine } from "lucide-react";
+import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download, Pill, ScanLine, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,6 +129,7 @@ function PatientTimeline() {
 
 
 
+  const [openInvoice, setOpenInvoice] = useState<string | null>(null);
   const [bookOpen, setBookOpen] = useState(false);
   const [bookForm, setBookForm] = useState({ doctor_id: "", scheduled_at: "", reason: "" });
   const book = useMutation({
