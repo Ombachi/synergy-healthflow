@@ -48,6 +48,7 @@ import { Route as AuthenticatedLabOrderRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
+import { Route as AuthenticatedInstrumentsRouteImport } from './routes/_authenticated/instruments'
 import { Route as AuthenticatedInpatientProceduresRouteImport } from './routes/_authenticated/inpatient-procedures'
 import { Route as AuthenticatedInfectionControlRouteImport } from './routes/_authenticated/infection-control'
 import { Route as AuthenticatedImmunizationRouteImport } from './routes/_authenticated/immunization'
@@ -295,6 +296,12 @@ const AuthenticatedInsuranceRoute = AuthenticatedInsuranceRouteImport.update({
   path: '/insurance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInstrumentsRoute =
+  AuthenticatedInstrumentsRouteImport.update({
+    id: '/instruments',
+    path: '/instruments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInpatientProceduresRoute =
   AuthenticatedInpatientProceduresRouteImport.update({
     id: '/inpatient-procedures',
@@ -576,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/immunization': typeof AuthenticatedImmunizationRoute
   '/infection-control': typeof AuthenticatedInfectionControlRoute
   '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
+  '/instruments': typeof AuthenticatedInstrumentsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -661,6 +669,7 @@ export interface FileRoutesByTo {
   '/immunization': typeof AuthenticatedImmunizationRoute
   '/infection-control': typeof AuthenticatedInfectionControlRoute
   '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
+  '/instruments': typeof AuthenticatedInstrumentsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -748,6 +757,7 @@ export interface FileRoutesById {
   '/_authenticated/immunization': typeof AuthenticatedImmunizationRoute
   '/_authenticated/infection-control': typeof AuthenticatedInfectionControlRoute
   '/_authenticated/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
+  '/_authenticated/instruments': typeof AuthenticatedInstrumentsRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
@@ -835,6 +845,7 @@ export interface FileRouteTypes {
     | '/immunization'
     | '/infection-control'
     | '/inpatient-procedures'
+    | '/instruments'
     | '/insurance'
     | '/inventory'
     | '/lab'
@@ -920,6 +931,7 @@ export interface FileRouteTypes {
     | '/immunization'
     | '/infection-control'
     | '/inpatient-procedures'
+    | '/instruments'
     | '/insurance'
     | '/inventory'
     | '/lab'
@@ -1006,6 +1018,7 @@ export interface FileRouteTypes {
     | '/_authenticated/immunization'
     | '/_authenticated/infection-control'
     | '/_authenticated/inpatient-procedures'
+    | '/_authenticated/instruments'
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
@@ -1346,6 +1359,13 @@ declare module '@tanstack/react-router' {
       path: '/insurance'
       fullPath: '/insurance'
       preLoaderRoute: typeof AuthenticatedInsuranceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/instruments': {
+      id: '/_authenticated/instruments'
+      path: '/instruments'
+      fullPath: '/instruments'
+      preLoaderRoute: typeof AuthenticatedInstrumentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inpatient-procedures': {
@@ -1703,6 +1723,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedImmunizationRoute: typeof AuthenticatedImmunizationRoute
   AuthenticatedInfectionControlRoute: typeof AuthenticatedInfectionControlRoute
   AuthenticatedInpatientProceduresRoute: typeof AuthenticatedInpatientProceduresRoute
+  AuthenticatedInstrumentsRoute: typeof AuthenticatedInstrumentsRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
@@ -1783,6 +1804,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedImmunizationRoute: AuthenticatedImmunizationRoute,
   AuthenticatedInfectionControlRoute: AuthenticatedInfectionControlRoute,
   AuthenticatedInpatientProceduresRoute: AuthenticatedInpatientProceduresRoute,
+  AuthenticatedInstrumentsRoute: AuthenticatedInstrumentsRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,

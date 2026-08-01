@@ -275,6 +275,14 @@ const GROUPS: Group[] = [
   },
 
 
+  {
+    key: "quality", label: "Diagnostics quality", icon: Microscope,
+    items: [
+      { title: "Critical results", url: "/critical-results", icon: ShieldAlert },
+      { title: "Instrument QC", url: "/instruments", icon: Gauge },
+    ],
+  },
+
   // Non-clinical utility groups (only shown if user has ≥1 accessible item).
   {
     key: "sports", label: "Sports & Wellness", icon: Activity,
