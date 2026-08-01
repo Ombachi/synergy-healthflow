@@ -4,7 +4,7 @@ import logoUrl from "@/assets/litu-vault-logo.png";
 
 export const ORG_NAME = "Litu Diagnostics";
 export const ORG_TAGLINE = "thrive with good health";
-export const ORG_ADDRESS = "Nairobi, Kenya  ·  info@litudiagnostics.co.ke";
+export const ORG_ADDRESS = "Kenya  ·  +254 781 872670  ·  litudiagnostics.com  ·  info@litudiagnostics.co.ke";
 
 let _logoCache: string | null = null;
 async function loadLogoDataUrl(): Promise<string | null> {

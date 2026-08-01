@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import { drawBrandHeader, drawVerifyQR, siteOrigin, ORG_NAME } from "./pdf-brand";
+import { drawBrandHeader, ORG_NAME } from "./pdf-brand";
 
 export interface SickOff {
   id: string;
@@ -14,6 +14,14 @@ export interface SickOff {
   created_at: string;
 }
 
+const DEFAULT_DOCTOR = "Dr Dan";
+
+function fmt(d: string | Date): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(date.getTime())) return String(d);
+  return date.toLocaleDateString("en-GB");
+}
+
 export async function exportSickOffPDF(s: SickOff) {
   const doc = new jsPDF();
   const w = doc.internal.pageSize.getWidth();
@@ -21,7 +29,7 @@ export async function exportSickOffPDF(s: SickOff) {
 
   y += 4;
   doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(120);
-  doc.text(`Issued ${new Date(s.created_at).toLocaleString("en-GB")}  ·  Ref ${s.id.slice(0, 8).toUpperCase()}`, w / 2, y, { align: "center" });
+  doc.text(`Issued ${fmt(s.created_at)}  ·  Ref ${s.id.slice(0, 8).toUpperCase()}`, w / 2, y, { align: "center" });
   y += 10;
   doc.setTextColor(0);
 
@@ -31,19 +39,31 @@ export async function exportSickOffPDF(s: SickOff) {
   if (s.mrn) { doc.text(`MRN: ${s.mrn}`, 14, y); y += 5; }
   y += 4;
 
-  doc.setFontSize(11).setFont("helvetica", "bold").text("Recommendation", 14, y); y += 6;
+  doc.setFontSize(11).setFont("helvetica", "bold").text("Recommendation", 14, y); y += 7;
   doc.setFontSize(10).setFont("helvetica", "normal");
-  doc.text(`This patient is medically unfit to attend work / school for ${s.days} day(s).`, 14, y); y += 6;
-  doc.text(`From: ${s.start_date}    To: ${s.end_date}`, 14, y); y += 8;
+
+  const name = s.patient_name;
+  const paragraphs = [
+    `This certificate serves to certify that ${name} was under our professional medical care.`,
+    `Following our clinical examination conducted on ${fmt(s.created_at)}, ${name} requires immediate rest and recovery for ${s.days} day(s), from ${fmt(s.start_date)} to ${fmt(s.end_date)}.`,
+    `${name} is advised to take a formal medical leave from all occupational / educational duties.`,
+    `Please excuse their absence during this specified timeframe. For additional clearance or verification, do not hesitate to contact us.`,
+  ];
+  for (const p of paragraphs) {
+    const lines = doc.splitTextToSize(p, w - 28);
+    doc.text(lines, 14, y);
+    y += lines.length * 5 + 4;
+  }
 
   if (s.diagnosis) {
+    y += 2;
     doc.setFont("helvetica", "bold").text("Diagnosis:", 14, y); y += 5;
     doc.setFont("helvetica", "normal");
     const lines = doc.splitTextToSize(s.diagnosis, w - 28);
     doc.text(lines, 14, y); y += lines.length * 5 + 4;
   }
   if (s.recommendation) {
-    doc.setFont("helvetica", "bold").text("Clinical recommendation:", 14, y); y += 5;
+    doc.setFont("helvetica", "bold").text("Clinical notes:", 14, y); y += 5;
     doc.setFont("helvetica", "normal");
     const lines = doc.splitTextToSize(s.recommendation, w - 28);
     doc.text(lines, 14, y); y += lines.length * 5 + 4;
@@ -52,15 +72,12 @@ export async function exportSickOffPDF(s: SickOff) {
   y = Math.max(y + 24, 200);
   doc.line(14, y, 90, y);
   doc.setFontSize(9).text("Attending physician", 14, y + 5);
-  if (s.doctor_name) doc.text(s.doctor_name, 14, y + 11);
+  doc.text(s.doctor_name || DEFAULT_DOCTOR, 14, y + 11);
 
-  // Footer disclaimer
   const h = doc.internal.pageSize.getHeight();
   doc.setFontSize(8).setTextColor(120);
-  doc.text(`Issued by ${ORG_NAME}. This certificate is verifiable via the QR code below.`, w / 2, h - 8, { align: "center" });
+  doc.text(`Issued by ${ORG_NAME}  ·  +254 781 872670  ·  litudiagnostics.com`, w / 2, h - 8, { align: "center" });
   doc.setTextColor(0);
-
-  await drawVerifyQR(doc, `${siteOrigin()}/verify/sick-off/${s.id}`);
 
   doc.save(`sick-off-${s.patient_name.replace(/\s+/g, "_")}-${s.id.slice(0, 8)}.pdf`);
 }
