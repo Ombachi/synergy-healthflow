@@ -55,19 +55,8 @@ export async function exportSickOffPDF(s: SickOff) {
     y += lines.length * 5 + 4;
   }
 
-  if (s.diagnosis) {
-    y += 2;
-    doc.setFont("helvetica", "bold").text("Diagnosis:", 14, y); y += 5;
-    doc.setFont("helvetica", "normal");
-    const lines = doc.splitTextToSize(s.diagnosis, w - 28);
-    doc.text(lines, 14, y); y += lines.length * 5 + 4;
-  }
-  if (s.recommendation) {
-    doc.setFont("helvetica", "bold").text("Clinical notes:", 14, y); y += 5;
-    doc.setFont("helvetica", "normal");
-    const lines = doc.splitTextToSize(s.recommendation, w - 28);
-    doc.text(lines, 14, y); y += lines.length * 5 + 4;
-  }
+  // Diagnosis and clinical notes are intentionally omitted (medical confidentiality).
+
 
   y = Math.max(y + 24, 200);
   doc.line(14, y, 90, y);
