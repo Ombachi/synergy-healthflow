@@ -55,6 +55,7 @@ import { Route as AuthenticatedHaimsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedEmarRouteImport } from './routes/_authenticated/emar'
 import { Route as AuthenticatedDischargePlanningRouteImport } from './routes/_authenticated/discharge-planning'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCriticalResultsRouteImport } from './routes/_authenticated/critical-results'
 import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
 import { Route as AuthenticatedCompletedRouteImport } from './routes/_authenticated/completed'
@@ -333,6 +334,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCriticalResultsRoute =
+  AuthenticatedCriticalResultsRouteImport.update({
+    id: '/critical-results',
+    path: '/critical-results',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCreditNotesRoute =
   AuthenticatedCreditNotesRouteImport.update({
     id: '/credit-notes',
@@ -561,6 +568,7 @@ export interface FileRoutesByFullPath {
   '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
+  '/critical-results': typeof AuthenticatedCriticalResultsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/emar': typeof AuthenticatedEmarRoute
@@ -645,6 +653,7 @@ export interface FileRoutesByTo {
   '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
+  '/critical-results': typeof AuthenticatedCriticalResultsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/emar': typeof AuthenticatedEmarRoute
@@ -731,6 +740,7 @@ export interface FileRoutesById {
   '/_authenticated/completed': typeof AuthenticatedCompletedRoute
   '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
+  '/_authenticated/critical-results': typeof AuthenticatedCriticalResultsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/_authenticated/emar': typeof AuthenticatedEmarRoute
@@ -817,6 +827,7 @@ export interface FileRouteTypes {
     | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
+    | '/critical-results'
     | '/dashboard'
     | '/discharge-planning'
     | '/emar'
@@ -901,6 +912,7 @@ export interface FileRouteTypes {
     | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
+    | '/critical-results'
     | '/dashboard'
     | '/discharge-planning'
     | '/emar'
@@ -986,6 +998,7 @@ export interface FileRouteTypes {
     | '/_authenticated/completed'
     | '/_authenticated/controlled-drugs'
     | '/_authenticated/credit-notes'
+    | '/_authenticated/critical-results'
     | '/_authenticated/dashboard'
     | '/_authenticated/discharge-planning'
     | '/_authenticated/emar'
@@ -1384,6 +1397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/critical-results': {
+      id: '/_authenticated/critical-results'
+      path: '/critical-results'
+      fullPath: '/critical-results'
+      preLoaderRoute: typeof AuthenticatedCriticalResultsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/credit-notes': {
       id: '/_authenticated/credit-notes'
       path: '/credit-notes'
@@ -1675,6 +1695,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompletedRoute: typeof AuthenticatedCompletedRoute
   AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
+  AuthenticatedCriticalResultsRoute: typeof AuthenticatedCriticalResultsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDischargePlanningRoute: typeof AuthenticatedDischargePlanningRoute
   AuthenticatedEmarRoute: typeof AuthenticatedEmarRoute
@@ -1754,6 +1775,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompletedRoute: AuthenticatedCompletedRoute,
   AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
+  AuthenticatedCriticalResultsRoute: AuthenticatedCriticalResultsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDischargePlanningRoute: AuthenticatedDischargePlanningRoute,
   AuthenticatedEmarRoute: AuthenticatedEmarRoute,
@@ -1831,13 +1853,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
