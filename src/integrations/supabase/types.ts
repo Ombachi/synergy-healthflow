@@ -1725,6 +1725,97 @@ export type Database = {
           },
         ]
       }
+      critical_result_alerts: {
+        Row: {
+          abnormal_flag: string
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          closed_at: string | null
+          created_at: string
+          detected_at: string
+          id: string
+          notes: string | null
+          notified_at: string | null
+          notified_to: string | null
+          order_id: string | null
+          parameter_name: string
+          patient_id: string | null
+          reference_range: string | null
+          status: string
+          units: string | null
+          updated_at: string
+          value_id: string | null
+          value_text: string | null
+          visit_id: string | null
+        }
+        Insert: {
+          abnormal_flag: string
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          closed_at?: string | null
+          created_at?: string
+          detected_at?: string
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          notified_to?: string | null
+          order_id?: string | null
+          parameter_name: string
+          patient_id?: string | null
+          reference_range?: string | null
+          status?: string
+          units?: string | null
+          updated_at?: string
+          value_id?: string | null
+          value_text?: string | null
+          visit_id?: string | null
+        }
+        Update: {
+          abnormal_flag?: string
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          closed_at?: string | null
+          created_at?: string
+          detected_at?: string
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          notified_to?: string | null
+          order_id?: string | null
+          parameter_name?: string
+          patient_id?: string | null
+          reference_range?: string | null
+          status?: string
+          units?: string | null
+          updated_at?: string
+          value_id?: string | null
+          value_text?: string | null
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "critical_result_alerts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "lab_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "critical_result_alerts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_lab_tat"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "critical_result_alerts_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discharge_summaries: {
         Row: {
           admission_id: string | null
@@ -2731,6 +2822,428 @@ export type Database = {
           },
         ]
       }
+      instrument_calibrations: {
+        Row: {
+          analyte: string | null
+          calibrated_at: string
+          calibrator_lot: string | null
+          created_at: string
+          id: string
+          instrument_id: string
+          method: string | null
+          next_due: string | null
+          notes: string | null
+          outcome: string
+          performed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          analyte?: string | null
+          calibrated_at?: string
+          calibrator_lot?: string | null
+          created_at?: string
+          id?: string
+          instrument_id: string
+          method?: string | null
+          next_due?: string | null
+          notes?: string | null
+          outcome?: string
+          performed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          analyte?: string | null
+          calibrated_at?: string
+          calibrator_lot?: string | null
+          created_at?: string
+          id?: string
+          instrument_id?: string
+          method?: string | null
+          next_due?: string | null
+          notes?: string | null
+          outcome?: string
+          performed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_calibrations_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument_incidents: {
+        Row: {
+          created_at: string
+          description: string
+          downtime_minutes: number
+          error_code: string | null
+          id: string
+          instrument_id: string
+          occurred_at: string
+          reported_by: string | null
+          resolution: string | null
+          resolved_at: string | null
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          downtime_minutes?: number
+          error_code?: string | null
+          id?: string
+          instrument_id: string
+          occurred_at?: string
+          reported_by?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          downtime_minutes?: number
+          error_code?: string | null
+          id?: string
+          instrument_id?: string
+          occurred_at?: string
+          reported_by?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_incidents_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument_maintenance: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          instrument_id: string
+          next_due: string | null
+          outcome: string | null
+          performed_at: string
+          performed_by: string | null
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          instrument_id: string
+          next_due?: string | null
+          outcome?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          task_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          instrument_id?: string
+          next_due?: string | null
+          outcome?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_maintenance_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument_qc_runs: {
+        Row: {
+          analyte: string
+          comments: string | null
+          created_at: string
+          id: string
+          instrument_id: string
+          lot_number: string | null
+          observed_value: number | null
+          performed_by: string | null
+          qc_level: string
+          result: string
+          run_at: string
+          sd: number | null
+          target_value: number | null
+          updated_at: string
+          z_score: number | null
+        }
+        Insert: {
+          analyte: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          instrument_id: string
+          lot_number?: string | null
+          observed_value?: number | null
+          performed_by?: string | null
+          qc_level?: string
+          result?: string
+          run_at?: string
+          sd?: number | null
+          target_value?: number | null
+          updated_at?: string
+          z_score?: number | null
+        }
+        Update: {
+          analyte?: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          instrument_id?: string
+          lot_number?: string | null
+          observed_value?: number | null
+          performed_by?: string | null
+          qc_level?: string
+          result?: string
+          run_at?: string
+          sd?: number | null
+          target_value?: number | null
+          updated_at?: string
+          z_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_qc_runs_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument_reagents: {
+        Row: {
+          created_at: string
+          expiry_date: string | null
+          id: string
+          instrument_id: string
+          lot_number: string | null
+          name: string
+          notes: string | null
+          quantity: number
+          received_on: string | null
+          status: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          instrument_id: string
+          lot_number?: string | null
+          name: string
+          notes?: string | null
+          quantity?: number
+          received_on?: string | null
+          status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          instrument_id?: string
+          lot_number?: string | null
+          name?: string
+          notes?: string | null
+          quantity?: number
+          received_on?: string | null
+          status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_reagents_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument_service_history: {
+        Row: {
+          cost_cents: number
+          created_at: string
+          engineer: string | null
+          id: string
+          instrument_id: string
+          next_service_due: string | null
+          notes: string | null
+          report_ref: string | null
+          service_date: string
+          service_type: string
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          cost_cents?: number
+          created_at?: string
+          engineer?: string | null
+          id?: string
+          instrument_id: string
+          next_service_due?: string | null
+          notes?: string | null
+          report_ref?: string | null
+          service_date?: string
+          service_type?: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          cost_cents?: number
+          created_at?: string
+          engineer?: string | null
+          id?: string
+          instrument_id?: string
+          next_service_due?: string | null
+          notes?: string | null
+          report_ref?: string | null
+          service_date?: string
+          service_type?: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_service_history_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument_temperature_logs: {
+        Row: {
+          created_at: string
+          id: string
+          in_range: boolean
+          instrument_id: string
+          max_c: number | null
+          min_c: number | null
+          notes: string | null
+          recorded_at: string
+          recorded_by: string | null
+          temperature_c: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          in_range?: boolean
+          instrument_id: string
+          max_c?: number | null
+          min_c?: number | null
+          notes?: string | null
+          recorded_at?: string
+          recorded_by?: string | null
+          temperature_c: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          in_range?: boolean
+          instrument_id?: string
+          max_c?: number | null
+          min_c?: number | null
+          notes?: string | null
+          recorded_at?: string
+          recorded_by?: string | null
+          temperature_c?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_temperature_logs_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instruments: {
+        Row: {
+          asset_tag: string | null
+          commissioned_on: string | null
+          created_at: string
+          id: string
+          lab_section: string
+          location: string | null
+          manufacturer: string | null
+          modality: string
+          model: string | null
+          name: string
+          notes: string | null
+          serial_number: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          asset_tag?: string | null
+          commissioned_on?: string | null
+          created_at?: string
+          id?: string
+          lab_section?: string
+          location?: string | null
+          manufacturer?: string | null
+          modality?: string
+          model?: string | null
+          name: string
+          notes?: string | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          asset_tag?: string | null
+          commissioned_on?: string | null
+          created_at?: string
+          id?: string
+          lab_section?: string
+          location?: string | null
+          manufacturer?: string | null
+          modality?: string
+          model?: string | null
+          name?: string
+          notes?: string | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       insurance_claims: {
         Row: {
           approved_amount_cents: number | null
@@ -3301,6 +3814,7 @@ export type Database = {
           encounter_id: string | null
           encounter_type: string | null
           id: string
+          instrument_id: string | null
           ordered_by: string | null
           patient_id: string
           priority: string
@@ -3315,6 +3829,7 @@ export type Database = {
           encounter_id?: string | null
           encounter_type?: string | null
           id?: string
+          instrument_id?: string | null
           ordered_by?: string | null
           patient_id: string
           priority?: string
@@ -3329,6 +3844,7 @@ export type Database = {
           encounter_id?: string | null
           encounter_type?: string | null
           id?: string
+          instrument_id?: string | null
           ordered_by?: string | null
           patient_id?: string
           priority?: string
@@ -3338,6 +3854,13 @@ export type Database = {
           visit_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "lab_orders_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instruments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lab_orders_patient_id_fkey"
             columns: ["patient_id"]

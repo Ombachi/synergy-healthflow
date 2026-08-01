@@ -48,6 +48,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Prescribers only — pharmacists dispense at /pharmacy, they do not prescribe.
   "/prescribe": ["doctor", "physio"],
   "/radiology": ["radiologist"],
+  // Laboratory quality & safety
+  "/critical-results": ["lab_tech", "doctor", "nurse"],
+  "/instruments": ["lab_tech", "radiologist"],
 
   // Billing & insurance
   "/billing": ["cashier", "billing_officer"],

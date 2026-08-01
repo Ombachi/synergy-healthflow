@@ -48,6 +48,7 @@ import { Route as AuthenticatedLabOrderRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedLabRouteImport } from './routes/_authenticated/lab'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
+import { Route as AuthenticatedInstrumentsRouteImport } from './routes/_authenticated/instruments'
 import { Route as AuthenticatedInpatientProceduresRouteImport } from './routes/_authenticated/inpatient-procedures'
 import { Route as AuthenticatedInfectionControlRouteImport } from './routes/_authenticated/infection-control'
 import { Route as AuthenticatedImmunizationRouteImport } from './routes/_authenticated/immunization'
@@ -55,6 +56,7 @@ import { Route as AuthenticatedHaimsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedEmarRouteImport } from './routes/_authenticated/emar'
 import { Route as AuthenticatedDischargePlanningRouteImport } from './routes/_authenticated/discharge-planning'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCriticalResultsRouteImport } from './routes/_authenticated/critical-results'
 import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
 import { Route as AuthenticatedCompletedRouteImport } from './routes/_authenticated/completed'
@@ -294,6 +296,12 @@ const AuthenticatedInsuranceRoute = AuthenticatedInsuranceRouteImport.update({
   path: '/insurance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInstrumentsRoute =
+  AuthenticatedInstrumentsRouteImport.update({
+    id: '/instruments',
+    path: '/instruments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInpatientProceduresRoute =
   AuthenticatedInpatientProceduresRouteImport.update({
     id: '/inpatient-procedures',
@@ -333,6 +341,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCriticalResultsRoute =
+  AuthenticatedCriticalResultsRouteImport.update({
+    id: '/critical-results',
+    path: '/critical-results',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCreditNotesRoute =
   AuthenticatedCreditNotesRouteImport.update({
     id: '/credit-notes',
@@ -561,6 +575,7 @@ export interface FileRoutesByFullPath {
   '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
+  '/critical-results': typeof AuthenticatedCriticalResultsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/emar': typeof AuthenticatedEmarRoute
@@ -568,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/immunization': typeof AuthenticatedImmunizationRoute
   '/infection-control': typeof AuthenticatedInfectionControlRoute
   '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
+  '/instruments': typeof AuthenticatedInstrumentsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -645,6 +661,7 @@ export interface FileRoutesByTo {
   '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
+  '/critical-results': typeof AuthenticatedCriticalResultsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/emar': typeof AuthenticatedEmarRoute
@@ -652,6 +669,7 @@ export interface FileRoutesByTo {
   '/immunization': typeof AuthenticatedImmunizationRoute
   '/infection-control': typeof AuthenticatedInfectionControlRoute
   '/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
+  '/instruments': typeof AuthenticatedInstrumentsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/lab': typeof AuthenticatedLabRoute
@@ -731,6 +749,7 @@ export interface FileRoutesById {
   '/_authenticated/completed': typeof AuthenticatedCompletedRoute
   '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
+  '/_authenticated/critical-results': typeof AuthenticatedCriticalResultsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/discharge-planning': typeof AuthenticatedDischargePlanningRoute
   '/_authenticated/emar': typeof AuthenticatedEmarRoute
@@ -738,6 +757,7 @@ export interface FileRoutesById {
   '/_authenticated/immunization': typeof AuthenticatedImmunizationRoute
   '/_authenticated/infection-control': typeof AuthenticatedInfectionControlRoute
   '/_authenticated/inpatient-procedures': typeof AuthenticatedInpatientProceduresRoute
+  '/_authenticated/instruments': typeof AuthenticatedInstrumentsRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/lab': typeof AuthenticatedLabRoute
@@ -817,6 +837,7 @@ export interface FileRouteTypes {
     | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
+    | '/critical-results'
     | '/dashboard'
     | '/discharge-planning'
     | '/emar'
@@ -824,6 +845,7 @@ export interface FileRouteTypes {
     | '/immunization'
     | '/infection-control'
     | '/inpatient-procedures'
+    | '/instruments'
     | '/insurance'
     | '/inventory'
     | '/lab'
@@ -901,6 +923,7 @@ export interface FileRouteTypes {
     | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
+    | '/critical-results'
     | '/dashboard'
     | '/discharge-planning'
     | '/emar'
@@ -908,6 +931,7 @@ export interface FileRouteTypes {
     | '/immunization'
     | '/infection-control'
     | '/inpatient-procedures'
+    | '/instruments'
     | '/insurance'
     | '/inventory'
     | '/lab'
@@ -986,6 +1010,7 @@ export interface FileRouteTypes {
     | '/_authenticated/completed'
     | '/_authenticated/controlled-drugs'
     | '/_authenticated/credit-notes'
+    | '/_authenticated/critical-results'
     | '/_authenticated/dashboard'
     | '/_authenticated/discharge-planning'
     | '/_authenticated/emar'
@@ -993,6 +1018,7 @@ export interface FileRouteTypes {
     | '/_authenticated/immunization'
     | '/_authenticated/infection-control'
     | '/_authenticated/inpatient-procedures'
+    | '/_authenticated/instruments'
     | '/_authenticated/insurance'
     | '/_authenticated/inventory'
     | '/_authenticated/lab'
@@ -1335,6 +1361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInsuranceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/instruments': {
+      id: '/_authenticated/instruments'
+      path: '/instruments'
+      fullPath: '/instruments'
+      preLoaderRoute: typeof AuthenticatedInstrumentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inpatient-procedures': {
       id: '/_authenticated/inpatient-procedures'
       path: '/inpatient-procedures'
@@ -1382,6 +1415,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/critical-results': {
+      id: '/_authenticated/critical-results'
+      path: '/critical-results'
+      fullPath: '/critical-results'
+      preLoaderRoute: typeof AuthenticatedCriticalResultsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/credit-notes': {
@@ -1675,6 +1715,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompletedRoute: typeof AuthenticatedCompletedRoute
   AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
+  AuthenticatedCriticalResultsRoute: typeof AuthenticatedCriticalResultsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDischargePlanningRoute: typeof AuthenticatedDischargePlanningRoute
   AuthenticatedEmarRoute: typeof AuthenticatedEmarRoute
@@ -1682,6 +1723,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedImmunizationRoute: typeof AuthenticatedImmunizationRoute
   AuthenticatedInfectionControlRoute: typeof AuthenticatedInfectionControlRoute
   AuthenticatedInpatientProceduresRoute: typeof AuthenticatedInpatientProceduresRoute
+  AuthenticatedInstrumentsRoute: typeof AuthenticatedInstrumentsRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLabRoute: typeof AuthenticatedLabRoute
@@ -1754,6 +1796,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompletedRoute: AuthenticatedCompletedRoute,
   AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
+  AuthenticatedCriticalResultsRoute: AuthenticatedCriticalResultsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDischargePlanningRoute: AuthenticatedDischargePlanningRoute,
   AuthenticatedEmarRoute: AuthenticatedEmarRoute,
@@ -1761,6 +1804,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedImmunizationRoute: AuthenticatedImmunizationRoute,
   AuthenticatedInfectionControlRoute: AuthenticatedInfectionControlRoute,
   AuthenticatedInpatientProceduresRoute: AuthenticatedInpatientProceduresRoute,
+  AuthenticatedInstrumentsRoute: AuthenticatedInstrumentsRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLabRoute: AuthenticatedLabRoute,
@@ -1831,13 +1875,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
