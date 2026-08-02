@@ -51,13 +51,25 @@ const STATUSES = ["active", "maintenance", "down", "retired"];
 
 function InstrumentsPage() {
   const qc = useQueryClient();
-  const { hasAnyRole } = useAuth();
+  const { hasAnyRole, hasRole } = useAuth();
   const canWrite = hasAnyRole(["lab_tech", "radiologist", "admin"]);
+  // Modality scoping: lab staff only see laboratory analyzers, radiology staff
+  // only see imaging modalities. Admins (and any cross-trained user holding both
+  // roles) keep the full fleet with the modality filter.
+  const isAdmin = hasRole("admin");
+  const labOnly = !isAdmin && hasRole("lab_tech") && !hasRole("radiologist");
+  const radOnly = !isAdmin && hasRole("radiologist") && !hasRole("lab_tech");
+  const scope: "laboratory" | "radiology" | null = labOnly ? "laboratory" : radOnly ? "radiology" : null;
   const [search, setSearch] = useState("");
   const [modality, setModality] = useState<"all" | "laboratory" | "radiology">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [form, setForm] = useState<Record<string, string>>({ lab_section: "Chemistry", modality: "laboratory", status: "active" });
+  const [form, setForm] = useState<Record<string, string>>({
+    lab_section: scope === "radiology" ? "Radiology" : "Chemistry",
+    modality: scope ?? "laboratory",
+    status: "active",
+  });
+
 
   const instruments = useQuery({
     queryKey: ["instruments"],
