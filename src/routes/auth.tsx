@@ -115,8 +115,12 @@ function AuthPage() {
               </div>
               <div>
                 <Label htmlFor="su-pw">Password</Label>
-                <Input id="su-pw" type="password" required minLength={6} value={password}
+                <Input id="su-pw" type="password" required minLength={MIN_PASSWORD_LENGTH} value={password}
                   onChange={(e) => setPassword(e.target.value)} />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  At least {MIN_PASSWORD_LENGTH} characters. Passwords found in known data breaches are rejected.
+                </p>
+
               </div>
               <Button type="submit" className="w-full" disabled={busy}>
                 {busy ? "Creating..." : "Create account"}
