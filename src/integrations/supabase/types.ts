@@ -7669,6 +7669,47 @@ export type Database = {
         Args: { _thread: string; _user: string }
         Returns: boolean
       }
+      kpi_alos: {
+        Args: never
+        Returns: {
+          alos_days: number
+          discharges_30d: number
+        }[]
+      }
+      kpi_denial: {
+        Args: never
+        Returns: {
+          decided_count: number
+          denial_pct: number
+          denied_count: number
+        }[]
+      }
+      kpi_lab_tat: {
+        Args: never
+        Returns: {
+          samples_30d: number
+          tat_minutes: number
+        }[]
+      }
+      kpi_occupancy: {
+        Args: never
+        Returns: {
+          cleaning: number
+          free: number
+          occupancy_pct: number
+          occupied: number
+          total_beds: number
+          ward: string
+        }[]
+      }
+      kpi_revenue_by_dept: {
+        Args: { _since?: string }
+        Returns: {
+          day: string
+          dept: string
+          revenue_cents: number
+        }[]
+      }
       list_messageable_users: {
         Args: never
         Returns: {
