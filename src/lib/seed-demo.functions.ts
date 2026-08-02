@@ -21,11 +21,12 @@ const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "admissions@demo.local", full_name: "Amos Admissions Officer", role: "admissions_officer" },
 ];
 
-// Fixed demo password for the seeded accounts. Users can rotate via the
-// admin dashboard; the seeder also RESETS this password on every run so
-// stale accounts (e.g. old HR / admissions officers seeded previously with
-// a randomised password) can log in with the documented credentials again.
-const DEMO_PASSWORD = "Demo123!";
+// Demo password for the seeded accounts. Rotated off the old, breached
+// "Demo123!" value — that string appears in public breach corpora and is
+// rejected once leaked-password protection is enabled. The seeder RESETS
+// this password on every run so stale accounts can log in again.
+const DEMO_PASSWORD = "L1tuV@ult-Demo-2026";
+
 
 export const seedDemoUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

@@ -17,30 +17,32 @@ function AdminKPI() {
     queryKey: ["kpi-rev"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabase.from("mv_kpi_revenue_by_dept" as never)
-        .select("dept, day, revenue_cents").gte("day", new Date(Date.now()-30*86400000).toISOString().slice(0,10));
+      const { data } = await supabase.rpc("kpi_revenue_by_dept" as never, {
+        _since: new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
+      } as never);
       return (data as unknown as { dept: string; day: string; revenue_cents: number }[]) ?? [];
     },
   });
   const occ = useQuery({
     queryKey: ["kpi-occ"], staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabase.from("mv_kpi_occupancy" as never).select("*").order("ward");
+      const { data } = await supabase.rpc("kpi_occupancy" as never);
       return (data as unknown as { ward: string; total_beds: number; occupied: number; free: number; cleaning: number; occupancy_pct: number }[]) ?? [];
     },
   });
   const alos = useQuery({ queryKey:["kpi-alos"], staleTime: 60_000, queryFn: async () => {
-    const { data } = await supabase.from("mv_kpi_alos" as never).select("*").maybeSingle();
-    return data as unknown as { alos_days: number; discharges_30d: number } | null;
+    const { data } = await supabase.rpc("kpi_alos" as never);
+    return ((data as unknown as { alos_days: number; discharges_30d: number }[]) ?? [])[0] ?? null;
   }});
   const denial = useQuery({ queryKey:["kpi-den"], staleTime: 60_000, queryFn: async () => {
-    const { data } = await supabase.from("mv_kpi_denial" as never).select("*").maybeSingle();
-    return data as unknown as { denied_count: number; decided_count: number; denial_pct: number } | null;
+    const { data } = await supabase.rpc("kpi_denial" as never);
+    return ((data as unknown as { denied_count: number; decided_count: number; denial_pct: number }[]) ?? [])[0] ?? null;
   }});
   const tat = useQuery({ queryKey:["kpi-tat"], staleTime: 60_000, queryFn: async () => {
-    const { data } = await supabase.from("mv_kpi_lab_tat" as never).select("*").maybeSingle();
-    return data as unknown as { tat_minutes: number; samples_30d: number } | null;
+    const { data } = await supabase.rpc("kpi_lab_tat" as never);
+    return ((data as unknown as { tat_minutes: number; samples_30d: number }[]) ?? [])[0] ?? null;
   }});
+
 
   // group revenue by dept
   const byDept = new Map<string, number>();

@@ -338,20 +338,6 @@ function VisitDetail() {
     });
   }
 
-  if (visit.isLoading) return <div className="text-muted-foreground">Loading visit...</div>;
-  if (!visit.data) return <div className="text-muted-foreground">Visit not found.</div>;
-  const v = visit.data; const p = patient.data;
-  const finalized = v.status === "completed" || v.status === "closed" || discharge.data?.finalized;
-
-  const patientAge = useMemo(() => {
-    if (!p?.date_of_birth) return null;
-    const dob = new Date(p.date_of_birth); if (isNaN(+dob)) return null;
-    const now = new Date(); let a = now.getFullYear() - dob.getFullYear();
-    const m = now.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) a--;
-    return a;
-  }, [p?.date_of_birth]);
-
   const tabs = [
     { key: "overview", label: "Overview", icon: Clipboard },
     { key: "vitals", label: "Vitals", icon: HeartPulse },
@@ -362,7 +348,25 @@ function VisitDetail() {
     { key: "discharge", label: "Discharge", icon: CheckCircle2 },
   ] as const;
   type TabKey = typeof tabs[number]["key"];
+
+  // NOTE: every hook must stay above the early returns below.
   const [tab, setTab] = useState<TabKey>("overview");
+
+  const patientAge = useMemo(() => {
+    const dobStr = patient.data?.date_of_birth;
+    if (!dobStr) return null;
+    const dob = new Date(dobStr); if (isNaN(+dob)) return null;
+    const now = new Date(); let a = now.getFullYear() - dob.getFullYear();
+    const m = now.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) a--;
+    return a;
+  }, [patient.data?.date_of_birth]);
+
+  if (visit.isLoading) return <div className="text-muted-foreground">Loading visit...</div>;
+  if (!visit.data) return <div className="text-muted-foreground">Visit not found.</div>;
+  const v = visit.data; const p = patient.data;
+  const finalized = v.status === "completed" || v.status === "closed" || discharge.data?.finalized;
+
 
   const encList = encounters.data ?? [];
   const admissionActive = activeAdmission.data && !activeAdmission.data.discharged_at;
