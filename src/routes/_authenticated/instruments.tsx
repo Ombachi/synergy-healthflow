@@ -51,13 +51,25 @@ const STATUSES = ["active", "maintenance", "down", "retired"];
 
 function InstrumentsPage() {
   const qc = useQueryClient();
-  const { hasAnyRole } = useAuth();
+  const { hasAnyRole, hasRole } = useAuth();
   const canWrite = hasAnyRole(["lab_tech", "radiologist", "admin"]);
+  // Modality scoping: lab staff only see laboratory analyzers, radiology staff
+  // only see imaging modalities. Admins (and any cross-trained user holding both
+  // roles) keep the full fleet with the modality filter.
+  const isAdmin = hasRole("admin");
+  const labOnly = !isAdmin && hasRole("lab_tech") && !hasRole("radiologist");
+  const radOnly = !isAdmin && hasRole("radiologist") && !hasRole("lab_tech");
+  const scope: "laboratory" | "radiology" | null = labOnly ? "laboratory" : radOnly ? "radiology" : null;
   const [search, setSearch] = useState("");
   const [modality, setModality] = useState<"all" | "laboratory" | "radiology">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [form, setForm] = useState<Record<string, string>>({ lab_section: "Chemistry", modality: "laboratory", status: "active" });
+  const [form, setForm] = useState<Record<string, string>>({
+    lab_section: scope === "radiology" ? "Radiology" : "Chemistry",
+    modality: scope ?? "laboratory",
+    status: "active",
+  });
+
 
   const instruments = useQuery({
     queryKey: ["instruments"],
@@ -77,7 +89,11 @@ function InstrumentsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["instruments"] });
       setAddOpen(false);
-      setForm({ lab_section: "Chemistry", modality: "laboratory", status: "active" });
+      setForm({
+        lab_section: scope === "radiology" ? "Radiology" : "Chemistry",
+        modality: scope ?? "laboratory",
+        status: "active",
+      });
       toast.success("Instrument registered");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -86,12 +102,13 @@ function InstrumentsPage() {
   const list = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (instruments.data ?? []).filter((i) => {
-      if (modality !== "all" && i.modality !== modality) return false;
+      if (scope && i.modality !== scope) return false;
+      if (!scope && modality !== "all" && i.modality !== modality) return false;
       if (!q) return true;
       return [i.name, i.manufacturer, i.model, i.serial_number, i.lab_section, i.location]
         .some((v) => (v ?? "").toLowerCase().includes(q));
     });
-  }, [instruments.data, search, modality]);
+  }, [instruments.data, search, modality, scope]);
 
   const selected = list.find((i) => i.id === selectedId) ?? list[0] ?? null;
 
@@ -100,10 +117,13 @@ function InstrumentsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold">
-            <Cpu className="h-6 w-6 text-primary" /> Instrument quality control
+            <Cpu className="h-6 w-6 text-primary" />{" "}
+            {scope === "radiology" ? "Radiology equipment quality control"
+              : scope === "laboratory" ? "Laboratory analyzer quality control"
+              : "Instrument quality control"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Every analyzer has its own workspace: profile, QC, calibration, maintenance, reagents, temperature, downtime, service and performance.
+            Every {scope === "radiology" ? "modality" : "analyzer"} has its own workspace: profile, QC, calibration, maintenance, reagents, temperature, downtime, service and performance.
           </p>
         </div>
         {canWrite && (
@@ -118,14 +138,17 @@ function InstrumentsPage() {
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input className="pl-8" placeholder="Search analyzers" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <div className="flex gap-1 text-xs">
-            {(["all", "laboratory", "radiology"] as const).map((m) => (
-              <button key={m} onClick={() => setModality(m)}
-                className={`rounded-full border px-3 py-1 capitalize ${modality === m ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>
-                {m}
-              </button>
-            ))}
-          </div>
+          {!scope && (
+            <div className="flex gap-1 text-xs">
+              {(["all", "laboratory", "radiology"] as const).map((m) => (
+                <button key={m} onClick={() => setModality(m)}
+                  className={`rounded-full border px-3 py-1 capitalize ${modality === m ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+                  {m}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="max-h-[70vh] overflow-auto rounded-lg border bg-card">
             {list.length === 0 && <div className="p-4 text-sm text-muted-foreground">No instruments.</div>}
             {list.map((i) => (
@@ -164,7 +187,7 @@ function InstrumentsPage() {
                 { key: "asset_tag", label: "Asset tag", type: "text" },
                 { key: "location", label: "Location", type: "text" },
                 { key: "lab_section", label: "Laboratory section", type: "select", options: SECTIONS },
-                { key: "modality", label: "Modality", type: "select", options: ["laboratory", "radiology"] },
+                { key: "modality", label: "Modality", type: "select", options: scope ? [scope] : ["laboratory", "radiology"] },
                 { key: "status", label: "Status", type: "select", options: STATUSES },
                 { key: "commissioned_on", label: "Commissioned on", type: "date" },
                 { key: "notes", label: "Notes", type: "textarea" },
