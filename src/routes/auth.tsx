@@ -16,6 +16,8 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+/** Minimum password length enforced at sign-up (matches the backend policy). */
+const MIN_PASSWORD_LENGTH = 12;
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -41,8 +43,12 @@ function AuthPage() {
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return toast.error(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+    }
     setBusy(true);
     const { error } = await supabase.auth.signUp({
+
       email,
       password,
       options: {
