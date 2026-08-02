@@ -187,7 +187,7 @@ function InstrumentsPage() {
                 { key: "asset_tag", label: "Asset tag", type: "text" },
                 { key: "location", label: "Location", type: "text" },
                 { key: "lab_section", label: "Laboratory section", type: "select", options: SECTIONS },
-                { key: "modality", label: "Modality", type: "select", options: ["laboratory", "radiology"] },
+                { key: "modality", label: "Modality", type: "select", options: scope ? [scope] : ["laboratory", "radiology"] },
                 { key: "status", label: "Status", type: "select", options: STATUSES },
                 { key: "commissioned_on", label: "Commissioned on", type: "date" },
                 { key: "notes", label: "Notes", type: "textarea" },
