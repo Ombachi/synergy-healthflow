@@ -26,6 +26,7 @@ import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sl
 import { Route as AuthenticatedServiceCatalogRouteImport } from './routes/_authenticated/service-catalog'
 import { Route as AuthenticatedRosterRouteImport } from './routes/_authenticated/roster'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
+import { Route as AuthenticatedReferralsRouteImport } from './routes/_authenticated/referrals'
 import { Route as AuthenticatedReceptionRouteImport } from './routes/_authenticated/reception'
 import { Route as AuthenticatedRadiologyRouteImport } from './routes/_authenticated/radiology'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
@@ -33,6 +34,7 @@ import { Route as AuthenticatedProcurementRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPrescribeRouteImport } from './routes/_authenticated/prescribe'
 import { Route as AuthenticatedPreauthRouteImport } from './routes/_authenticated/preauth'
 import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
+import { Route as AuthenticatedPharmacySafetyRouteImport } from './routes/_authenticated/pharmacy-safety'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
 import { Route as AuthenticatedNutritionRouteImport } from './routes/_authenticated/nutrition'
 import { Route as AuthenticatedNursingStationRouteImport } from './routes/_authenticated/nursing-station'
@@ -182,6 +184,11 @@ const AuthenticatedRequestsRoute = AuthenticatedRequestsRouteImport.update({
   path: '/requests',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReferralsRoute = AuthenticatedReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReceptionRoute = AuthenticatedReceptionRouteImport.update({
   id: '/reception',
   path: '/reception',
@@ -218,6 +225,12 @@ const AuthenticatedPhysioRoute = AuthenticatedPhysioRouteImport.update({
   path: '/physio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPharmacySafetyRoute =
+  AuthenticatedPharmacySafetyRouteImport.update({
+    id: '/pharmacy-safety',
+    path: '/pharmacy-safety',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPharmacyRoute = AuthenticatedPharmacyRouteImport.update({
   id: '/pharmacy',
   path: '/pharmacy',
@@ -599,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/pharmacy-safety': typeof AuthenticatedPharmacySafetyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/preauth': typeof AuthenticatedPreauthRoute
   '/prescribe': typeof AuthenticatedPrescribeRoute
@@ -606,6 +620,7 @@ export interface FileRoutesByFullPath {
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
+  '/referrals': typeof AuthenticatedReferralsRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
@@ -685,6 +700,7 @@ export interface FileRoutesByTo {
   '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/pharmacy-safety': typeof AuthenticatedPharmacySafetyRoute
   '/physio': typeof AuthenticatedPhysioRoute
   '/preauth': typeof AuthenticatedPreauthRoute
   '/prescribe': typeof AuthenticatedPrescribeRoute
@@ -692,6 +708,7 @@ export interface FileRoutesByTo {
   '/queue': typeof AuthenticatedQueueRoute
   '/radiology': typeof AuthenticatedRadiologyRoute
   '/reception': typeof AuthenticatedReceptionRoute
+  '/referrals': typeof AuthenticatedReferralsRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/roster': typeof AuthenticatedRosterRoute
   '/service-catalog': typeof AuthenticatedServiceCatalogRoute
@@ -773,6 +790,7 @@ export interface FileRoutesById {
   '/_authenticated/nursing-station': typeof AuthenticatedNursingStationRoute
   '/_authenticated/nutrition': typeof AuthenticatedNutritionRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
+  '/_authenticated/pharmacy-safety': typeof AuthenticatedPharmacySafetyRoute
   '/_authenticated/physio': typeof AuthenticatedPhysioRoute
   '/_authenticated/preauth': typeof AuthenticatedPreauthRoute
   '/_authenticated/prescribe': typeof AuthenticatedPrescribeRoute
@@ -780,6 +798,7 @@ export interface FileRoutesById {
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/radiology': typeof AuthenticatedRadiologyRoute
   '/_authenticated/reception': typeof AuthenticatedReceptionRoute
+  '/_authenticated/referrals': typeof AuthenticatedReferralsRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/roster': typeof AuthenticatedRosterRoute
   '/_authenticated/service-catalog': typeof AuthenticatedServiceCatalogRoute
@@ -861,6 +880,7 @@ export interface FileRouteTypes {
     | '/nursing-station'
     | '/nutrition'
     | '/pharmacy'
+    | '/pharmacy-safety'
     | '/physio'
     | '/preauth'
     | '/prescribe'
@@ -868,6 +888,7 @@ export interface FileRouteTypes {
     | '/queue'
     | '/radiology'
     | '/reception'
+    | '/referrals'
     | '/requests'
     | '/roster'
     | '/service-catalog'
@@ -947,6 +968,7 @@ export interface FileRouteTypes {
     | '/nursing-station'
     | '/nutrition'
     | '/pharmacy'
+    | '/pharmacy-safety'
     | '/physio'
     | '/preauth'
     | '/prescribe'
@@ -954,6 +976,7 @@ export interface FileRouteTypes {
     | '/queue'
     | '/radiology'
     | '/reception'
+    | '/referrals'
     | '/requests'
     | '/roster'
     | '/service-catalog'
@@ -1034,6 +1057,7 @@ export interface FileRouteTypes {
     | '/_authenticated/nursing-station'
     | '/_authenticated/nutrition'
     | '/_authenticated/pharmacy'
+    | '/_authenticated/pharmacy-safety'
     | '/_authenticated/physio'
     | '/_authenticated/preauth'
     | '/_authenticated/prescribe'
@@ -1041,6 +1065,7 @@ export interface FileRouteTypes {
     | '/_authenticated/queue'
     | '/_authenticated/radiology'
     | '/_authenticated/reception'
+    | '/_authenticated/referrals'
     | '/_authenticated/requests'
     | '/_authenticated/roster'
     | '/_authenticated/service-catalog'
@@ -1207,6 +1232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/referrals': {
+      id: '/_authenticated/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof AuthenticatedReferralsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reception': {
       id: '/_authenticated/reception'
       path: '/reception'
@@ -1254,6 +1286,13 @@ declare module '@tanstack/react-router' {
       path: '/physio'
       fullPath: '/physio'
       preLoaderRoute: typeof AuthenticatedPhysioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pharmacy-safety': {
+      id: '/_authenticated/pharmacy-safety'
+      path: '/pharmacy-safety'
+      fullPath: '/pharmacy-safety'
+      preLoaderRoute: typeof AuthenticatedPharmacySafetyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pharmacy': {
@@ -1739,6 +1778,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNursingStationRoute: typeof AuthenticatedNursingStationRoute
   AuthenticatedNutritionRoute: typeof AuthenticatedNutritionRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
+  AuthenticatedPharmacySafetyRoute: typeof AuthenticatedPharmacySafetyRoute
   AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
   AuthenticatedPreauthRoute: typeof AuthenticatedPreauthRoute
   AuthenticatedPrescribeRoute: typeof AuthenticatedPrescribeRoute
@@ -1746,6 +1786,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRadiologyRoute: typeof AuthenticatedRadiologyRoute
   AuthenticatedReceptionRoute: typeof AuthenticatedReceptionRoute
+  AuthenticatedReferralsRoute: typeof AuthenticatedReferralsRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
   AuthenticatedRosterRoute: typeof AuthenticatedRosterRoute
   AuthenticatedServiceCatalogRoute: typeof AuthenticatedServiceCatalogRoute
@@ -1820,6 +1861,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNursingStationRoute: AuthenticatedNursingStationRoute,
   AuthenticatedNutritionRoute: AuthenticatedNutritionRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
+  AuthenticatedPharmacySafetyRoute: AuthenticatedPharmacySafetyRoute,
   AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
   AuthenticatedPreauthRoute: AuthenticatedPreauthRoute,
   AuthenticatedPrescribeRoute: AuthenticatedPrescribeRoute,
@@ -1827,6 +1869,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRadiologyRoute: AuthenticatedRadiologyRoute,
   AuthenticatedReceptionRoute: AuthenticatedReceptionRoute,
+  AuthenticatedReferralsRoute: AuthenticatedReferralsRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
   AuthenticatedRosterRoute: AuthenticatedRosterRoute,
   AuthenticatedServiceCatalogRoute: AuthenticatedServiceCatalogRoute,

@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
 import { CatalogSearch, type CatalogItem } from "@/components/catalog-search";
+import { useSafetyLibrary, parseAllergies, screenMedication } from "@/lib/rx-safety";
+import { RxSafetyAlerts, hasBlockingWarning } from "@/components/rx-safety-alerts";
 
 export const Route = createFileRoute("/_authenticated/prescribe")({
   component: () => <RoleGate path="/prescribe"><PrescribePage /></RoleGate>,
@@ -18,7 +20,8 @@ export const Route = createFileRoute("/_authenticated/prescribe")({
 
 interface Drug { id: string; drug_name: string; medication_class: string | null; default_dose: string | null; default_frequency: string | null; default_duration: string | null; instructions: string | null }
 interface Visit { id: string; patient_id: string; reason: string | null; created_at: string; status: string }
-interface Patient { id: string; full_name: string; medical_record_number: string | null }
+interface Patient { id: string; full_name: string; medical_record_number: string | null; allergies: string | null }
+
 
 // Detect dosage form from drug name for the form filter.
 function detectForm(name: string): string {
@@ -60,7 +63,7 @@ function PrescribePage() {
     queryFn: async () => {
       const ids = Array.from(new Set((visits.data ?? []).map((v) => v.patient_id)));
       const { data } = await supabase.from("patients" as never)
-        .select("id, full_name, medical_record_number").in("id", ids as never);
+        .select("id, full_name, medical_record_number, allergies").in("id", ids as never);
       return (data as unknown as Patient[]) ?? [];
     },
   });
@@ -79,6 +82,41 @@ function PrescribePage() {
   const selectedVisit = visits.data?.find((v) => v.id === visitId);
   const selectedPatient = patients.data?.find((p) => p.id === selectedVisit?.patient_id);
 
+  // ---- Prescribe-time safety screening --------------------------------
+  const safety = useSafetyLibrary();
+  const activeMeds = useQuery({
+    queryKey: ["prescribe-active-meds", selectedVisit?.patient_id],
+    enabled: !!selectedVisit?.patient_id,
+    queryFn: async () => {
+      const { data: vids } = await supabase.from("visits" as never)
+        .select("id").eq("patient_id", selectedVisit!.patient_id).limit(50);
+      const ids = ((vids as unknown as { id: string }[]) ?? []).map((v) => v.id);
+      if (ids.length === 0) return [] as string[];
+      const { data } = await supabase.from("prescriptions" as never)
+        .select("medication, created_at").in("visit_id", ids as never)
+        .order("created_at", { ascending: false }).limit(60);
+      return ((data as unknown as { medication: string }[]) ?? []).map((r) => r.medication);
+    },
+  });
+
+  const allergyTerms = useMemo(
+    () => parseAllergies(selectedPatient?.allergies),
+    [selectedPatient?.allergies],
+  );
+
+  const warnings = useMemo(() => {
+    if (!selected) return [];
+    return screenMedication(selected.drug_name, {
+      allergies: allergyTerms,
+      currentMeds: activeMeds.data ?? [],
+      interactions: safety.data?.interactions ?? [],
+      allergyRules: safety.data?.allergyRules ?? [],
+    });
+  }, [selected, allergyTerms, activeMeds.data, safety.data]);
+
+  const blocking = hasBlockingWarning(warnings);
+  const [override, setOverride] = useState("");
+
   const items = useMemo<(CatalogItem & Drug & { form: string })[]>(() => {
     const rows = (drugs.data ?? []).map((d) => {
       const f = detectForm(d.drug_name);
@@ -96,13 +134,20 @@ function PrescribePage() {
     mutationFn: async () => {
       if (!selectedVisit) throw new Error("Choose a visit first");
       if (!selected) throw new Error("Pick a medication");
+      if (blocking && override.trim().length < 5) {
+        throw new Error("A clinical override reason is required for a major safety alert");
+      }
+      const safetyNote = warnings.length
+        ? `\n[Safety alerts acknowledged: ${warnings.map((w) => w.title).join("; ")}]` +
+          (override.trim() ? `\n[Override reason: ${override.trim()}]` : "")
+        : "";
       const { error } = await supabase.from("prescriptions" as never).insert({
         visit_id: selectedVisit.id,
         medication: selected.drug_name,
         dose: form.dose || selected.default_dose,
         frequency: form.frequency || selected.default_frequency,
         duration: form.duration || selected.default_duration,
-        instructions: form.instructions || selected.instructions,
+        instructions: (form.instructions || selected.instructions || "") + safetyNote,
         created_by: user?.id ?? null,
       } as never);
       if (error) throw error;
@@ -110,11 +155,14 @@ function PrescribePage() {
     onSuccess: () => {
       toast.success(`Added ${selected?.drug_name} to med order`);
       setSelected(null);
+      setOverride("");
       setForm({ dose: "", frequency: "", duration: "", instructions: "" });
       qc.invalidateQueries({ queryKey: ["pharm-rx"] });
+      qc.invalidateQueries({ queryKey: ["prescribe-active-meds"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const forms = ["all", "tablet", "capsule", "syrup", "injection", "topical", "drops", "suppository", "inhaler", "powder", "other"];
 
@@ -162,12 +210,37 @@ function PrescribePage() {
               <div className="font-medium">{selectedPatient.full_name}</div>
               <div className="text-muted-foreground">{selectedPatient.medical_record_number ?? "—"}</div>
               {selectedVisit?.reason && <div className="mt-1 italic text-muted-foreground">Reason: {selectedVisit.reason}</div>}
+              <div className="mt-1">
+                <span className="font-medium">Allergies: </span>
+                {allergyTerms.length ? (
+                  <span className="text-destructive">{allergyTerms.join(", ")}</span>
+                ) : (
+                  <span className="text-muted-foreground">none recorded</span>
+                )}
+              </div>
+              {(activeMeds.data?.length ?? 0) > 0 && (
+                <div className="mt-1 text-muted-foreground">
+                  <span className="font-medium text-foreground">Current meds: </span>
+                  {Array.from(new Set(activeMeds.data)).slice(0, 8).join(", ")}
+                </div>
+              )}
             </div>
           )}
 
           {selected && (
             <div className="space-y-2 rounded-md border bg-background p-3">
               <div className="text-sm font-semibold">{selected.drug_name}</div>
+
+              <RxSafetyAlerts warnings={warnings} />
+
+              {blocking && (
+                <div>
+                  <Label className="text-[11px] text-destructive">Clinical override reason (required)</Label>
+                  <Textarea rows={2} value={override} onChange={(e) => setOverride(e.target.value)}
+                    placeholder="e.g. Allergy de-labelled after formal challenge on 12/03/2026" />
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2">
                 <div><Label className="text-[11px]">Dose</Label><Input value={form.dose} onChange={(e) => setForm({ ...form, dose: e.target.value })} placeholder={selected.default_dose ?? "e.g. 500mg"} /></div>
                 <div><Label className="text-[11px]">Frequency</Label><Input value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })} placeholder={selected.default_frequency ?? "e.g. TDS"} /></div>
@@ -175,13 +248,15 @@ function PrescribePage() {
                 <div className="col-span-2"><Label className="text-[11px]">Instructions</Label><Textarea rows={2} value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} placeholder="e.g. After meals" /></div>
               </div>
               <div className="flex gap-2">
-                <Button className="flex-1" onClick={() => addRx.mutate()} disabled={addRx.isPending || !visitId}>
-                  <Plus className="h-4 w-4" /> Add to med order
+                <Button className="flex-1" variant={blocking ? "destructive" : "default"}
+                  onClick={() => addRx.mutate()} disabled={addRx.isPending || !visitId}>
+                  <Plus className="h-4 w-4" /> {blocking ? "Override & add" : "Add to med order"}
                 </Button>
-                <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
+                <Button variant="ghost" onClick={() => { setSelected(null); setOverride(""); }}>Cancel</Button>
               </div>
             </div>
           )}
+
         </div>
 
         <div className="rounded-lg border bg-card p-4">
