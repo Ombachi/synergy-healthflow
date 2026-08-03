@@ -123,6 +123,9 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
   // Clinical safety additions
   "/controlled-drugs": ["pharmacist"],
+  "/pharmacy-safety": ["pharmacist"],
+  "/referrals": ["doctor", "physio", "nurse", "nutritionist"],
+
 
   // Finance ops
   "/cash-reconciliation": ["cashier", "billing_officer"],

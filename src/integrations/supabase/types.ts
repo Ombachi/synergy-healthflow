@@ -1899,6 +1899,66 @@ export type Database = {
           },
         ]
       }
+      dispense_counselling: {
+        Row: {
+          advice: string | null
+          counselled_at: string
+          created_at: string
+          id: string
+          interpreter_used: boolean
+          medication: string
+          patient_id: string | null
+          pharmacist_id: string
+          points: string[]
+          prescription_id: string | null
+          understood: boolean
+          updated_at: string
+        }
+        Insert: {
+          advice?: string | null
+          counselled_at?: string
+          created_at?: string
+          id?: string
+          interpreter_used?: boolean
+          medication: string
+          patient_id?: string | null
+          pharmacist_id?: string
+          points?: string[]
+          prescription_id?: string | null
+          understood?: boolean
+          updated_at?: string
+        }
+        Update: {
+          advice?: string | null
+          counselled_at?: string
+          created_at?: string
+          id?: string
+          interpreter_used?: boolean
+          medication?: string
+          patient_id?: string | null
+          pharmacist_id?: string
+          points?: string[]
+          prescription_id?: string | null
+          understood?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispense_counselling_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispense_counselling_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctor_profiles: {
         Row: {
           bio: string | null
@@ -1985,6 +2045,36 @@ export type Database = {
           },
         ]
       }
+      drug_allergy_rules: {
+        Row: {
+          allergen: string
+          created_at: string
+          drug_pattern: string
+          id: string
+          note: string | null
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          allergen: string
+          created_at?: string
+          drug_pattern: string
+          id?: string
+          note?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          allergen?: string
+          created_at?: string
+          drug_pattern?: string
+          id?: string
+          note?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       drug_catalog: {
         Row: {
           active: boolean
@@ -2029,6 +2119,39 @@ export type Database = {
           instructions?: string | null
           medication_class?: string | null
           unit_price_cents?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      drug_interactions: {
+        Row: {
+          advice: string | null
+          created_at: string
+          drug_a: string
+          drug_b: string
+          id: string
+          mechanism: string | null
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          advice?: string | null
+          created_at?: string
+          drug_a: string
+          drug_b: string
+          id?: string
+          mechanism?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          advice?: string | null
+          created_at?: string
+          drug_a?: string
+          drug_b?: string
+          id?: string
+          mechanism?: string | null
+          severity?: string
           updated_at?: string
         }
         Relationships: []
@@ -5642,6 +5765,45 @@ export type Database = {
           },
         ]
       }
+      radiology_report_templates: {
+        Row: {
+          active: boolean
+          body_part: string | null
+          created_at: string
+          findings_template: string
+          id: string
+          impression_template: string | null
+          modality: string
+          name: string
+          technique: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body_part?: string | null
+          created_at?: string
+          findings_template: string
+          id?: string
+          impression_template?: string | null
+          modality: string
+          name: string
+          technique?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body_part?: string | null
+          created_at?: string
+          findings_template?: string
+          id?: string
+          impression_template?: string | null
+          modality?: string
+          name?: string
+          technique?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       recovery_sessions: {
         Row: {
           created_at: string
@@ -5676,6 +5838,84 @@ export type Database = {
             columns: ["treatment_plan_id"]
             isOneToOne: false
             referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          clinical_summary: string | null
+          created_at: string
+          current_medications: string | null
+          external_facility: string | null
+          id: string
+          investigations: string | null
+          patient_id: string
+          reason: string
+          referred_by: string
+          referred_to: string | null
+          responded_at: string | null
+          responded_by: string | null
+          response: string | null
+          specialty: string
+          status: string
+          updated_at: string
+          urgency: string
+          visit_id: string | null
+        }
+        Insert: {
+          clinical_summary?: string | null
+          created_at?: string
+          current_medications?: string | null
+          external_facility?: string | null
+          id?: string
+          investigations?: string | null
+          patient_id: string
+          reason: string
+          referred_by?: string
+          referred_to?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          specialty: string
+          status?: string
+          updated_at?: string
+          urgency?: string
+          visit_id?: string | null
+        }
+        Update: {
+          clinical_summary?: string | null
+          created_at?: string
+          current_medications?: string | null
+          external_facility?: string | null
+          id?: string
+          investigations?: string | null
+          patient_id?: string
+          reason?: string
+          referred_by?: string
+          referred_to?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          specialty?: string
+          status?: string
+          updated_at?: string
+          urgency?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
             referencedColumns: ["id"]
           },
         ]
@@ -7624,6 +7864,19 @@ export type Database = {
       }
       complete_access_review: { Args: { _review: string }; Returns: undefined }
       compute_patient_initials: { Args: { _name: string }; Returns: string }
+      controlled_drug_reconciliation: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          closing: number
+          dispensed: number
+          drug_name: string
+          opening: number
+          received: number
+          register_balance: number
+          schedule: string
+          variance: number
+        }[]
+      }
       cron_sla_breach_scan: { Args: never; Returns: undefined }
       emit_outbox: {
         Args: {
@@ -7710,6 +7963,14 @@ export type Database = {
           revenue_cents: number
         }[]
       }
+      kpi_walkin_vs_appointment: {
+        Args: { _days?: number }
+        Returns: {
+          day: string
+          scheduled: number
+          walk_in: number
+        }[]
+      }
       list_messageable_users: {
         Args: never
         Returns: {
@@ -7744,6 +8005,30 @@ export type Database = {
         Args: { _quarter: number; _year: number }
         Returns: string
       }
+      patient_pay_invoice: {
+        Args: {
+          _amount_cents: number
+          _invoice: string
+          _method: string
+          _reference?: string
+        }
+        Returns: {
+          amount_cents: number
+          id: string
+          invoice_id: string
+          method: string
+          notes: string | null
+          received_at: string
+          received_by: string | null
+          reference: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       refresh_admin_kpis: { Args: never; Returns: undefined }
       reject_credit_note: {
         Args: { _credit_note_id: string; _notes: string }
@@ -7768,6 +8053,20 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      reorder_suggestions: {
+        Args: never
+        Returns: {
+          category: string
+          item_id: string
+          name: string
+          quantity: number
+          reorder_threshold: number
+          sku: string
+          suggested_qty: number
+          supplier: string
+          unit_price_cents: number
+        }[]
       }
       restore_patient: { Args: { _patient: string }; Returns: undefined }
       restore_visit: { Args: { _visit: string }; Returns: undefined }
