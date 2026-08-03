@@ -280,8 +280,11 @@ const GROUPS: Group[] = [
     items: [
       { title: "Critical results", url: "/critical-results", icon: ShieldAlert },
       { title: "Instrument QC", url: "/instruments", icon: Gauge },
+      { title: "Referrals & consults", url: "/referrals", icon: FileText },
+      { title: "Pharmacy safety", url: "/pharmacy-safety", icon: Pill },
     ],
   },
+
 
   // Non-clinical utility groups (only shown if user has ≥1 accessible item).
   {
