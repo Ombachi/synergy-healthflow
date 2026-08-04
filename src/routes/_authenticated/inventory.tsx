@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CrudPage } from "@/components/crud-page";
 import { useAuth } from "@/hooks/use-auth";
+import { ReorderAutomation } from "@/components/reorder-automation";
 
 export const Route = createFileRoute("/_authenticated/inventory")({
   component: Inventory,
@@ -104,5 +105,6 @@ function Inventory() {
         </>
       )}
     />
+    </div>
   );
 }
