@@ -66,9 +66,8 @@ function ReferralsPage() {
   const patients = useQuery({
     queryKey: ["ref-patients"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("patients" as never)
-        .select("id, full_name, medical_record_number, date_of_birth, gender")
-        .is("deleted_at", null).order("full_name").limit(500);
+      // patient_directory() excludes staff members who also hold a patient record.
+      const { data, error } = await supabase.rpc("patient_directory" as never);
       if (error) throw error;
       return (data as unknown as Patient[]) ?? [];
     },

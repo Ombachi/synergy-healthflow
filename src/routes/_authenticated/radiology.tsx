@@ -14,11 +14,13 @@ import { PatientContext } from "@/components/patient-context";
 import { RoleGate } from "@/components/role-gate";
 import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
 import { EncounterTabs } from "@/components/encounter-tabs";
+import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/radiology")({ component: () => <RoleGate path="/radiology"><RadPortal /></RoleGate> });
 
 interface ImgOrder { id: string; visit_id: string | null; patient_id: string; modality: string; body_part: string | null; clinical_question: string | null; status: string; priority: string; scheduled_at: string | null; performed_at: string | null; findings: string | null; report: string | null; image_path: string | null; created_at: string }
 interface Patient { id: string; full_name: string }
+interface RadTemplate { id: string; modality: string; name: string; technique: string | null; findings_template: string; impression_template: string | null }
 
 function RadPortal() {
   const qc = useQueryClient();
@@ -69,20 +71,23 @@ function RadPortal() {
     if (!openId) return;
     try { localStorage.setItem(draftKey(openId), JSON.stringify(form)); } catch { /* ignore */ }
   }, [openId, form]);
-  // Restore last-open draft on mount so the panel comes back if the user navigated away.
-  useEffect(() => {
-    try {
-      const lastId = localStorage.getItem("litu:rad-draft:last");
-      if (lastId && !openId) {
-        const raw = localStorage.getItem(draftKey(lastId));
-        if (raw) setOpenId(lastId);
-      }
-    } catch { /* ignore */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  useEffect(() => {
-    if (openId) { try { localStorage.setItem("litu:rad-draft:last", openId); } catch { /* ignore */ } }
-  }, [openId]);
+  // NOTE: drafts are restored only when the radiologist explicitly reopens an
+  // order. We deliberately do NOT auto-open the last draft on mount — that made
+  // a report dialog pop up every time the dashboard was visited.
+
+  const templates = useQuery({
+    queryKey: ["rad-templates"],
+    staleTime: 300_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("radiology_report_templates" as never)
+        .select("id, modality, name, technique, findings_template, impression_template")
+        .eq("active" as never, true as never)
+        .order("modality");
+      if (error) throw error;
+      return (data as unknown as RadTemplate[]) ?? [];
+    },
+  });
 
   const schedule = useMutation({
     mutationFn: async (id: string) => {
@@ -134,6 +139,27 @@ function RadPortal() {
       return encFilter === "inpatient" ? isInp : !isInp;
     });
   }, [orders.data, encFilter, encMap.data?.inpatientVisitIds]);
+  const pager = usePager(filteredOrders, 20);
+
+  // Templates matching the modality of the order being reported (fall back to all).
+  const modalityTemplates = useMemo(() => {
+    const all = templates.data ?? [];
+    if (!opening) return all;
+    const m = opening.modality.toLowerCase();
+    const match = all.filter((t) => m.includes(t.modality.toLowerCase()) || t.modality.toLowerCase().includes(m));
+    return match.length ? match : all;
+  }, [templates.data, opening]);
+
+  function applyTemplate(id: string) {
+    const t = (templates.data ?? []).find((x) => x.id === id);
+    if (!t) return;
+    setForm((f) => ({
+      ...f,
+      findings: [t.technique ? `Technique: ${t.technique}` : null, t.findings_template].filter(Boolean).join("\n\n"),
+      report: t.impression_template ?? f.report,
+    }));
+    toast.success(`Applied "${t.name}" template`);
+  }
 
   return (
     <div className="space-y-6">
@@ -149,7 +175,7 @@ function RadPortal() {
         </div>
         <div className="divide-y">
           {filteredOrders.length === 0 && <div className="p-4 text-sm text-muted-foreground">No orders.</div>}
-          {filteredOrders.map((o) => (
+          {pager.slice.map((o) => (
             <div key={o.id} className="p-3 text-sm">
               <div className="grid grid-cols-12 items-center gap-2">
                 <div className="col-span-3">
@@ -172,13 +198,28 @@ function RadPortal() {
             </div>
           ))}
         </div>
+        <Pager page={pager.page} pageCount={pager.pageCount} total={pager.total} pageSize={pager.pageSize} setPage={pager.setPage} label="orders" />
       </div>
 
       <Dialog open={!!openId} onOpenChange={(v) => !v && setOpenId(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[88vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{opening?.modality} — Report</DialogTitle></DialogHeader>
           <div className="space-y-2">
-            <div><Label>Findings</Label><Textarea rows={4} value={form.findings} onChange={(e) => setForm({ ...form, findings: e.target.value })} /></div>
+            <div>
+              <Label>Structured report template</Label>
+              <select
+                className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm"
+                defaultValue=""
+                onChange={(e) => { if (e.target.value) { applyTemplate(e.target.value); e.target.value = ""; } }}
+              >
+                <option value="">Insert a template…</option>
+                {modalityTemplates.map((t) => (
+                  <option key={t.id} value={t.id}>{t.modality} · {t.name}</option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-muted-foreground">Inserting replaces the findings and impression with the template's normal text — edit as needed.</p>
+            </div>
+            <div><Label>Findings</Label><Textarea rows={8} value={form.findings} onChange={(e) => setForm({ ...form, findings: e.target.value })} /></div>
             <div><Label>Impression / Report</Label><Textarea rows={5} value={form.report} onChange={(e) => setForm({ ...form, report: e.target.value })} /></div>
             <div>
               <Label>Report image</Label>

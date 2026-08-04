@@ -52,6 +52,74 @@ export type Database = {
           },
         ]
       }
+      abp_baselines: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          athlete_id: string
+          created_at: string
+          id: string
+          marker: string
+          mean_value: number | null
+          n_samples: number
+          notes: string | null
+          personal_high: number | null
+          personal_low: number | null
+          population_high: number | null
+          population_low: number | null
+          sd_value: number | null
+          status: string
+          units: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          athlete_id: string
+          created_at?: string
+          id?: string
+          marker: string
+          mean_value?: number | null
+          n_samples?: number
+          notes?: string | null
+          personal_high?: number | null
+          personal_low?: number | null
+          population_high?: number | null
+          population_low?: number | null
+          sd_value?: number | null
+          status?: string
+          units?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          marker?: string
+          mean_value?: number | null
+          n_samples?: number
+          notes?: string | null
+          personal_high?: number | null
+          personal_low?: number | null
+          population_high?: number | null
+          population_low?: number | null
+          sd_value?: number | null
+          status?: string
+          units?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abp_baselines_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       abp_biomarkers: {
         Row: {
           athlete_id: string
@@ -3107,6 +3175,7 @@ export type Database = {
           instrument_id: string
           lot_number: string | null
           observed_value: number | null
+          panel: string | null
           performed_by: string | null
           qc_level: string
           result: string
@@ -3124,6 +3193,7 @@ export type Database = {
           instrument_id: string
           lot_number?: string | null
           observed_value?: number | null
+          panel?: string | null
           performed_by?: string | null
           qc_level?: string
           result?: string
@@ -3141,6 +3211,7 @@ export type Database = {
           instrument_id?: string
           lot_number?: string | null
           observed_value?: number | null
+          panel?: string | null
           performed_by?: string | null
           qc_level?: string
           result?: string
@@ -4943,6 +5014,8 @@ export type Database = {
           full_name: string
           gender: string | null
           id: string
+          id_number: string | null
+          id_type: string
           insurance_number: string | null
           insurance_provider: string | null
           medical_record_number: string | null
@@ -4969,6 +5042,8 @@ export type Database = {
           full_name: string
           gender?: string | null
           id?: string
+          id_number?: string | null
+          id_type?: string
           insurance_number?: string | null
           insurance_provider?: string | null
           medical_record_number?: string | null
@@ -4995,6 +5070,8 @@ export type Database = {
           full_name?: string
           gender?: string | null
           id?: string
+          id_number?: string | null
+          id_type?: string
           insurance_number?: string | null
           insurance_provider?: string | null
           medical_record_number?: string | null
@@ -5710,6 +5787,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      qc_panels: {
+        Row: {
+          analytes: Json
+          code: string
+          created_at: string
+          id: string
+          levels: string[]
+          name: string
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          analytes?: Json
+          code: string
+          created_at?: string
+          id?: string
+          levels?: string[]
+          name: string
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          analytes?: Json
+          code?: string
+          created_at?: string
+          id?: string
+          levels?: string[]
+          name?: string
+          section?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       quality_events: {
         Row: {
@@ -8005,6 +8115,20 @@ export type Database = {
         Args: { _quarter: number; _year: number }
         Returns: string
       }
+      patient_directory: {
+        Args: never
+        Returns: {
+          allergies: string
+          date_of_birth: string
+          full_name: string
+          gender: string
+          id: string
+          id_number: string
+          id_type: string
+          medical_record_number: string
+          phone: string
+        }[]
+      }
       patient_pay_invoice: {
         Args: {
           _amount_cents: number
@@ -8025,6 +8149,34 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      recompute_abp_baseline: {
+        Args: { _athlete: string; _marker: string; _n?: number }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          athlete_id: string
+          created_at: string
+          id: string
+          marker: string
+          mean_value: number | null
+          n_samples: number
+          notes: string | null
+          personal_high: number | null
+          personal_low: number | null
+          population_high: number | null
+          population_low: number | null
+          sd_value: number | null
+          status: string
+          units: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "abp_baselines"
           isOneToOne: true
           isSetofReturn: false
         }

@@ -16,7 +16,7 @@ interface Req { id: string; department: string | null; status: string; notes: st
 interface ReqItem { id: string; request_id: string; item_id: string; qty_requested: number; qty_approved: number | null; qty_issued: number | null }
 
 // Reusable form used by /lab and /pharmacy to raise a stock request to central store.
-export function StockRequestForm({ department, categoryHint }: { department: "lab" | "pharmacy"; categoryHint?: string }) {
+export function StockRequestForm({ department, categoryHint }: { department: "lab" | "pharmacy" | "ward"; categoryHint?: string }) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
