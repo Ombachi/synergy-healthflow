@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, BedDouble, ClipboardList, Receipt, ShieldX, Timer } from "lucide-react";
+import { Activity, BedDouble, CalendarClock, ClipboardList, Receipt, ShieldX, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoleGate } from "@/components/role-gate";
