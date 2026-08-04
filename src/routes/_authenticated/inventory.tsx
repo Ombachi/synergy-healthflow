@@ -23,6 +23,8 @@ function Inventory() {
   const canWrite = hasRole("admin");
 
   return (
+    <div className="space-y-6">
+    <ReorderAutomation />
     <CrudPage<Item>
       title="Inventory"
       description="Stock, reorder thresholds, and suppliers."
