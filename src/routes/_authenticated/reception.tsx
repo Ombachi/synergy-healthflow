@@ -158,7 +158,7 @@ function ReceptionPage() {
   // Walk-in / new patient registration — trimmed layout
   const EMPTY_REG = {
     // Identification
-    full_name: "", date_of_birth: "", gender: "",
+    full_name: "", date_of_birth: "", gender: "", id_type: "national_id", id_number: "",
     // Contact
     phone: "", email: "", address: "",
     // Emergency contact
@@ -175,6 +175,8 @@ function ReceptionPage() {
         full_name: walkForm.full_name.trim(),
         date_of_birth: walkForm.date_of_birth || null,
         gender: walkForm.gender || null,
+        id_type: walkForm.id_type,
+        id_number: walkForm.id_number.trim() || null,
         phone: walkForm.phone || null,
         email: walkForm.email || null,
         address: walkForm.address || null,
@@ -249,6 +251,20 @@ function ReceptionPage() {
                       <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.gender} onChange={(e) => setWalkForm({ ...walkForm, gender: e.target.value })}>
                         <option value="">—</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option>
                       </select>
+                    </div>
+                    <div className="col-span-4"><Label className="text-xs">Identification type</Label>
+                      <select className="mt-1 h-9 w-full rounded border bg-background px-2 text-sm" value={walkForm.id_type} onChange={(e) => setWalkForm({ ...walkForm, id_type: e.target.value })}>
+                        <option value="national_id">National ID</option>
+                        <option value="passport">Passport</option>
+                        <option value="birth_certificate">Birth certificate</option>
+                        <option value="alien_id">Alien ID</option>
+                        <option value="military_id">Military ID</option>
+                        <option value="none">None / not provided</option>
+                      </select>
+                    </div>
+                    <div className="col-span-8"><Label className="text-xs">ID / Passport number</Label>
+                      <Input value={walkForm.id_number} onChange={(e) => setWalkForm({ ...walkForm, id_number: e.target.value })} maxLength={40}
+                        placeholder={walkForm.id_type === "passport" ? "e.g. AK0123456" : "e.g. 12345678"} />
                     </div>
                   </div>
                 </section>

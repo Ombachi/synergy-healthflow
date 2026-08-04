@@ -223,8 +223,8 @@ function CounsellingRecords() {
   const patients = useQuery({
     queryKey: ["counsel-patients"],
     queryFn: async () => {
-      const { data } = await supabase.from("patients" as never)
-        .select("id, full_name, medical_record_number").is("deleted_at", null).order("full_name").limit(500);
+      // Staff-free patient directory (staff members with patient rows are filtered out).
+      const { data } = await supabase.rpc("patient_directory" as never);
       return ((data as unknown as { id: string; full_name: string; medical_record_number: string | null }[]) ?? []);
     },
   });

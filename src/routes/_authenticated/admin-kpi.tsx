@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, BedDouble, ClipboardList, Receipt, ShieldX, Timer } from "lucide-react";
+import { Activity, BedDouble, CalendarClock, ClipboardList, Receipt, ShieldX, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoleGate } from "@/components/role-gate";
@@ -42,6 +42,10 @@ function AdminKPI() {
     const { data } = await supabase.rpc("kpi_lab_tat" as never);
     return ((data as unknown as { tat_minutes: number; samples_30d: number }[]) ?? [])[0] ?? null;
   }});
+  const mix = useQuery({ queryKey:["kpi-mix"], staleTime: 60_000, queryFn: async () => {
+    const { data } = await supabase.rpc("kpi_walkin_vs_appointment" as never, { _days: 30 } as never);
+    return (data as unknown as { day: string; walk_in: number; scheduled: number }[]) ?? [];
+  }});
 
 
   // group revenue by dept
@@ -49,10 +53,17 @@ function AdminKPI() {
   (revenue.data ?? []).forEach((r) => byDept.set(r.dept, (byDept.get(r.dept) ?? 0) + Number(r.revenue_cents)));
   const totalRev = Array.from(byDept.values()).reduce((s,v)=>s+v,0);
 
+  const mixRows = mix.data ?? [];
+  const walkTotal = mixRows.reduce((s, r) => s + Number(r.walk_in ?? 0), 0);
+  const schedTotal = mixRows.reduce((s, r) => s + Number(r.scheduled ?? 0), 0);
+  const mixTotal = walkTotal + schedTotal;
+  const maxDay = Math.max(1, ...mixRows.map((r) => Number(r.walk_in ?? 0) + Number(r.scheduled ?? 0)));
+
   async function refresh() {
     await supabase.rpc("refresh_admin_kpis" as never);
-    revenue.refetch(); occ.refetch(); alos.refetch(); denial.refetch(); tat.refetch();
+    revenue.refetch(); occ.refetch(); alos.refetch(); denial.refetch(); tat.refetch(); mix.refetch();
   }
+
 
   return (
     <div className="space-y-6">
@@ -71,7 +82,41 @@ function AdminKPI() {
         <Kpi icon={ShieldX} title="Denial rate" value={`${denial.data?.denial_pct ?? 0}%`} sub={`${denial.data?.denied_count ?? 0} of ${denial.data?.decided_count ?? 0} claims`} color="text-rose-500" />
         <Kpi icon={Timer} title="Lab TAT" value={`${tat.data?.tat_minutes ?? "—"} min`} sub={`${tat.data?.samples_30d ?? 0} samples`} color="text-violet-500" />
         <Kpi icon={Activity} title="Wards active" value={(occ.data?.length ?? 0).toString()} sub="across hospital" color="text-cyan-500" />
+        <Kpi icon={CalendarClock} title="Scheduled share (30d)" value={`${mixTotal ? Math.round(100 * schedTotal / mixTotal) : 0}%`} sub={`${schedTotal} scheduled · ${walkTotal} walk-in`} color="text-indigo-500" />
       </div>
+
+      <Card>
+        <CardHeader><CardTitle>Walk-in vs appointment (30 days)</CardTitle></CardHeader>
+        <CardContent>
+          {mixRows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No visit activity in the last 30 days.</p>
+          ) : (
+            <>
+              <div className="mb-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><i className="inline-block h-2 w-3 rounded-sm bg-primary" /> Scheduled ({schedTotal})</span>
+                <span className="flex items-center gap-1"><i className="inline-block h-2 w-3 rounded-sm bg-amber-500" /> Walk-in ({walkTotal})</span>
+              </div>
+              <div className="flex h-40 items-end gap-1">
+                {mixRows.map((r) => {
+                  const w = Number(r.walk_in ?? 0), s = Number(r.scheduled ?? 0);
+                  return (
+                    <div key={r.day} className="flex flex-1 flex-col justify-end" title={`${new Date(r.day).toLocaleDateString("en-GB")} — ${s} scheduled, ${w} walk-in`}>
+                      <div className="w-full bg-amber-500" style={{ height: `${(w / maxDay) * 100}%` }} />
+                      <div className="w-full bg-primary" style={{ height: `${(s / maxDay) * 100}%` }} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-1 flex justify-between text-xs text-muted-foreground">
+                <span>{new Date(mixRows[0]!.day).toLocaleDateString("en-GB")}</span>
+                <span>{new Date(mixRows[mixRows.length - 1]!.day).toLocaleDateString("en-GB")}</span>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+
 
       <Card>
         <CardHeader><CardTitle>Revenue by department (30d)</CardTitle></CardHeader>

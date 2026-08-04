@@ -102,8 +102,8 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/sports-medicine": ["physio"],
   "/anti-doping": ["physio"],
 
-  // Orders (stock requests live globally for lab/pharmacy/store)
-  "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper"],
+  // Orders (stock requests live globally for lab/pharmacy/ward/store)
+  "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper", "nurse"],
 
   // HR / Employee Self-Service — moved to the staff portal.
   // Only HR admins retain in-app access; regular staff will access via staff.vitalis.health.
@@ -150,7 +150,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
   "/visits/": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
   "/department/": [],
-  "/orders/": ["lab_tech", "pharmacist", "store_keeper"],
+  "/orders/": ["lab_tech", "pharmacist", "store_keeper", "nurse"],
   "/print/wristband/": ["receptionist", "nurse", "doctor"],
   "/print/sample/": ["lab_tech", "nurse", "doctor"],
   "/print/drug/": ["pharmacist", "store_keeper"],
