@@ -420,62 +420,8 @@ export function NurseStation() {
                 )}
               </section>
 
-              {/* Symptoms */}
-              <section className="space-y-3 rounded-lg border bg-background p-4">
-                <div className="font-medium">Symptoms & history</div>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <Label className="text-xs">Chief complaint</Label>
-                    <Textarea rows={2} value={v.chief_complaint} onChange={(e) => setV({ ...v, chief_complaint: e.target.value })} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Pain score (0–10)" value={v.pain_level} onChange={(x) => setV({ ...v, pain_level: x })} />
-                    <div>
-                      <Label className="text-xs">Pregnancy</Label>
-                      <Select value={v.pregnancy_status} onValueChange={(x) => setV({ ...v, pregnancy_status: x })}>
-                        <SelectTrigger className="h-9"><SelectValue placeholder="N/A" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="na">N/A</SelectItem>
-                          <SelectItem value="not_pregnant">Not pregnant</SelectItem>
-                          <SelectItem value="pregnant">Pregnant</SelectItem>
-                          <SelectItem value="unknown">Unknown</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Allergies</Label>
-                    <Input value={v.allergies} onChange={(e) => setV({ ...v, allergies: e.target.value })} placeholder="e.g. penicillin" />
-                    <div className="mt-1.5 flex flex-wrap gap-1">
-                      {COMMON_ALLERGENS.map((a) => {
-                        const present = v.allergies.toLowerCase().split(/[,;]\s*/).includes(a.toLowerCase());
-                        return (
-                          <button
-                            key={a}
-                            type="button"
-                            onClick={() => {
-                              const list = v.allergies.split(/,\s*/).map(s=>s.trim()).filter(Boolean);
-                              const next = present ? list.filter((x) => x.toLowerCase() !== a.toLowerCase()) : [...list, a];
-                              setV({ ...v, allergies: next.join(", ") });
-                            }}
-                            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
-                              present ? "border-rose-500 bg-rose-500/10 text-rose-700" : "border-border bg-muted hover:bg-accent"
-                            }`}
-                          >
-                            {present ? "− " : "+ "}{a}
-                          </button>
-                        );
-                      })}
-                      <button type="button" onClick={() => setV({ ...v, allergies: "NKDA" })}
-                        className="rounded-full border px-2 py-0.5 text-[11px] hover:bg-accent">NKDA</button>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Triage notes</Label>
-                    <Textarea rows={2} value={v.notes} onChange={(e) => setV({ ...v, notes: e.target.value })} />
-                  </div>
-                </div>
-              </section>
+
+
 
               {/* Triage + assign */}
               {selectedEntry?.queue_type === "triage" && <section className="space-y-3 rounded-lg border bg-background p-4 lg:col-span-2">
