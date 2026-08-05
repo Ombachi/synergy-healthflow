@@ -5,7 +5,6 @@ import { AlertTriangle, HeartPulse, Stethoscope, UserRound } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -24,12 +23,6 @@ const PRIO_COLOR: Record<number, string> = {
   5: "bg-muted text-muted-foreground border-border",
 };
 const PRIO_LABEL: Record<number, string> = { 1: "Emergency", 2: "Urgent", 3: "Normal", 4: "Low", 5: "Routine" };
-
-const COMMON_ALLERGENS: string[] = [
-  "Penicillin","Sulfa drugs","Aspirin","NSAIDs","Codeine","Morphine","Ibuprofen",
-  "Latex","Iodine/contrast","Peanuts","Tree nuts","Shellfish","Eggs","Milk","Soy","Wheat/Gluten",
-  "Bee stings","Pollen","Dust mites",
-];
 
 function ageOf(dob: string | null) {
   if (!dob) return "—";
