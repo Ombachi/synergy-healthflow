@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DisplayQueueRouteImport } from './routes/display.queue'
@@ -88,6 +89,7 @@ import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 import { Route as AuthenticatedComingSoonNameRouteImport } from './routes/_authenticated/coming-soon.$name'
 import { Route as AuthenticatedAdminSoftDeletedRouteImport } from './routes/_authenticated/admin.soft-deleted'
+import { Route as AuthenticatedAdminPortalInvitationsRouteImport } from './routes/_authenticated/admin.portal-invitations'
 import { Route as AuthenticatedAdminErrorsRouteImport } from './routes/_authenticated/admin.errors'
 import { Route as AuthenticatedAdminConsentRouteImport } from './routes/_authenticated/admin.consent'
 import { Route as AuthenticatedAdminBreachesRouteImport } from './routes/_authenticated/admin.breaches'
@@ -100,6 +102,11 @@ import { Route as AuthenticatedPrintDrugBatchIdRouteImport } from './routes/_aut
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivateRoute = ActivateRouteImport.update({
+  id: '/activate',
+  path: '/activate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -519,6 +526,12 @@ const AuthenticatedAdminSoftDeletedRoute =
     path: '/admin/soft-deleted',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminPortalInvitationsRoute =
+  AuthenticatedAdminPortalInvitationsRouteImport.update({
+    id: '/admin/portal-invitations',
+    path: '/admin/portal-invitations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminErrorsRoute =
   AuthenticatedAdminErrorsRouteImport.update({
     id: '/admin/errors',
@@ -570,6 +583,7 @@ const AuthenticatedPrintDrugBatchIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/admissions': typeof AuthenticatedAdmissionsRoute
@@ -639,6 +653,7 @@ export interface FileRoutesByFullPath {
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
+  '/admin/portal-invitations': typeof AuthenticatedAdminPortalInvitationsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -658,6 +673,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/admissions': typeof AuthenticatedAdmissionsRoute
@@ -727,6 +743,7 @@ export interface FileRoutesByTo {
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
+  '/admin/portal-invitations': typeof AuthenticatedAdminPortalInvitationsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -748,6 +765,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/_authenticated/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/_authenticated/admissions': typeof AuthenticatedAdmissionsRoute
@@ -817,6 +835,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/_authenticated/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/_authenticated/admin/errors': typeof AuthenticatedAdminErrorsRoute
+  '/_authenticated/admin/portal-invitations': typeof AuthenticatedAdminPortalInvitationsRoute
   '/_authenticated/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/_authenticated/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -838,6 +857,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activate'
     | '/auth'
     | '/admin-kpi'
     | '/admissions'
@@ -907,6 +927,7 @@ export interface FileRouteTypes {
     | '/admin/breaches'
     | '/admin/consent'
     | '/admin/errors'
+    | '/admin/portal-invitations'
     | '/admin/soft-deleted'
     | '/coming-soon/$name'
     | '/department/$dept'
@@ -926,6 +947,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activate'
     | '/auth'
     | '/admin-kpi'
     | '/admissions'
@@ -995,6 +1017,7 @@ export interface FileRouteTypes {
     | '/admin/breaches'
     | '/admin/consent'
     | '/admin/errors'
+    | '/admin/portal-invitations'
     | '/admin/soft-deleted'
     | '/coming-soon/$name'
     | '/department/$dept'
@@ -1015,6 +1038,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/activate'
     | '/auth'
     | '/_authenticated/admin-kpi'
     | '/_authenticated/admissions'
@@ -1084,6 +1108,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/breaches'
     | '/_authenticated/admin/consent'
     | '/_authenticated/admin/errors'
+    | '/_authenticated/admin/portal-invitations'
     | '/_authenticated/admin/soft-deleted'
     | '/_authenticated/coming-soon/$name'
     | '/_authenticated/department/$dept'
@@ -1105,6 +1130,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  ActivateRoute: typeof ActivateRoute
   AuthRoute: typeof AuthRoute
   DisplayQueueRoute: typeof DisplayQueueRoute
   VerifyTypeIdRoute: typeof VerifyTypeIdRoute
@@ -1118,6 +1144,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activate': {
+      id: '/activate'
+      path: '/activate'
+      fullPath: '/activate'
+      preLoaderRoute: typeof ActivateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1666,6 +1699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSoftDeletedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/portal-invitations': {
+      id: '/_authenticated/admin/portal-invitations'
+      path: '/admin/portal-invitations'
+      fullPath: '/admin/portal-invitations'
+      preLoaderRoute: typeof AuthenticatedAdminPortalInvitationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/errors': {
       id: '/_authenticated/admin/errors'
       path: '/admin/errors'
@@ -1804,6 +1844,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminBreachesRoute: typeof AuthenticatedAdminBreachesRoute
   AuthenticatedAdminConsentRoute: typeof AuthenticatedAdminConsentRoute
   AuthenticatedAdminErrorsRoute: typeof AuthenticatedAdminErrorsRoute
+  AuthenticatedAdminPortalInvitationsRoute: typeof AuthenticatedAdminPortalInvitationsRoute
   AuthenticatedAdminSoftDeletedRoute: typeof AuthenticatedAdminSoftDeletedRoute
   AuthenticatedComingSoonNameRoute: typeof AuthenticatedComingSoonNameRoute
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
@@ -1887,6 +1928,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminBreachesRoute: AuthenticatedAdminBreachesRoute,
   AuthenticatedAdminConsentRoute: AuthenticatedAdminConsentRoute,
   AuthenticatedAdminErrorsRoute: AuthenticatedAdminErrorsRoute,
+  AuthenticatedAdminPortalInvitationsRoute:
+    AuthenticatedAdminPortalInvitationsRoute,
   AuthenticatedAdminSoftDeletedRoute: AuthenticatedAdminSoftDeletedRoute,
   AuthenticatedComingSoonNameRoute: AuthenticatedComingSoonNameRoute,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
@@ -1910,6 +1953,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  ActivateRoute: ActivateRoute,
   AuthRoute: AuthRoute,
   DisplayQueueRoute: DisplayQueueRoute,
   VerifyTypeIdRoute: VerifyTypeIdRoute,
@@ -1918,13 +1962,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -4997,37 +4997,49 @@ export type Database = {
       }
       patient_portal_invitations: {
         Row: {
+          channel: string
           created_at: string
           created_by: string | null
-          email: string
+          email: string | null
           expires_at: string
           id: string
           invalidated_at: string | null
+          last_sent_at: string | null
           patient_id: string
+          phone: string | null
+          send_count: number
           token_hash: string
           updated_at: string
           used_at: string | null
         }
         Insert: {
+          channel?: string
           created_at?: string
           created_by?: string | null
-          email: string
+          email?: string | null
           expires_at?: string
           id?: string
           invalidated_at?: string | null
+          last_sent_at?: string | null
           patient_id: string
+          phone?: string | null
+          send_count?: number
           token_hash: string
           updated_at?: string
           used_at?: string | null
         }
         Update: {
+          channel?: string
           created_at?: string
           created_by?: string | null
-          email?: string
+          email?: string | null
           expires_at?: string
           id?: string
           invalidated_at?: string | null
+          last_sent_at?: string | null
           patient_id?: string
+          phone?: string | null
+          send_count?: number
           token_hash?: string
           updated_at?: string
           used_at?: string | null
@@ -5435,6 +5447,63 @@ export type Database = {
             columns: ["prescription_id"]
             isOneToOne: false
             referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_invitation_events: {
+        Row: {
+          actor_id: string | null
+          channel: string | null
+          created_at: string
+          event: string
+          id: string
+          invitation_id: string | null
+          ip_address: string | null
+          metadata: Json
+          patient_id: string | null
+          reason: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          channel?: string | null
+          created_at?: string
+          event: string
+          id?: string
+          invitation_id?: string | null
+          ip_address?: string | null
+          metadata?: Json
+          patient_id?: string | null
+          reason?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          channel?: string | null
+          created_at?: string
+          event?: string
+          id?: string
+          invitation_id?: string | null
+          ip_address?: string | null
+          metadata?: Json
+          patient_id?: string | null
+          reason?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_invitation_events_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "patient_portal_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_invitation_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]

@@ -140,6 +140,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/admin/breaches": [],
   "/admin/access-reviews": [],
   "/admin/errors": [],
+  "/admin/portal-invitations": [],
 };
 
 

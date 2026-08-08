@@ -344,6 +344,7 @@ const GROUPS: Group[] = [
       { title: "Breach register", url: "/admin/breaches", icon: ShieldAlert },
       { title: "Access reviews", url: "/admin/access-reviews", icon: ClipboardCheck },
       { title: "Error monitor", url: "/admin/errors", icon: ShieldAlert },
+      { title: "Portal invitations", url: "/admin/portal-invitations", icon: ShieldCheck },
       { title: "SLA dashboard", url: "/sla", icon: Gauge },
       { title: "Queue display", url: "/display/queue", icon: ListOrdered },
     ],
