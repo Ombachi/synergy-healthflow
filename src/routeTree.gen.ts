@@ -89,6 +89,7 @@ import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
 import { Route as AuthenticatedComingSoonNameRouteImport } from './routes/_authenticated/coming-soon.$name'
 import { Route as AuthenticatedAdminSoftDeletedRouteImport } from './routes/_authenticated/admin.soft-deleted'
+import { Route as AuthenticatedAdminPortalInvitationsRouteImport } from './routes/_authenticated/admin.portal-invitations'
 import { Route as AuthenticatedAdminErrorsRouteImport } from './routes/_authenticated/admin.errors'
 import { Route as AuthenticatedAdminConsentRouteImport } from './routes/_authenticated/admin.consent'
 import { Route as AuthenticatedAdminBreachesRouteImport } from './routes/_authenticated/admin.breaches'
@@ -525,6 +526,12 @@ const AuthenticatedAdminSoftDeletedRoute =
     path: '/admin/soft-deleted',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminPortalInvitationsRoute =
+  AuthenticatedAdminPortalInvitationsRouteImport.update({
+    id: '/admin/portal-invitations',
+    path: '/admin/portal-invitations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminErrorsRoute =
   AuthenticatedAdminErrorsRouteImport.update({
     id: '/admin/errors',
@@ -646,6 +653,7 @@ export interface FileRoutesByFullPath {
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
+  '/admin/portal-invitations': typeof AuthenticatedAdminPortalInvitationsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -735,6 +743,7 @@ export interface FileRoutesByTo {
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
+  '/admin/portal-invitations': typeof AuthenticatedAdminPortalInvitationsRoute
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -826,6 +835,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/breaches': typeof AuthenticatedAdminBreachesRoute
   '/_authenticated/admin/consent': typeof AuthenticatedAdminConsentRoute
   '/_authenticated/admin/errors': typeof AuthenticatedAdminErrorsRoute
+  '/_authenticated/admin/portal-invitations': typeof AuthenticatedAdminPortalInvitationsRoute
   '/_authenticated/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/_authenticated/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
@@ -917,6 +927,7 @@ export interface FileRouteTypes {
     | '/admin/breaches'
     | '/admin/consent'
     | '/admin/errors'
+    | '/admin/portal-invitations'
     | '/admin/soft-deleted'
     | '/coming-soon/$name'
     | '/department/$dept'
@@ -1006,6 +1017,7 @@ export interface FileRouteTypes {
     | '/admin/breaches'
     | '/admin/consent'
     | '/admin/errors'
+    | '/admin/portal-invitations'
     | '/admin/soft-deleted'
     | '/coming-soon/$name'
     | '/department/$dept'
@@ -1096,6 +1108,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/breaches'
     | '/_authenticated/admin/consent'
     | '/_authenticated/admin/errors'
+    | '/_authenticated/admin/portal-invitations'
     | '/_authenticated/admin/soft-deleted'
     | '/_authenticated/coming-soon/$name'
     | '/_authenticated/department/$dept'
@@ -1686,6 +1699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSoftDeletedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/portal-invitations': {
+      id: '/_authenticated/admin/portal-invitations'
+      path: '/admin/portal-invitations'
+      fullPath: '/admin/portal-invitations'
+      preLoaderRoute: typeof AuthenticatedAdminPortalInvitationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/errors': {
       id: '/_authenticated/admin/errors'
       path: '/admin/errors'
@@ -1824,6 +1844,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminBreachesRoute: typeof AuthenticatedAdminBreachesRoute
   AuthenticatedAdminConsentRoute: typeof AuthenticatedAdminConsentRoute
   AuthenticatedAdminErrorsRoute: typeof AuthenticatedAdminErrorsRoute
+  AuthenticatedAdminPortalInvitationsRoute: typeof AuthenticatedAdminPortalInvitationsRoute
   AuthenticatedAdminSoftDeletedRoute: typeof AuthenticatedAdminSoftDeletedRoute
   AuthenticatedComingSoonNameRoute: typeof AuthenticatedComingSoonNameRoute
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
@@ -1907,6 +1928,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminBreachesRoute: AuthenticatedAdminBreachesRoute,
   AuthenticatedAdminConsentRoute: AuthenticatedAdminConsentRoute,
   AuthenticatedAdminErrorsRoute: AuthenticatedAdminErrorsRoute,
+  AuthenticatedAdminPortalInvitationsRoute:
+    AuthenticatedAdminPortalInvitationsRoute,
   AuthenticatedAdminSoftDeletedRoute: AuthenticatedAdminSoftDeletedRoute,
   AuthenticatedComingSoonNameRoute: AuthenticatedComingSoonNameRoute,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
