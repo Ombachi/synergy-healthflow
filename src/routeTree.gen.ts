@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DisplayQueueRouteImport } from './routes/display.queue'
@@ -100,6 +101,11 @@ import { Route as AuthenticatedPrintDrugBatchIdRouteImport } from './routes/_aut
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivateRoute = ActivateRouteImport.update({
+  id: '/activate',
+  path: '/activate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -570,6 +576,7 @@ const AuthenticatedPrintDrugBatchIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/admissions': typeof AuthenticatedAdmissionsRoute
@@ -658,6 +665,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/admissions': typeof AuthenticatedAdmissionsRoute
@@ -748,6 +756,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/_authenticated/admin-kpi': typeof AuthenticatedAdminKpiRoute
   '/_authenticated/admissions': typeof AuthenticatedAdmissionsRoute
@@ -838,6 +847,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activate'
     | '/auth'
     | '/admin-kpi'
     | '/admissions'
@@ -926,6 +936,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activate'
     | '/auth'
     | '/admin-kpi'
     | '/admissions'
@@ -1015,6 +1026,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/activate'
     | '/auth'
     | '/_authenticated/admin-kpi'
     | '/_authenticated/admissions'
@@ -1105,6 +1117,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  ActivateRoute: typeof ActivateRoute
   AuthRoute: typeof AuthRoute
   DisplayQueueRoute: typeof DisplayQueueRoute
   VerifyTypeIdRoute: typeof VerifyTypeIdRoute
@@ -1118,6 +1131,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activate': {
+      id: '/activate'
+      path: '/activate'
+      fullPath: '/activate'
+      preLoaderRoute: typeof ActivateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1910,6 +1930,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  ActivateRoute: ActivateRoute,
   AuthRoute: AuthRoute,
   DisplayQueueRoute: DisplayQueueRoute,
   VerifyTypeIdRoute: VerifyTypeIdRoute,
@@ -1918,13 +1939,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
