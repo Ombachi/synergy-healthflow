@@ -22,6 +22,8 @@ export const Route = createFileRoute("/_authenticated/me")({ component: PatientT
 
 
 const money = (cents: number) => `KES ${(cents / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const METHOD_LABEL: Record<string, string> = { mpesa: "M-Pesa", card: "Card", bank_transfer: "Bank transfer", insurance: "Insurance", cash: "Cash" };
+
 
 interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth?: string | null; gender?: string | null }
 interface Visit { id: string; opened_at: string; closed_at: string | null; status: string; reason: string | null; notes: string | null; triage_level: string | null }
