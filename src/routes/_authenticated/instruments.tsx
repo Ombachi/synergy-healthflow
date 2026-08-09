@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
+import { QcPanelEntry } from "@/components/qc-panel-entry";
 
 export const Route = createFileRoute("/_authenticated/instruments")({
   head: () => ({
