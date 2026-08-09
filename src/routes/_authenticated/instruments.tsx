@@ -16,6 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
 import { QcPanelEntry } from "@/components/qc-panel-entry";
+import { QcHistory } from "@/components/qc-history";
+
 
 export const Route = createFileRoute("/_authenticated/instruments")({
   head: () => ({
