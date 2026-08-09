@@ -220,6 +220,8 @@ function PatientTimeline() {
           <TabsTrigger value="sickoff">Sick-off</TabsTrigger>
 
           <TabsTrigger value="bills">Bills</TabsTrigger>
+          <TabsTrigger value="payments">Payment history</TabsTrigger>
+
         </TabsList>
 
         <TabsContent value="timeline" className="mt-4 space-y-6">
