@@ -434,9 +434,49 @@ function PatientTimeline() {
                     ))}
                   </ul>
                 )}
+                {due > 0 && (
+                  <div className="flex items-center justify-between gap-2 border-t p-2 text-xs">
+                    <span className="text-muted-foreground">Paid {money(inv.paid_cents)} of {money(inv.total_cents)}</span>
+                    <Button size="sm" onClick={() => { setPayFor(inv); setPayForm({ amount: (due / 100).toFixed(2), method: "mpesa", reference: "" }); }}>
+                      <CreditCard className="h-4 w-4" /> Pay {money(due)}
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })}
+
+          <Dialog open={!!payFor} onOpenChange={(v) => { if (!v) setPayFor(null); }}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Pay invoice {payFor?.id.slice(0, 8)}</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <Label>Amount (KES)</Label>
+                  <Input inputMode="decimal" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} />
+                  {payFor && <p className="mt-1 text-xs text-muted-foreground">Balance due {money(payFor.total_cents - payFor.paid_cents)}</p>}
+                </div>
+                <div>
+                  <Label>Payment method</Label>
+                  <Select value={payForm.method} onValueChange={(v) => setPayForm({ ...payForm, method: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mpesa">M-Pesa</SelectItem>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="bank_transfer">Bank transfer</SelectItem>
+                      <SelectItem value="insurance">Insurance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Reference (transaction code)</Label>
+                  <Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} placeholder="e.g. SFE4XY12Z" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => pay.mutate()} disabled={pay.isPending}>{pay.isPending ? "Submitting…" : "Submit payment"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
       </Tabs>
