@@ -148,7 +148,27 @@ function PatientTimeline() {
 
 
 
+  async function downloadReceipt(p: Payment) {
+    const inv = (invoices.data ?? []).find((i) => i.id === p.invoice_id);
+    await exportReceiptPDF({
+      payment_id: p.id,
+      received_at: p.received_at,
+      amount_cents: p.amount_cents,
+      method: p.method,
+      reference: p.reference,
+      patient_name: patient.data?.full_name ?? "",
+      mrn: patient.data?.medical_record_number ?? null,
+      invoice_id: p.invoice_id,
+      invoice_total_cents: inv?.total_cents ?? p.amount_cents,
+      invoice_paid_cents: inv?.paid_cents ?? p.amount_cents,
+      items: (invoiceItems.data ?? [])
+        .filter((it) => it.invoice_id === p.invoice_id)
+        .map((it) => ({ description: it.description, qty: it.qty, amount_cents: it.amount_cents })),
+    });
+  }
+
   const [openInvoice, setOpenInvoice] = useState<string | null>(null);
+
   const [payFor, setPayFor] = useState<Invoice | null>(null);
   const [payForm, setPayForm] = useState({ amount: "", method: "mpesa", reference: "" });
   const pay = useMutation({
