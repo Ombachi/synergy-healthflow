@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportSickOffPDF } from "@/lib/sick-off-pdf";
 import { exportPrescriptionPDF } from "@/lib/prescription-pdf";
+import { exportReceiptPDF } from "@/lib/receipt-pdf";
+
 import { LabResultsViewer } from "@/components/lab-results-viewer";
 import { ImagingViewer } from "@/components/imaging-viewer";
 
@@ -22,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/me")({ component: PatientT
 
 
 const money = (cents: number) => `KES ${(cents / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const METHOD_LABEL: Record<string, string> = { mpesa: "M-Pesa", card: "Card", bank_transfer: "Bank transfer", insurance: "Insurance", cash: "Cash" };
+
 
 interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth?: string | null; gender?: string | null }
 interface Visit { id: string; opened_at: string; closed_at: string | null; status: string; reason: string | null; notes: string | null; triage_level: string | null }
@@ -31,6 +35,8 @@ interface Discharge { visit_id: string; summary: string; treatment_plan: string 
 interface Appointment { id: string; scheduled_at: string; status: string; reason: string | null; doctor_id: string | null; department: string | null }
 interface Invoice { id: string; visit_id: string | null; total_cents: number; paid_cents: number; status: string; created_at: string }
 interface InvoiceItem { id: string; invoice_id: string; description: string; qty: number; unit_price_cents: number; amount_cents: number; kind: string }
+interface Payment { id: string; invoice_id: string; amount_cents: number; method: string; reference: string | null; received_at: string }
+
 interface Doctor { id: string; full_name: string | null; role: string }
 interface LabOrderRow { id: string; test_id: string; created_at: string; status: string; visit_id: string | null }
 interface LabResultRow { id: string; order_id: string; result_value: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; performed_at: string | null; comments: string | null }
@@ -89,6 +95,21 @@ function PatientTimeline() {
       return (data as unknown as InvoiceItem[]) ?? [];
     },
   });
+  const payments = useQuery({
+    queryKey: ["my-payments", (invoices.data ?? []).map((i) => i.id).join(",")],
+    enabled: (invoices.data ?? []).length > 0,
+    queryFn: async () => {
+      const ids = (invoices.data ?? []).map((i) => i.id);
+      const { data, error } = await supabase
+        .from("payments" as never)
+        .select("id, invoice_id, amount_cents, method, reference, received_at")
+        .in("invoice_id", ids as never)
+        .order("received_at", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as Payment[]) ?? [];
+    },
+  });
+
   const doctors = useQuery({
     queryKey: ["me-doctors"],
     queryFn: async () => {
@@ -129,7 +150,27 @@ function PatientTimeline() {
 
 
 
+  async function downloadReceipt(p: Payment) {
+    const inv = (invoices.data ?? []).find((i) => i.id === p.invoice_id);
+    await exportReceiptPDF({
+      payment_id: p.id,
+      received_at: p.received_at,
+      amount_cents: p.amount_cents,
+      method: p.method,
+      reference: p.reference,
+      patient_name: patient.data?.full_name ?? "",
+      mrn: patient.data?.medical_record_number ?? null,
+      invoice_id: p.invoice_id,
+      invoice_total_cents: inv?.total_cents ?? p.amount_cents,
+      invoice_paid_cents: inv?.paid_cents ?? p.amount_cents,
+      items: (invoiceItems.data ?? [])
+        .filter((it) => it.invoice_id === p.invoice_id)
+        .map((it) => ({ description: it.description, qty: it.qty, amount_cents: it.amount_cents })),
+    });
+  }
+
   const [openInvoice, setOpenInvoice] = useState<string | null>(null);
+
   const [payFor, setPayFor] = useState<Invoice | null>(null);
   const [payForm, setPayForm] = useState({ amount: "", method: "mpesa", reference: "" });
   const pay = useMutation({
@@ -148,7 +189,9 @@ function PatientTimeline() {
     onSuccess: () => {
       setPayFor(null); setPayForm({ amount: "", method: "mpesa", reference: "" });
       qc.invalidateQueries({ queryKey: ["my-invoices"] });
+      qc.invalidateQueries({ queryKey: ["my-payments"] });
       toast.success("Payment recorded");
+
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -220,6 +263,8 @@ function PatientTimeline() {
           <TabsTrigger value="sickoff">Sick-off</TabsTrigger>
 
           <TabsTrigger value="bills">Bills</TabsTrigger>
+          <TabsTrigger value="payments">Payment history</TabsTrigger>
+
         </TabsList>
 
         <TabsContent value="timeline" className="mt-4 space-y-6">
@@ -478,6 +523,44 @@ function PatientTimeline() {
             </DialogContent>
           </Dialog>
         </TabsContent>
+
+        <TabsContent value="payments" className="mt-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 font-medium"><CreditCard className="h-4 w-4 text-primary" /> Payment history</h2>
+            <div className="text-sm">
+              Total paid: <span className="font-semibold">{money((payments.data ?? []).reduce((s, p) => s + p.amount_cents, 0))}</span>
+            </div>
+          </div>
+          {(payments.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No payments recorded yet.</p>}
+          <div className="divide-y rounded-lg border bg-card">
+            {payments.data?.map((p) => {
+              const inv = (invoices.data ?? []).find((i) => i.id === p.invoice_id);
+              return (
+                <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm">
+                  <div>
+                    <div className="font-medium">{money(p.amount_cents)} <span className="text-xs font-normal text-muted-foreground">· {METHOD_LABEL[p.method] ?? p.method}</span></div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(p.received_at).toLocaleDateString("en-GB")} · Invoice {p.invoice_id.slice(0, 8).toUpperCase()}
+                      {p.reference ? ` · Ref ${p.reference}` : ""}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {inv && (
+                      <span className={`rounded px-2 py-0.5 text-xs ${inv.total_cents - inv.paid_cents <= 0 ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>
+                        {inv.total_cents - inv.paid_cents <= 0 ? "Settled" : `Balance ${money(inv.total_cents - inv.paid_cents)}`}
+                      </span>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => downloadReceipt(p)}>
+                      <Download className="h-4 w-4" /> Receipt
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+
 
       </Tabs>
     </div>
