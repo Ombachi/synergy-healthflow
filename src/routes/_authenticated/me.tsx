@@ -148,7 +148,9 @@ function PatientTimeline() {
     onSuccess: () => {
       setPayFor(null); setPayForm({ amount: "", method: "mpesa", reference: "" });
       qc.invalidateQueries({ queryKey: ["my-invoices"] });
+      qc.invalidateQueries({ queryKey: ["my-payments"] });
       toast.success("Payment recorded");
+
     },
     onError: (e: Error) => toast.error(e.message),
   });
