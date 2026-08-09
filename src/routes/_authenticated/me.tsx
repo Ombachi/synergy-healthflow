@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, CalendarClock, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download, Pill, ScanLine, ChevronRight } from "lucide-react";
+import { Activity, CalendarClock, CreditCard, FileText, FlaskConical, HeartPulse, Receipt, Plus, Download, Pill, ScanLine, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,6 +130,28 @@ function PatientTimeline() {
 
 
   const [openInvoice, setOpenInvoice] = useState<string | null>(null);
+  const [payFor, setPayFor] = useState<Invoice | null>(null);
+  const [payForm, setPayForm] = useState({ amount: "", method: "mpesa", reference: "" });
+  const pay = useMutation({
+    mutationFn: async () => {
+      if (!payFor) throw new Error("No invoice selected");
+      const cents = Math.round(Number(payForm.amount) * 100);
+      if (!cents || cents <= 0) throw new Error("Enter a valid amount");
+      const { error } = await supabase.rpc("patient_pay_invoice" as never, {
+        _invoice: payFor.id,
+        _amount_cents: cents,
+        _method: payForm.method,
+        _reference: payForm.reference || null,
+      } as never);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setPayFor(null); setPayForm({ amount: "", method: "mpesa", reference: "" });
+      qc.invalidateQueries({ queryKey: ["my-invoices"] });
+      toast.success("Payment recorded");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
   const [bookOpen, setBookOpen] = useState(false);
   const [bookForm, setBookForm] = useState({ doctor_id: "", scheduled_at: "", reason: "" });
   const book = useMutation({
@@ -364,7 +386,15 @@ function PatientTimeline() {
         </TabsContent>
 
         <TabsContent value="bills" className="mt-4 space-y-3">
-          <h2 className="flex items-center gap-2 font-medium"><Receipt className="h-4 w-4 text-primary" /> My bills</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 font-medium"><Receipt className="h-4 w-4 text-primary" /> My bills</h2>
+            <div className="text-sm">
+              Outstanding balance:{" "}
+              <span className="font-semibold">
+                {money((invoices.data ?? []).reduce((s, i) => s + Math.max(0, i.total_cents - i.paid_cents), 0))}
+              </span>
+            </div>
+          </div>
           {(invoices.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No bills yet.</p>}
           {invoices.data?.map((inv) => {
             const items = (invoiceItems.data ?? []).filter((it) => it.invoice_id === inv.id);
@@ -404,9 +434,49 @@ function PatientTimeline() {
                     ))}
                   </ul>
                 )}
+                {due > 0 && (
+                  <div className="flex items-center justify-between gap-2 border-t p-2 text-xs">
+                    <span className="text-muted-foreground">Paid {money(inv.paid_cents)} of {money(inv.total_cents)}</span>
+                    <Button size="sm" onClick={() => { setPayFor(inv); setPayForm({ amount: (due / 100).toFixed(2), method: "mpesa", reference: "" }); }}>
+                      <CreditCard className="h-4 w-4" /> Pay {money(due)}
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })}
+
+          <Dialog open={!!payFor} onOpenChange={(v) => { if (!v) setPayFor(null); }}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Pay invoice {payFor?.id.slice(0, 8)}</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <Label>Amount (KES)</Label>
+                  <Input inputMode="decimal" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} />
+                  {payFor && <p className="mt-1 text-xs text-muted-foreground">Balance due {money(payFor.total_cents - payFor.paid_cents)}</p>}
+                </div>
+                <div>
+                  <Label>Payment method</Label>
+                  <Select value={payForm.method} onValueChange={(v) => setPayForm({ ...payForm, method: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mpesa">M-Pesa</SelectItem>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="bank_transfer">Bank transfer</SelectItem>
+                      <SelectItem value="insurance">Insurance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Reference (transaction code)</Label>
+                  <Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} placeholder="e.g. SFE4XY12Z" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => pay.mutate()} disabled={pay.isPending}>{pay.isPending ? "Submitting…" : "Submit payment"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
       </Tabs>

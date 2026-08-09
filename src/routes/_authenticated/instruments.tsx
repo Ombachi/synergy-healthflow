@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
+import { QcPanelEntry } from "@/components/qc-panel-entry";
 
 export const Route = createFileRoute("/_authenticated/instruments")({
   head: () => ({
@@ -452,6 +453,9 @@ function InstrumentWorkspace({ inst, canWrite }: { inst: Instrument; canWrite: b
         </TabsContent>
 
         <TabsContent value="qc" className="mt-3">
+          <div className="mb-2 flex justify-end">
+            <QcPanelEntry instrumentId={inst.id} section={inst.lab_section} canWrite={canWrite} />
+          </div>
           <LogSection<QcRun>
             table="instrument_qc_runs" instrumentId={inst.id} canWrite={canWrite} orderBy="run_at"
             empty="No QC runs recorded."
