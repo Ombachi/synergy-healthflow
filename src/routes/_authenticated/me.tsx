@@ -89,6 +89,21 @@ function PatientTimeline() {
       return (data as unknown as InvoiceItem[]) ?? [];
     },
   });
+  const payments = useQuery({
+    queryKey: ["my-payments", (invoices.data ?? []).map((i) => i.id).join(",")],
+    enabled: (invoices.data ?? []).length > 0,
+    queryFn: async () => {
+      const ids = (invoices.data ?? []).map((i) => i.id);
+      const { data, error } = await supabase
+        .from("payments" as never)
+        .select("id, invoice_id, amount_cents, method, reference, received_at")
+        .in("invoice_id", ids as never)
+        .order("received_at", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as Payment[]) ?? [];
+    },
+  });
+
   const doctors = useQuery({
     queryKey: ["me-doctors"],
     queryFn: async () => {
