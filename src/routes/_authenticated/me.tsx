@@ -500,6 +500,44 @@ function PatientTimeline() {
           </Dialog>
         </TabsContent>
 
+        <TabsContent value="payments" className="mt-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 font-medium"><CreditCard className="h-4 w-4 text-primary" /> Payment history</h2>
+            <div className="text-sm">
+              Total paid: <span className="font-semibold">{money((payments.data ?? []).reduce((s, p) => s + p.amount_cents, 0))}</span>
+            </div>
+          </div>
+          {(payments.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No payments recorded yet.</p>}
+          <div className="divide-y rounded-lg border bg-card">
+            {payments.data?.map((p) => {
+              const inv = (invoices.data ?? []).find((i) => i.id === p.invoice_id);
+              return (
+                <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm">
+                  <div>
+                    <div className="font-medium">{money(p.amount_cents)} <span className="text-xs font-normal text-muted-foreground">· {METHOD_LABEL[p.method] ?? p.method}</span></div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(p.received_at).toLocaleDateString("en-GB")} · Invoice {p.invoice_id.slice(0, 8).toUpperCase()}
+                      {p.reference ? ` · Ref ${p.reference}` : ""}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {inv && (
+                      <span className={`rounded px-2 py-0.5 text-xs ${inv.total_cents - inv.paid_cents <= 0 ? "bg-green-500/10 text-green-700" : "bg-amber-500/10 text-amber-700"}`}>
+                        {inv.total_cents - inv.paid_cents <= 0 ? "Settled" : `Balance ${money(inv.total_cents - inv.paid_cents)}`}
+                      </span>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => downloadReceipt(p)}>
+                      <Download className="h-4 w-4" /> Receipt
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+
+
       </Tabs>
     </div>
   );
