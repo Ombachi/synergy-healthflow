@@ -452,11 +452,14 @@ function InstrumentWorkspace({ inst, canWrite }: { inst: Instrument; canWrite: b
           </div>
         </TabsContent>
 
-        <TabsContent value="qc" className="mt-3">
+        <TabsContent value="qc" className="mt-3 space-y-3">
           <div className="mb-2 flex justify-end">
             <QcPanelEntry instrumentId={inst.id} section={inst.lab_section} canWrite={canWrite} />
           </div>
+          <QcHistory instrumentId={inst.id} instrument={inst} />
+          <div className="pt-1 text-xs font-medium text-muted-foreground">Add or manage individual QC runs</div>
           <LogSection<QcRun>
+
             table="instrument_qc_runs" instrumentId={inst.id} canWrite={canWrite} orderBy="run_at"
             empty="No QC runs recorded."
             fields={[
