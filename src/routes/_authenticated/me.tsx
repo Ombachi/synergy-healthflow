@@ -386,7 +386,15 @@ function PatientTimeline() {
         </TabsContent>
 
         <TabsContent value="bills" className="mt-4 space-y-3">
-          <h2 className="flex items-center gap-2 font-medium"><Receipt className="h-4 w-4 text-primary" /> My bills</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 font-medium"><Receipt className="h-4 w-4 text-primary" /> My bills</h2>
+            <div className="text-sm">
+              Outstanding balance:{" "}
+              <span className="font-semibold">
+                {money((invoices.data ?? []).reduce((s, i) => s + Math.max(0, i.total_cents - i.paid_cents), 0))}
+              </span>
+            </div>
+          </div>
           {(invoices.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No bills yet.</p>}
           {invoices.data?.map((inv) => {
             const items = (invoiceItems.data ?? []).filter((it) => it.invoice_id === inv.id);
