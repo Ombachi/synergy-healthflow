@@ -130,6 +130,28 @@ function PatientTimeline() {
 
 
   const [openInvoice, setOpenInvoice] = useState<string | null>(null);
+  const [payFor, setPayFor] = useState<Invoice | null>(null);
+  const [payForm, setPayForm] = useState({ amount: "", method: "mpesa", reference: "" });
+  const pay = useMutation({
+    mutationFn: async () => {
+      if (!payFor) throw new Error("No invoice selected");
+      const cents = Math.round(Number(payForm.amount) * 100);
+      if (!cents || cents <= 0) throw new Error("Enter a valid amount");
+      const { error } = await supabase.rpc("patient_pay_invoice" as never, {
+        _invoice: payFor.id,
+        _amount_cents: cents,
+        _method: payForm.method,
+        _reference: payForm.reference || null,
+      } as never);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setPayFor(null); setPayForm({ amount: "", method: "mpesa", reference: "" });
+      qc.invalidateQueries({ queryKey: ["my-invoices"] });
+      toast.success("Payment recorded");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
   const [bookOpen, setBookOpen] = useState(false);
   const [bookForm, setBookForm] = useState({ doctor_id: "", scheduled_at: "", reason: "" });
   const book = useMutation({
