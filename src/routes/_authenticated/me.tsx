@@ -31,6 +31,8 @@ interface Discharge { visit_id: string; summary: string; treatment_plan: string 
 interface Appointment { id: string; scheduled_at: string; status: string; reason: string | null; doctor_id: string | null; department: string | null }
 interface Invoice { id: string; visit_id: string | null; total_cents: number; paid_cents: number; status: string; created_at: string }
 interface InvoiceItem { id: string; invoice_id: string; description: string; qty: number; unit_price_cents: number; amount_cents: number; kind: string }
+interface Payment { id: string; invoice_id: string; amount_cents: number; method: string; reference: string | null; received_at: string }
+
 interface Doctor { id: string; full_name: string | null; role: string }
 interface LabOrderRow { id: string; test_id: string; created_at: string; status: string; visit_id: string | null }
 interface LabResultRow { id: string; order_id: string; result_value: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; performed_at: string | null; comments: string | null }
