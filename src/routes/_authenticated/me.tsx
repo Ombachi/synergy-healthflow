@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportSickOffPDF } from "@/lib/sick-off-pdf";
 import { exportPrescriptionPDF } from "@/lib/prescription-pdf";
+import { exportReceiptPDF } from "@/lib/receipt-pdf";
+
 import { LabResultsViewer } from "@/components/lab-results-viewer";
 import { ImagingViewer } from "@/components/imaging-viewer";
 
