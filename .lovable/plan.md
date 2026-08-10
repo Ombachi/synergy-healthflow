@@ -1,62 +1,115 @@
-# Litu Vault rebrand + encounter-driven clinical refactor
+# Vitalis Mobility — healthcare transportation module
 
-Big turn. Splitting into a clear sequence so nothing regresses. I'll do it in **three sub-turns**; this plan covers all three, and I'll ship them one after another unless you say otherwise.
+A transport module inside the existing platform: patients and staff request healthcare
+transport, a fleet manager dispatches vehicles, drivers run the trip, and completed trips
+bill through the existing invoice system. No separate accounts, no separate finance store.
 
-## Sub-turn 1 — Rebrand + homepage + RBAC audit (safe, no schema)
+## What gets built
 
-**Rename Vitalis → Litu Vault**
-- Landing page (`src/routes/index.tsx`): new hero built around a vault metaphor — "Your health records, locked in the vault." Prominent Sign in / Create account CTAs above the fold, secondary trust strip (encrypted, audited, role-gated). Generate a Litu Vault logo (vault door + cross motif) as an SVG asset.
-- Auth page copy, sidebar header, root `<title>` / meta / og tags → "Litu Vault".
-- Toaster + any hard-coded "Vitalis" strings across routes swept.
+### Roles
+Two new roles: `fleet_manager` and `driver`. Existing patients, doctors, nurses and
+admissions officers get transport-request rights on top of what they already have.
 
-**Homepage layout**
-- Left: logo, tagline, two big buttons (Sign in, Create account).
-- Right: vault-illustration card with three trust bullets (RBAC, audit trail, encrypted records).
-- Footer strip: "Trusted like a bank vault. Built for clinicians."
+### Patient portal — MOBILITY section
+- **Request Transport** — a stepped booking flow: service → who is being transported →
+  pickup → destination → requirements (only the questions relevant to the chosen service)
+  → now/later → fare estimate → confirm.
+- **Active Trip** — live status, assigned vehicle/driver, ETA, progress, contact buttons.
+- **Upcoming Trips** and **Trip History** — with a per-trip detail view and receipt.
 
-**RBAC audit**
-- Re-verify `role-permissions.ts`: procurement, store_keeper, HR, cashier cannot reach `/lab`, `/lab-order`, `/radiology`, `/pharmacy`, `/prescribe`, or their queues. Add a small unit-style assertion file (`src/lib/__rbac_check.ts`) that runs at import to warn in dev if a forbidden pair sneaks back.
-- Sidebar already role-filters; confirm Laboratory / Radiology / Pharmacy groups are hidden for procurement/store_keeper/HR/cashier.
+### Four service workflows (separate forms, not one generic one)
+- **Healthcare Cab** — pickup, destination, date/time, passengers, accessibility, notes,
+  fare estimate in KES.
+- **Ambulance** — patient, requester + relationship, condition, priority
+  (Emergency / Urgent / Priority / Routine / Scheduled), and requirement toggles
+  (stretcher, wheelchair, oxygen, monitoring, clinical escort). Patient-declared priority
+  is stored separately from clinically-assessed priority and is labelled as such
+  everywhere. Emergency requests show safety messaging (call emergency services) and
+  immediately alert dispatch.
+- **Assisted / Wheelchair Transport** — wheelchair, stretcher, elderly assistance,
+  accessibility needs.
+- **Hearse / Mortuary Transport** — its own workflow with requester, relationship,
+  contact, deceased details, documentation checklist, and a formal handover record
+  (released by, received by, timestamp, documentation status, confirmation). Kept
+  entirely out of the patient ride flow.
+- **Hospital Transfer** — staff-only: facilities, MRN, reason, clinical priority,
+  condition, equipment, escort, referral docs, clinical summary.
 
-## Sub-turn 2 — Encounter-aware queues (no schema change)
+### Staff-initiated transport
+A **Request transport** action on the patient workspace, inpatient view and an emergency
+transport form, auto-linking MRN, encounter, department and requesting clinician.
 
-Use existing `visit_id` (outpatient) vs `admission_id` (inpatient) as the encounter discriminator. On each queue page, add an **Outpatient | Inpatient | All** tab set:
+### Fleet Manager portal
+- **Dashboard** — live counts: active/pending requests, vehicles available/on trip, per
+  category availability, drivers online, vehicles offline, trips today, completed,
+  cancelled, revenue. All from live queries.
+- **Dispatch board** — request queue with ID, service, priority, pickup, destination,
+  distance, requested time, status, recommended vehicle, assigned driver, plus
+  view/assign/reassign/cancel/contact actions.
+- **Live map** — vehicle and request markers by status, with click-through detail panels.
+  Uses the Google Maps connector if connected; falls back to a coordinate list view.
+- **Manual dispatch** — recommended vehicle with distance, ETA, equipment compatibility,
+  driver and crew; dispatch or choose another. Fleet manager always has final control.
+- **Auto dispatch** — optional ranked matching, with override on high-priority requests.
+- **Fleet** — ambulances, cabs, assisted-transport vehicles, hearses; full vehicle record
+  with status lifecycle (available, reserved, assigned, en route, on trip, maintenance,
+  offline, out of service).
+- **Compliance** — insurance/inspection/permit/service/equipment expiry with alerts, and
+  a hard block on dispatching a non-compliant vehicle.
+- **Pricing** — configurable rules per service in KES; nothing priced in UI code.
 
-- `/lab` — split lab_orders by whether the linked visit has an active admission.
-- `/radiology` — same split on imaging_orders.
-- `/pharmacy` — split prescriptions / medication_orders (MAR entries are inpatient by definition).
-- `/nutrition` — split nutrition_plans / allied_health_notes by encounter.
-- `/queue` (nurse) — split visit_queue rows: outpatient = visit without admission, inpatient = visit with admission.
+### Dispatch engine
+Filters to vehicles that actually satisfy the request (equipment, capability, crew
+qualification, compliance, availability), then ranks by distance, ETA, priority and
+status. A cab is never offered for a stretcher request; a vehicle without oxygen is never
+offered for an oxygen request.
 
-Ward filter dropdown for the nurse inpatient tab (reads `admissions.ward_id`).
+### Driver portal
+Separate, minimal interface: online/offline toggle, current vehicle, incoming request
+card showing only service, pickup, destination, transport requirements, distance and ETA
+— no clinical detail. Accept/decline, then navigate, arrived, boarding, start, arrived at
+destination, handover, complete.
 
-## Sub-turn 3 — Schema + clinical_tasks + visit/admission unification
+### Trip state machine
+`REQUESTED → TRIAGED → MATCHING → ASSIGNED → DRIVER_ACCEPTED → EN_ROUTE_TO_PICKUP →
+ARRIVED_PICKUP → PATIENT_BOARDING → IN_TRANSIT → ARRIVED_DESTINATION → HANDOVER →
+COMPLETED`, plus `CANCELLED / REJECTED / EXPIRED / NO_SHOW / UNABLE_TO_COMPLETE`. Every
+transition is timestamped, attributed and written to a trip event log.
 
-**Migration**
-- Add `encounter_id UUID` + `encounter_type TEXT CHECK IN ('visit','admission')` to: `lab_orders`, `lab_results`, `lab_samples`, `imaging_orders`, `prescriptions`, `medication_orders`, `procedure_orders`, `nutrition_plans`, `allied_health_notes`, `visit_diagnoses`, `vitals`.
-- Backfill: `encounter_id = COALESCE(admission_id, visit_id)`, `encounter_type` = whichever matched.
-- Trigger `set_encounter_from_source()` on insert to populate both from whichever id the caller supplies.
-- New table `clinical_tasks` (id, encounter_id, encounter_type, patient_id, kind, source_table, source_id, assigned_role, assigned_to, status[pending|in_progress|done|cancelled], priority, due_at, created_at, updated_at, completed_at, completed_by). RLS: creator + assigned_role + admin. Grants for authenticated + service_role.
-- Triggers on lab_orders / imaging_orders / prescriptions / procedure_orders / medication_orders insert → create matching `clinical_tasks` row assigned to the correct role.
-- Auto-attach: lab_results already have order_id; extend `auto_flag_lab_result` (or new trigger) to copy `encounter_id`/`encounter_type` from the parent order so patient timelines can query by encounter directly.
-
-**/visits/$visitId enhancements**
-- If the visit has an active admission (join on `admissions.visit_id` or `admissions.patient_id` + open status): render an Admission Context banner (ward, bed, LOS, admission diagnosis, attending consultant).
-- New **Tasks** panel: lists `clinical_tasks` for the encounter with status toggles (pending → in_progress → done). Filter chips by role.
-- Link "Open ward round" / "Add MAR entry" shortcuts when inpatient context is detected.
-
-**Discharge planning**
-- `/discharge-planning` reads outstanding `clinical_tasks WHERE encounter_type='admission' AND status <> 'done'` and blocks the Discharge button until all are done or cancelled (admin override). Auto-generator already pulls ward rounds + care plans; extend it to summarize completed tasks by category.
+### Billing and notifications
+Completed trips post a line to the patient's existing invoice (cash, insurance and the
+already-configured payment methods; receipt via the existing receipt PDF). Trip events
+fire through the existing notification service to patient, requester, fleet manager,
+driver and relevant staff.
 
 ## Technical notes
 
-- Migrations follow the strict order (CREATE → GRANT → RLS → POLICY). `clinical_tasks` gets `authenticated` grants + `service_role`, no `anon`.
-- Sub-turn 1 ships immediately with no DB changes.
-- Sub-turn 2 uses the existing schema — safe to ship without waiting for migration approval.
-- Sub-turn 3 is one migration + one code pass; the trigger keeps old code paths (which only set `visit_id` or `admission_id`) working.
+New tables (all with RLS + grants): `mobility_vehicles`, `mobility_equipment_types`,
+`mobility_vehicle_equipment`, `mobility_vehicle_documents`, `mobility_vehicle_maintenance`,
+`mobility_drivers`, `mobility_locations`, `mobility_requests`, `mobility_trips`,
+`mobility_trip_events`, `mobility_dispatches`, `mobility_pricing_rules`,
+`mobility_mortuary_transfers`, `mobility_hospital_transfers`.
 
-## Questions before I start
+`mobility_requests` references existing `patients`, `visits`/`admissions` and
+`auth.users` — the patient database is not duplicated, and billing writes into the
+existing `invoices` / `invoice_items` / `payments` tables via the existing
+`add_invoice_line` function.
 
-1. **Logo style**: minimalist line-art vault door with a subtle medical cross, monochrome (works on any background) — OK? Or do you want full-color?
-2. **Sub-turn order**: ship 1 → 2 → 3 across three messages (recommended, safer), or do you want everything in one go?
-3. **Discharge task gate**: hard block until all admission tasks are `done`/`cancelled`, or soft warn + allow admin override? (Recommend: hard block for non-admin, admin override with reason.)
+Code lives under `src/modules/mobility/` (booking, dispatch, fleet, vehicles, drivers,
+ambulance, cab, assisted-transport, mortuary, trips, tracking, transfers, pricing,
+payments, notifications, analytics), with thin route files under
+`src/routes/_authenticated/mobility.*` wiring them into the existing sidebar and RBAC.
+
+Pricing, equipment categories and compliance requirements are all database-configured, so
+fleet admins change them without a code change.
+
+## Build order
+
+1. Migration: enum roles, all tables, RLS/grants, pricing + equipment seed, demo fleet.
+2. Shared module core: types, state machine, pricing calculator, dispatch matcher, hooks.
+3. Patient booking flow + Active/Upcoming/History.
+4. Fleet manager dashboard, dispatch board, manual/auto dispatch, map.
+5. Fleet, compliance, pricing admin.
+6. Driver portal.
+7. Staff-initiated, emergency and inpatient transport entry points.
+8. Billing + notification wiring, sidebar/RBAC, seeded demo data.
