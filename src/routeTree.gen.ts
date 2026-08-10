@@ -81,6 +81,7 @@ import { Route as VerifyRxRxIdRouteImport } from './routes/verify.rx.$rxId'
 import { Route as VerifyTypeIdRouteImport } from './routes/verify.$type.$id'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_authenticated/orders.stock-requests'
+import { Route as AuthenticatedMobilityRequestRouteImport } from './routes/_authenticated/mobility.request'
 import { Route as AuthenticatedHrPayslipsRouteImport } from './routes/_authenticated/hr.payslips'
 import { Route as AuthenticatedHrMeRouteImport } from './routes/_authenticated/hr.me'
 import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticated/hr.leave'
@@ -482,6 +483,12 @@ const AuthenticatedOrdersStockRequestsRoute =
     path: '/orders/stock-requests',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMobilityRequestRoute =
+  AuthenticatedMobilityRequestRouteImport.update({
+    id: '/mobility/request',
+    path: '/mobility/request',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHrPayslipsRoute = AuthenticatedHrPayslipsRouteImport.update({
   id: '/hr/payslips',
   path: '/hr/payslips',
@@ -662,6 +669,7 @@ export interface FileRoutesByFullPath {
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
+  '/mobility/request': typeof AuthenticatedMobilityRequestRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
   '/verify/$type/$id': typeof VerifyTypeIdRoute
@@ -752,6 +760,7 @@ export interface FileRoutesByTo {
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
+  '/mobility/request': typeof AuthenticatedMobilityRequestRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
   '/verify/$type/$id': typeof VerifyTypeIdRoute
@@ -844,6 +853,7 @@ export interface FileRoutesById {
   '/_authenticated/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/_authenticated/hr/me': typeof AuthenticatedHrMeRoute
   '/_authenticated/hr/payslips': typeof AuthenticatedHrPayslipsRoute
+  '/_authenticated/mobility/request': typeof AuthenticatedMobilityRequestRoute
   '/_authenticated/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
   '/verify/$type/$id': typeof VerifyTypeIdRoute
@@ -936,6 +946,7 @@ export interface FileRouteTypes {
     | '/hr/leave'
     | '/hr/me'
     | '/hr/payslips'
+    | '/mobility/request'
     | '/orders/stock-requests'
     | '/visits/$visitId'
     | '/verify/$type/$id'
@@ -1026,6 +1037,7 @@ export interface FileRouteTypes {
     | '/hr/leave'
     | '/hr/me'
     | '/hr/payslips'
+    | '/mobility/request'
     | '/orders/stock-requests'
     | '/visits/$visitId'
     | '/verify/$type/$id'
@@ -1117,6 +1129,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/leave'
     | '/_authenticated/hr/me'
     | '/_authenticated/hr/payslips'
+    | '/_authenticated/mobility/request'
     | '/_authenticated/orders/stock-requests'
     | '/_authenticated/visits/$visitId'
     | '/verify/$type/$id'
@@ -1643,6 +1656,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersStockRequestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mobility/request': {
+      id: '/_authenticated/mobility/request'
+      path: '/mobility/request'
+      fullPath: '/mobility/request'
+      preLoaderRoute: typeof AuthenticatedMobilityRequestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/payslips': {
       id: '/_authenticated/hr/payslips'
       path: '/hr/payslips'
@@ -1853,6 +1873,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrLeaveRoute: typeof AuthenticatedHrLeaveRoute
   AuthenticatedHrMeRoute: typeof AuthenticatedHrMeRoute
   AuthenticatedHrPayslipsRoute: typeof AuthenticatedHrPayslipsRoute
+  AuthenticatedMobilityRequestRoute: typeof AuthenticatedMobilityRequestRoute
   AuthenticatedOrdersStockRequestsRoute: typeof AuthenticatedOrdersStockRequestsRoute
   AuthenticatedPrintDrugBatchIdRoute: typeof AuthenticatedPrintDrugBatchIdRoute
   AuthenticatedPrintPrescriptionRxIdRoute: typeof AuthenticatedPrintPrescriptionRxIdRoute
@@ -1938,6 +1959,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrLeaveRoute: AuthenticatedHrLeaveRoute,
   AuthenticatedHrMeRoute: AuthenticatedHrMeRoute,
   AuthenticatedHrPayslipsRoute: AuthenticatedHrPayslipsRoute,
+  AuthenticatedMobilityRequestRoute: AuthenticatedMobilityRequestRoute,
   AuthenticatedOrdersStockRequestsRoute: AuthenticatedOrdersStockRequestsRoute,
   AuthenticatedPrintDrugBatchIdRoute: AuthenticatedPrintDrugBatchIdRoute,
   AuthenticatedPrintPrescriptionRxIdRoute:
@@ -1962,13 +1984,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
