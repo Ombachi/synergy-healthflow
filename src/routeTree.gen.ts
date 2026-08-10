@@ -81,6 +81,7 @@ import { Route as VerifyRxRxIdRouteImport } from './routes/verify.rx.$rxId'
 import { Route as VerifyTypeIdRouteImport } from './routes/verify.$type.$id'
 import { Route as AuthenticatedVisitsVisitIdRouteImport } from './routes/_authenticated/visits.$visitId'
 import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_authenticated/orders.stock-requests'
+import { Route as AuthenticatedMobilityTripsRouteImport } from './routes/_authenticated/mobility.trips'
 import { Route as AuthenticatedMobilityRequestRouteImport } from './routes/_authenticated/mobility.request'
 import { Route as AuthenticatedHrPayslipsRouteImport } from './routes/_authenticated/hr.payslips'
 import { Route as AuthenticatedHrMeRouteImport } from './routes/_authenticated/hr.me'
@@ -483,6 +484,12 @@ const AuthenticatedOrdersStockRequestsRoute =
     path: '/orders/stock-requests',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMobilityTripsRoute =
+  AuthenticatedMobilityTripsRouteImport.update({
+    id: '/mobility/trips',
+    path: '/mobility/trips',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMobilityRequestRoute =
   AuthenticatedMobilityRequestRouteImport.update({
     id: '/mobility/request',
@@ -670,6 +677,7 @@ export interface FileRoutesByFullPath {
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/mobility/request': typeof AuthenticatedMobilityRequestRoute
+  '/mobility/trips': typeof AuthenticatedMobilityTripsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
   '/verify/$type/$id': typeof VerifyTypeIdRoute
@@ -761,6 +769,7 @@ export interface FileRoutesByTo {
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/mobility/request': typeof AuthenticatedMobilityRequestRoute
+  '/mobility/trips': typeof AuthenticatedMobilityTripsRoute
   '/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
   '/verify/$type/$id': typeof VerifyTypeIdRoute
@@ -854,6 +863,7 @@ export interface FileRoutesById {
   '/_authenticated/hr/me': typeof AuthenticatedHrMeRoute
   '/_authenticated/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/_authenticated/mobility/request': typeof AuthenticatedMobilityRequestRoute
+  '/_authenticated/mobility/trips': typeof AuthenticatedMobilityTripsRoute
   '/_authenticated/orders/stock-requests': typeof AuthenticatedOrdersStockRequestsRoute
   '/_authenticated/visits/$visitId': typeof AuthenticatedVisitsVisitIdRoute
   '/verify/$type/$id': typeof VerifyTypeIdRoute
@@ -947,6 +957,7 @@ export interface FileRouteTypes {
     | '/hr/me'
     | '/hr/payslips'
     | '/mobility/request'
+    | '/mobility/trips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
     | '/verify/$type/$id'
@@ -1038,6 +1049,7 @@ export interface FileRouteTypes {
     | '/hr/me'
     | '/hr/payslips'
     | '/mobility/request'
+    | '/mobility/trips'
     | '/orders/stock-requests'
     | '/visits/$visitId'
     | '/verify/$type/$id'
@@ -1130,6 +1142,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/me'
     | '/_authenticated/hr/payslips'
     | '/_authenticated/mobility/request'
+    | '/_authenticated/mobility/trips'
     | '/_authenticated/orders/stock-requests'
     | '/_authenticated/visits/$visitId'
     | '/verify/$type/$id'
@@ -1656,6 +1669,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersStockRequestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mobility/trips': {
+      id: '/_authenticated/mobility/trips'
+      path: '/mobility/trips'
+      fullPath: '/mobility/trips'
+      preLoaderRoute: typeof AuthenticatedMobilityTripsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/mobility/request': {
       id: '/_authenticated/mobility/request'
       path: '/mobility/request'
@@ -1874,6 +1894,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrMeRoute: typeof AuthenticatedHrMeRoute
   AuthenticatedHrPayslipsRoute: typeof AuthenticatedHrPayslipsRoute
   AuthenticatedMobilityRequestRoute: typeof AuthenticatedMobilityRequestRoute
+  AuthenticatedMobilityTripsRoute: typeof AuthenticatedMobilityTripsRoute
   AuthenticatedOrdersStockRequestsRoute: typeof AuthenticatedOrdersStockRequestsRoute
   AuthenticatedPrintDrugBatchIdRoute: typeof AuthenticatedPrintDrugBatchIdRoute
   AuthenticatedPrintPrescriptionRxIdRoute: typeof AuthenticatedPrintPrescriptionRxIdRoute
@@ -1960,6 +1981,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrMeRoute: AuthenticatedHrMeRoute,
   AuthenticatedHrPayslipsRoute: AuthenticatedHrPayslipsRoute,
   AuthenticatedMobilityRequestRoute: AuthenticatedMobilityRequestRoute,
+  AuthenticatedMobilityTripsRoute: AuthenticatedMobilityTripsRoute,
   AuthenticatedOrdersStockRequestsRoute: AuthenticatedOrdersStockRequestsRoute,
   AuthenticatedPrintDrugBatchIdRoute: AuthenticatedPrintDrugBatchIdRoute,
   AuthenticatedPrintPrescriptionRxIdRoute:
