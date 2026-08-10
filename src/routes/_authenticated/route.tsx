@@ -4,7 +4,7 @@ import {
   Activity, Ambulance, Apple, Archive, Bandage, Baby, BarChart3, Bed, BedDouble, Bell, Briefcase, CalendarClock,
   CalendarDays, ChevronDown, ClipboardCheck, ClipboardList, Clock, FileText, FlaskConical, Gauge, Gavel,
   Heart, HeartPulse, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Microscope,
-  Package, Pill, Receipt, ScanLine, Shield, ShieldAlert, ShieldCheck, ShoppingCart, Siren, Stethoscope,
+  MapPin, Package, Pill, Receipt, ScanLine, Shield, ShieldAlert, ShieldCheck, ShoppingCart, Siren, Stethoscope,
   Syringe, Ticket, User, Warehouse, Wallet,
 } from "lucide-react";
 
@@ -143,8 +143,8 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/my-vaccines", "/assessments", "/messages"],
-  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages"],
+  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility"],
+  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
 };
@@ -275,6 +275,13 @@ const GROUPS: Group[] = [
   },
 
 
+  {
+    key: "mobility", label: "Mobility", icon: Ambulance,
+    items: [
+      { title: "Request transport", url: "/mobility/request", icon: Ambulance },
+      { title: "My trips", url: "/mobility/trips", icon: MapPin },
+    ],
+  },
   {
     key: "quality", label: "Diagnostics quality", icon: Microscope,
     items: [

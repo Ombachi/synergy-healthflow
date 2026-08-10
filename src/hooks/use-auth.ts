@@ -11,7 +11,8 @@ export type AppRole =
   | "physio" | "nutritionist"
   | "store_keeper" | "procurement" | "billing_officer"
   | "hr_officer" | "hr_manager" | "dept_manager"
-  | "admissions_officer";
+  | "admissions_officer"
+  | "fleet_manager" | "driver";
 
 export const ALL_ROLES: AppRole[] = [
   "admin", "doctor", "nurse",
@@ -21,8 +22,10 @@ export const ALL_ROLES: AppRole[] = [
   "store_keeper", "procurement",
   "hr_officer", "hr_manager", "dept_manager",
   "admissions_officer",
+  "fleet_manager", "driver",
   "patient", "athlete",
 ];
+
 
 
 export interface Profile {

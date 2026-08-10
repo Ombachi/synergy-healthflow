@@ -4824,6 +4824,843 @@ export type Database = {
           },
         ]
       }
+      mobility_dispatches: {
+        Row: {
+          created_at: string
+          dispatched_by: string | null
+          driver_id: string | null
+          id: string
+          mode: string
+          reason: string | null
+          request_id: string
+          score: number | null
+          superseded_at: string | null
+          trip_id: string | null
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dispatched_by?: string | null
+          driver_id?: string | null
+          id?: string
+          mode?: string
+          reason?: string | null
+          request_id: string
+          score?: number | null
+          superseded_at?: string | null
+          trip_id?: string | null
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dispatched_by?: string | null
+          driver_id?: string | null
+          id?: string
+          mode?: string
+          reason?: string | null
+          request_id?: string
+          score?: number | null
+          superseded_at?: string | null
+          trip_id?: string | null
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_dispatches_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_dispatches_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_dispatches_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_dispatches_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_drivers: {
+        Row: {
+          active: boolean
+          created_at: string
+          full_name: string
+          id: string
+          licence_expiry: string | null
+          licence_number: string | null
+          phone: string | null
+          qualifications: string[]
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          full_name: string
+          id?: string
+          licence_expiry?: string | null
+          licence_number?: string | null
+          phone?: string | null
+          qualifications?: string[]
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          full_name?: string
+          id?: string
+          licence_expiry?: string | null
+          licence_number?: string | null
+          phone?: string | null
+          qualifications?: string[]
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      mobility_equipment_types: {
+        Row: {
+          active: boolean
+          category: string
+          code: string
+          created_at: string
+          id: string
+          label: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          code: string
+          created_at?: string
+          id?: string
+          label: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          code?: string
+          created_at?: string
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
+      mobility_hospital_transfers: {
+        Row: {
+          accepting_clinician: string | null
+          clinical_summary: string | null
+          created_at: string
+          equipment_required: string[]
+          escort_required: boolean
+          escort_role: string | null
+          from_facility: string
+          id: string
+          mrn: string | null
+          patient_condition: string | null
+          reason: string
+          referral_documents: string | null
+          request_id: string
+          to_facility: string
+        }
+        Insert: {
+          accepting_clinician?: string | null
+          clinical_summary?: string | null
+          created_at?: string
+          equipment_required?: string[]
+          escort_required?: boolean
+          escort_role?: string | null
+          from_facility: string
+          id?: string
+          mrn?: string | null
+          patient_condition?: string | null
+          reason: string
+          referral_documents?: string | null
+          request_id: string
+          to_facility: string
+        }
+        Update: {
+          accepting_clinician?: string | null
+          clinical_summary?: string | null
+          created_at?: string
+          equipment_required?: string[]
+          escort_required?: boolean
+          escort_role?: string | null
+          from_facility?: string
+          id?: string
+          mrn?: string | null
+          patient_condition?: string | null
+          reason?: string
+          referral_documents?: string | null
+          request_id?: string
+          to_facility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_hospital_transfers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_locations: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          is_facility: boolean
+          label: string
+          lat: number | null
+          lng: number | null
+          owner_id: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          is_facility?: boolean
+          label: string
+          lat?: number | null
+          lng?: number | null
+          owner_id?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          is_facility?: boolean
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          owner_id?: string | null
+        }
+        Relationships: []
+      }
+      mobility_mortuary_transfers: {
+        Row: {
+          created_at: string
+          date_of_death: string | null
+          deceased_age: number | null
+          deceased_gender: string | null
+          deceased_name: string
+          documentation: Json
+          documentation_status: string
+          handover_at: string | null
+          handover_confirmed: boolean
+          id: string
+          notes: string | null
+          received_by: string | null
+          released_by: string | null
+          request_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_death?: string | null
+          deceased_age?: number | null
+          deceased_gender?: string | null
+          deceased_name: string
+          documentation?: Json
+          documentation_status?: string
+          handover_at?: string | null
+          handover_confirmed?: boolean
+          id?: string
+          notes?: string | null
+          received_by?: string | null
+          released_by?: string | null
+          request_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_of_death?: string | null
+          deceased_age?: number | null
+          deceased_gender?: string | null
+          deceased_name?: string
+          documentation?: Json
+          documentation_status?: string
+          handover_at?: string | null
+          handover_confirmed?: boolean
+          id?: string
+          notes?: string | null
+          received_by?: string | null
+          released_by?: string | null
+          request_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_mortuary_transfers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_pricing_rules: {
+        Row: {
+          accessibility_cents: number
+          active: boolean
+          after_hours_pct: number
+          base_fare_cents: number
+          created_at: string
+          crew_cents: number
+          currency: string
+          equipment_cents: number
+          id: string
+          label: string
+          minimum_fare_cents: number
+          per_km_cents: number
+          per_minute_cents: number
+          service_type: string
+          tier: string
+          updated_at: string
+          waiting_per_minute_cents: number
+        }
+        Insert: {
+          accessibility_cents?: number
+          active?: boolean
+          after_hours_pct?: number
+          base_fare_cents?: number
+          created_at?: string
+          crew_cents?: number
+          currency?: string
+          equipment_cents?: number
+          id?: string
+          label: string
+          minimum_fare_cents?: number
+          per_km_cents?: number
+          per_minute_cents?: number
+          service_type: string
+          tier?: string
+          updated_at?: string
+          waiting_per_minute_cents?: number
+        }
+        Update: {
+          accessibility_cents?: number
+          active?: boolean
+          after_hours_pct?: number
+          base_fare_cents?: number
+          created_at?: string
+          crew_cents?: number
+          currency?: string
+          equipment_cents?: number
+          id?: string
+          label?: string
+          minimum_fare_cents?: number
+          per_km_cents?: number
+          per_minute_cents?: number
+          service_type?: string
+          tier?: string
+          updated_at?: string
+          waiting_per_minute_cents?: number
+        }
+        Relationships: []
+      }
+      mobility_requests: {
+        Row: {
+          cancel_reason: string | null
+          clinical_priority: string | null
+          clinical_priority_at: string | null
+          clinical_priority_by: string | null
+          condition_notes: string | null
+          created_at: string
+          declared_priority: string
+          department: string | null
+          destination_address: string | null
+          destination_label: string
+          destination_lat: number | null
+          destination_lng: number | null
+          distance_km: number
+          encounter_id: string | null
+          encounter_type: string | null
+          estimated_fare_cents: number
+          id: string
+          origin: string
+          passengers: number
+          patient_id: string | null
+          pickup_address: string | null
+          pickup_label: string
+          pickup_lat: number | null
+          pickup_lng: number | null
+          request_code: string
+          requester_id: string | null
+          requester_name: string | null
+          requester_phone: string | null
+          requester_relationship: string | null
+          requesting_clinician: string | null
+          requirements: Json
+          schedule_mode: string
+          scheduled_at: string | null
+          service_type: string
+          special_instructions: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_reason?: string | null
+          clinical_priority?: string | null
+          clinical_priority_at?: string | null
+          clinical_priority_by?: string | null
+          condition_notes?: string | null
+          created_at?: string
+          declared_priority?: string
+          department?: string | null
+          destination_address?: string | null
+          destination_label: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance_km?: number
+          encounter_id?: string | null
+          encounter_type?: string | null
+          estimated_fare_cents?: number
+          id?: string
+          origin?: string
+          passengers?: number
+          patient_id?: string | null
+          pickup_address?: string | null
+          pickup_label: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          request_code?: string
+          requester_id?: string | null
+          requester_name?: string | null
+          requester_phone?: string | null
+          requester_relationship?: string | null
+          requesting_clinician?: string | null
+          requirements?: Json
+          schedule_mode?: string
+          scheduled_at?: string | null
+          service_type: string
+          special_instructions?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_reason?: string | null
+          clinical_priority?: string | null
+          clinical_priority_at?: string | null
+          clinical_priority_by?: string | null
+          condition_notes?: string | null
+          created_at?: string
+          declared_priority?: string
+          department?: string | null
+          destination_address?: string | null
+          destination_label?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance_km?: number
+          encounter_id?: string | null
+          encounter_type?: string | null
+          estimated_fare_cents?: number
+          id?: string
+          origin?: string
+          passengers?: number
+          patient_id?: string | null
+          pickup_address?: string | null
+          pickup_label?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          request_code?: string
+          requester_id?: string | null
+          requester_name?: string | null
+          requester_phone?: string | null
+          requester_relationship?: string | null
+          requesting_clinician?: string | null
+          requirements?: Json
+          schedule_mode?: string
+          scheduled_at?: string | null
+          service_type?: string
+          special_instructions?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_trip_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          note: string | null
+          request_id: string | null
+          status: string
+          trip_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          request_id?: string | null
+          status: string
+          trip_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          request_id?: string | null
+          status?: string
+          trip_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_trip_events_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_trip_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_trips: {
+        Row: {
+          accepted_at: string | null
+          arrived_destination_at: string | null
+          arrived_pickup_at: string | null
+          assigned_at: string | null
+          boarding_at: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          distance_km: number
+          driver_id: string | null
+          en_route_at: string | null
+          eta_minutes: number | null
+          fare_cents: number
+          handover_at: string | null
+          handover_notes: string | null
+          id: string
+          in_transit_at: string | null
+          invoice_id: string | null
+          payment_method: string | null
+          request_id: string
+          status: string
+          updated_at: string
+          vehicle_id: string | null
+          waiting_minutes: number
+        }
+        Insert: {
+          accepted_at?: string | null
+          arrived_destination_at?: string | null
+          arrived_pickup_at?: string | null
+          assigned_at?: string | null
+          boarding_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          distance_km?: number
+          driver_id?: string | null
+          en_route_at?: string | null
+          eta_minutes?: number | null
+          fare_cents?: number
+          handover_at?: string | null
+          handover_notes?: string | null
+          id?: string
+          in_transit_at?: string | null
+          invoice_id?: string | null
+          payment_method?: string | null
+          request_id: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string | null
+          waiting_minutes?: number
+        }
+        Update: {
+          accepted_at?: string | null
+          arrived_destination_at?: string | null
+          arrived_pickup_at?: string | null
+          assigned_at?: string | null
+          boarding_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          distance_km?: number
+          driver_id?: string | null
+          en_route_at?: string | null
+          eta_minutes?: number | null
+          fare_cents?: number
+          handover_at?: string | null
+          handover_notes?: string | null
+          id?: string
+          in_transit_at?: string | null
+          invoice_id?: string | null
+          payment_method?: string | null
+          request_id?: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string | null
+          waiting_minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_trips_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_trips_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_trips_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_trips_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_vehicle_documents: {
+        Row: {
+          blocks_dispatch: boolean
+          created_at: string
+          doc_type: string
+          expires_on: string | null
+          id: string
+          issued_on: string | null
+          notes: string | null
+          reference: string | null
+          vehicle_id: string
+        }
+        Insert: {
+          blocks_dispatch?: boolean
+          created_at?: string
+          doc_type: string
+          expires_on?: string | null
+          id?: string
+          issued_on?: string | null
+          notes?: string | null
+          reference?: string | null
+          vehicle_id: string
+        }
+        Update: {
+          blocks_dispatch?: boolean
+          created_at?: string
+          doc_type?: string
+          expires_on?: string | null
+          id?: string
+          issued_on?: string | null
+          notes?: string | null
+          reference?: string | null
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_vehicle_documents_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_vehicle_equipment: {
+        Row: {
+          created_at: string
+          equipment_code: string
+          id: string
+          last_checked_on: string | null
+          quantity: number
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          equipment_code: string
+          id?: string
+          last_checked_on?: string | null
+          quantity?: number
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          equipment_code?: string
+          id?: string
+          last_checked_on?: string | null
+          quantity?: number
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_vehicle_equipment_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_vehicle_maintenance: {
+        Row: {
+          cost_cents: number
+          created_at: string
+          id: string
+          kind: string
+          next_due_on: string | null
+          notes: string | null
+          performed_on: string | null
+          vehicle_id: string
+          vendor: string | null
+        }
+        Insert: {
+          cost_cents?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          next_due_on?: string | null
+          notes?: string | null
+          performed_on?: string | null
+          vehicle_id: string
+          vendor?: string | null
+        }
+        Update: {
+          cost_cents?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          next_due_on?: string | null
+          notes?: string | null
+          performed_on?: string | null
+          vehicle_id?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_vehicle_maintenance_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_vehicles: {
+        Row: {
+          active: boolean
+          base_location: string | null
+          capacity: number
+          category: string | null
+          created_at: string
+          crew: string[]
+          current_lat: number | null
+          current_lng: number | null
+          current_location: string | null
+          driver_id: string | null
+          id: string
+          make: string | null
+          model: string | null
+          notes: string | null
+          registration: string
+          status: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          active?: boolean
+          base_location?: string | null
+          capacity?: number
+          category?: string | null
+          created_at?: string
+          crew?: string[]
+          current_lat?: number | null
+          current_lng?: number | null
+          current_location?: string | null
+          driver_id?: string | null
+          id?: string
+          make?: string | null
+          model?: string | null
+          notes?: string | null
+          registration: string
+          status?: string
+          updated_at?: string
+          vehicle_type: string
+        }
+        Update: {
+          active?: boolean
+          base_location?: string | null
+          capacity?: number
+          category?: string | null
+          created_at?: string
+          crew?: string[]
+          current_lat?: number | null
+          current_lng?: number | null
+          current_location?: string | null
+          driver_id?: string | null
+          id?: string
+          make?: string | null
+          model?: string | null
+          notes?: string | null
+          registration?: string
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_vehicles_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           email_address: string | null
@@ -8142,6 +8979,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_clinical_requester: { Args: never; Returns: boolean }
+      is_fleet_staff: { Args: never; Returns: boolean }
       is_hr_staff: { Args: never; Returns: boolean }
       is_supervisor_of: { Args: { _emp: string }; Returns: boolean }
       is_thread_participant: {
@@ -8215,6 +9054,7 @@ export type Database = {
         }
         Returns: string
       }
+      mobility_bill_trip: { Args: { _trip: string }; Returns: string }
       notify_role: {
         Args: {
           _body: string
@@ -8395,6 +9235,8 @@ export type Database = {
         | "hr_manager"
         | "dept_manager"
         | "admissions_officer"
+        | "fleet_manager"
+        | "driver"
       bid_status:
         | "submitted"
         | "shortlisted"
@@ -8566,6 +9408,8 @@ export const Constants = {
         "hr_manager",
         "dept_manager",
         "admissions_officer",
+        "fleet_manager",
+        "driver",
       ],
       bid_status: [
         "submitted",
