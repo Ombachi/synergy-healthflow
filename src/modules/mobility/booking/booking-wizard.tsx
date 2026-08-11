@@ -36,7 +36,8 @@ const SERVICE_ICON: Record<ServiceType, typeof Car> = {
   transfer: Ambulance,
 };
 
-export type { Place } from "./place-picker";
+import { PlacePicker, EMPTY_PLACE } from "./place-picker";
+import type { Place } from "./place-picker";
 
 
 export function BookingWizard({
