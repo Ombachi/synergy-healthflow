@@ -230,4 +230,7 @@ export const ROLE_HOME: Partial<Record<AppRole, string>> = {
   physio: "/physio",
   nutritionist: "/nutrition",
   athlete: "/me",
+  fleet_manager: "/mobility/dispatch",
+  driver: "/mobility/driver",
+
 };
