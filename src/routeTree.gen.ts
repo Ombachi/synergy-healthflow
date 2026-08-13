@@ -84,6 +84,7 @@ import { Route as AuthenticatedOrdersStockRequestsRouteImport } from './routes/_
 import { Route as AuthenticatedMobilityTripsRouteImport } from './routes/_authenticated/mobility.trips'
 import { Route as AuthenticatedMobilityRequestRouteImport } from './routes/_authenticated/mobility.request'
 import { Route as AuthenticatedMobilityFleetRouteImport } from './routes/_authenticated/mobility.fleet'
+import { Route as AuthenticatedMobilityDriverRouteImport } from './routes/_authenticated/mobility.driver'
 import { Route as AuthenticatedMobilityDispatchRouteImport } from './routes/_authenticated/mobility.dispatch'
 import { Route as AuthenticatedHrPayslipsRouteImport } from './routes/_authenticated/hr.payslips'
 import { Route as AuthenticatedHrMeRouteImport } from './routes/_authenticated/hr.me'
@@ -504,6 +505,12 @@ const AuthenticatedMobilityFleetRoute =
     path: '/mobility/fleet',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMobilityDriverRoute =
+  AuthenticatedMobilityDriverRouteImport.update({
+    id: '/mobility/driver',
+    path: '/mobility/driver',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMobilityDispatchRoute =
   AuthenticatedMobilityDispatchRouteImport.update({
     id: '/mobility/dispatch',
@@ -691,6 +698,7 @@ export interface FileRoutesByFullPath {
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/mobility/dispatch': typeof AuthenticatedMobilityDispatchRoute
+  '/mobility/driver': typeof AuthenticatedMobilityDriverRoute
   '/mobility/fleet': typeof AuthenticatedMobilityFleetRoute
   '/mobility/request': typeof AuthenticatedMobilityRequestRoute
   '/mobility/trips': typeof AuthenticatedMobilityTripsRoute
@@ -785,6 +793,7 @@ export interface FileRoutesByTo {
   '/hr/me': typeof AuthenticatedHrMeRoute
   '/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/mobility/dispatch': typeof AuthenticatedMobilityDispatchRoute
+  '/mobility/driver': typeof AuthenticatedMobilityDriverRoute
   '/mobility/fleet': typeof AuthenticatedMobilityFleetRoute
   '/mobility/request': typeof AuthenticatedMobilityRequestRoute
   '/mobility/trips': typeof AuthenticatedMobilityTripsRoute
@@ -881,6 +890,7 @@ export interface FileRoutesById {
   '/_authenticated/hr/me': typeof AuthenticatedHrMeRoute
   '/_authenticated/hr/payslips': typeof AuthenticatedHrPayslipsRoute
   '/_authenticated/mobility/dispatch': typeof AuthenticatedMobilityDispatchRoute
+  '/_authenticated/mobility/driver': typeof AuthenticatedMobilityDriverRoute
   '/_authenticated/mobility/fleet': typeof AuthenticatedMobilityFleetRoute
   '/_authenticated/mobility/request': typeof AuthenticatedMobilityRequestRoute
   '/_authenticated/mobility/trips': typeof AuthenticatedMobilityTripsRoute
@@ -977,6 +987,7 @@ export interface FileRouteTypes {
     | '/hr/me'
     | '/hr/payslips'
     | '/mobility/dispatch'
+    | '/mobility/driver'
     | '/mobility/fleet'
     | '/mobility/request'
     | '/mobility/trips'
@@ -1071,6 +1082,7 @@ export interface FileRouteTypes {
     | '/hr/me'
     | '/hr/payslips'
     | '/mobility/dispatch'
+    | '/mobility/driver'
     | '/mobility/fleet'
     | '/mobility/request'
     | '/mobility/trips'
@@ -1166,6 +1178,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/me'
     | '/_authenticated/hr/payslips'
     | '/_authenticated/mobility/dispatch'
+    | '/_authenticated/mobility/driver'
     | '/_authenticated/mobility/fleet'
     | '/_authenticated/mobility/request'
     | '/_authenticated/mobility/trips'
@@ -1716,6 +1729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMobilityFleetRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mobility/driver': {
+      id: '/_authenticated/mobility/driver'
+      path: '/mobility/driver'
+      fullPath: '/mobility/driver'
+      preLoaderRoute: typeof AuthenticatedMobilityDriverRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/mobility/dispatch': {
       id: '/_authenticated/mobility/dispatch'
       path: '/mobility/dispatch'
@@ -1934,6 +1954,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrMeRoute: typeof AuthenticatedHrMeRoute
   AuthenticatedHrPayslipsRoute: typeof AuthenticatedHrPayslipsRoute
   AuthenticatedMobilityDispatchRoute: typeof AuthenticatedMobilityDispatchRoute
+  AuthenticatedMobilityDriverRoute: typeof AuthenticatedMobilityDriverRoute
   AuthenticatedMobilityFleetRoute: typeof AuthenticatedMobilityFleetRoute
   AuthenticatedMobilityRequestRoute: typeof AuthenticatedMobilityRequestRoute
   AuthenticatedMobilityTripsRoute: typeof AuthenticatedMobilityTripsRoute
@@ -2023,6 +2044,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrMeRoute: AuthenticatedHrMeRoute,
   AuthenticatedHrPayslipsRoute: AuthenticatedHrPayslipsRoute,
   AuthenticatedMobilityDispatchRoute: AuthenticatedMobilityDispatchRoute,
+  AuthenticatedMobilityDriverRoute: AuthenticatedMobilityDriverRoute,
   AuthenticatedMobilityFleetRoute: AuthenticatedMobilityFleetRoute,
   AuthenticatedMobilityRequestRoute: AuthenticatedMobilityRequestRoute,
   AuthenticatedMobilityTripsRoute: AuthenticatedMobilityTripsRoute,

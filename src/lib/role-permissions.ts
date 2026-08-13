@@ -39,7 +39,11 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
   // Mobility — healthcare transportation
   "/mobility/request": ["patient", "athlete", "doctor", "nurse", "receptionist", "admissions_officer", "fleet_manager"],
-  "/mobility/trips": ["patient", "athlete", "doctor", "nurse", "receptionist", "admissions_officer", "fleet_manager"],
+  "/mobility/trips": ["patient", "athlete", "doctor", "nurse", "receptionist", "admissions_officer", "fleet_manager", "driver"],
+  "/mobility/dispatch": ["fleet_manager"],
+  "/mobility/fleet": ["fleet_manager"],
+  "/mobility/driver": ["driver"],
+
 
   "/my-vaccines": ["patient", "athlete"],
   // Patient self-service assessments — patient/athlete portal only.
