@@ -5,7 +5,7 @@ import {
   CalendarDays, ChevronDown, ClipboardCheck, ClipboardList, Clock, FileText, FlaskConical, Gauge, Gavel,
   Heart, HeartPulse, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Microscope,
   MapPin, Package, Pill, Receipt, ScanLine, Shield, ShieldAlert, ShieldCheck, ShoppingCart, Siren, Stethoscope,
-  Syringe, Ticket, User, Warehouse, Wallet,
+  Navigation, Syringe, Ticket, Truck, User, Warehouse, Wallet,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -143,10 +143,12 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility"],
-  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility"],
+  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility/request", "/mobility/trips"],
+  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility/request", "/mobility/trips"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
+  fleet_manager:     ["/dashboard", "/messages", "/mobility/dispatch", "/mobility/fleet", "/mobility/trips", "/mobility/request"],
+  driver:            ["/dashboard", "/messages", "/mobility/driver", "/mobility/trips"],
 };
 
 function urlMatches(url: string, pattern: string): boolean {
@@ -280,6 +282,9 @@ const GROUPS: Group[] = [
     items: [
       { title: "Request transport", url: "/mobility/request", icon: Ambulance },
       { title: "My trips", url: "/mobility/trips", icon: MapPin },
+      { title: "Dispatch board", url: "/mobility/dispatch", icon: Siren },
+      { title: "Fleet admin", url: "/mobility/fleet", icon: Truck },
+      { title: "Driver portal", url: "/mobility/driver", icon: Navigation },
     ],
   },
   {
