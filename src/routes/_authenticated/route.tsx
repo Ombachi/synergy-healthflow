@@ -143,10 +143,12 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility"],
-  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility"],
+  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility/request", "/mobility/trips"],
+  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility/request", "/mobility/trips"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
+  fleet_manager:     ["/dashboard", "/messages", "/mobility/dispatch", "/mobility/fleet", "/mobility/trips", "/mobility/request"],
+  driver:            ["/dashboard", "/messages", "/mobility/driver", "/mobility/trips"],
 };
 
 function urlMatches(url: string, pattern: string): boolean {
