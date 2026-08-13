@@ -280,6 +280,9 @@ const GROUPS: Group[] = [
     items: [
       { title: "Request transport", url: "/mobility/request", icon: Ambulance },
       { title: "My trips", url: "/mobility/trips", icon: MapPin },
+      { title: "Dispatch board", url: "/mobility/dispatch", icon: Siren },
+      { title: "Fleet admin", url: "/mobility/fleet", icon: Truck },
+      { title: "Driver portal", url: "/mobility/driver", icon: Navigation },
     ],
   },
   {
