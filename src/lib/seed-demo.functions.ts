@@ -19,6 +19,8 @@ const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "procurement@demo.local", full_name: "Pete Procurement", role: "procurement" },
   { email: "hr@demo.local", full_name: "Hana HR Officer", role: "hr_officer" },
   { email: "admissions@demo.local", full_name: "Amos Admissions Officer", role: "admissions_officer" },
+  { email: "fleet@demo.local", full_name: "Fred Fleet Manager", role: "fleet_manager" },
+  { email: "driver@demo.local", full_name: "Dave Driver", role: "driver" },
 ];
 
 // Demo password for the seeded accounts. Rotated off the old, breached
@@ -78,6 +80,30 @@ export const seedDemoUsers = createServerFn({ method: "POST" })
       });
       await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
       await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: u.role as never });
+      if (u.role === "driver") {
+        const { data: existingDriver } = await supabaseAdmin
+          .from("mobility_drivers")
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (existingDriver) {
+          await supabaseAdmin
+            .from("mobility_drivers")
+            .update({ full_name: u.full_name, active: true })
+            .eq("id", existingDriver.id);
+        } else {
+          await supabaseAdmin.from("mobility_drivers").insert({
+            user_id: userId,
+            full_name: u.full_name,
+            phone: "+254700000111",
+            licence_number: "DL-DEMO-0001",
+            licence_expiry: "2030-01-01",
+            qualifications: ["BLS", "Defensive driving"],
+            status: "offline",
+            active: true,
+          });
+        }
+      }
       results.push({ email: u.email, status, role: u.role });
     }
 
