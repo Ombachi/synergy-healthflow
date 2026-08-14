@@ -8941,6 +8941,7 @@ export type Database = {
         }[]
       }
       cron_sla_breach_scan: { Args: never; Returns: undefined }
+      driver_owns_request: { Args: { _request: string }; Returns: boolean }
       emit_outbox: {
         Args: {
           _agg_id: string
