@@ -19,6 +19,8 @@ const DEMO_USERS: { email: string; full_name: string; role: string }[] = [
   { email: "procurement@demo.local", full_name: "Pete Procurement", role: "procurement" },
   { email: "hr@demo.local", full_name: "Hana HR Officer", role: "hr_officer" },
   { email: "admissions@demo.local", full_name: "Amos Admissions Officer", role: "admissions_officer" },
+  { email: "fleet@demo.local", full_name: "Fred Fleet Manager", role: "fleet_manager" },
+  { email: "driver@demo.local", full_name: "Dave Driver", role: "driver" },
 ];
 
 // Demo password for the seeded accounts. Rotated off the old, breached
