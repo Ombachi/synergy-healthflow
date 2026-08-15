@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   useDrivers, useInsertRow, useMaintenance, usePricingRules, useUpdateRow,
-  useVehicleDocuments, useVehicleEquipment, useEquipmentTypes, useVehicles,
+  useVehicleDocuments, useVehicleEquipment, useEquipmentTypes, useVehicles, useDeleteRow,
 } from "@/modules/mobility/api";
 import {
   VEHICLE_STATUSES, VEHICLE_STATUS_CLASS, VEHICLE_STATUS_LABEL,
@@ -545,7 +545,13 @@ function MaintenanceTab() {
 function DriversTab() {
   const { data: drivers = [] } = useDrivers();
   const update = useUpdateRow("mobility_drivers");
+  const insert = useInsertRow("mobility_drivers");
+  const remove = useDeleteRow("mobility_drivers");
   const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<Record<string, string>>({
+    full_name: "", phone: "", licence_number: "", licence_expiry: "", qualifications: "",
+  });
   const rows = useMemo(() => {
     const t = q.trim().toLowerCase();
     return drivers.filter((d) => !t || d.full_name.toLowerCase().includes(t) || (d.licence_number ?? "").toLowerCase().includes(t));
@@ -556,7 +562,65 @@ function DriversTab() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="flex items-center gap-2 text-base"><Truck className="h-4 w-4" />Driver roster</CardTitle>
-        <Search value={q} onChange={setQ} placeholder="Search driver…" />
+        <div className="flex items-center gap-2">
+          <Search value={q} onChange={setQ} placeholder="Search driver…" />
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm"><Plus className="mr-1 h-4 w-4" />Onboard driver</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Onboard driver</DialogTitle></DialogHeader>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  ["full_name", "Full name", "text"], ["phone", "Phone", "text"],
+                  ["licence_number", "Licence number", "text"], ["licence_expiry", "Licence expiry", "date"],
+                ].map(([key, label, type]) => (
+                  <div key={key}>
+                    <Label>{label}</Label>
+                    <Input
+                      type={type}
+                      value={form[key] ?? ""}
+                      onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                    />
+                  </div>
+                ))}
+                <div className="col-span-2">
+                  <Label>Qualifications (comma separated)</Label>
+                  <Input
+                    placeholder="BLS, ALS, wheelchair"
+                    value={form.qualifications ?? ""}
+                    onChange={(e) => setForm({ ...form, qualifications: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button
+                disabled={!form.full_name || insert.isPending}
+                onClick={() => {
+                  insert.mutate({
+                    full_name: form.full_name,
+                    phone: form.phone || null,
+                    licence_number: form.licence_number || null,
+                    licence_expiry: form.licence_expiry || null,
+                    qualifications: form.qualifications
+                      ? form.qualifications.split(",").map((s) => s.trim()).filter(Boolean)
+                      : [],
+                    status: "offline",
+                    active: true,
+                  }, {
+                    onSuccess: () => {
+                      toast.success("Driver onboarded");
+                      setOpen(false);
+                      setForm({ full_name: "", phone: "", licence_number: "", licence_expiry: "", qualifications: "" });
+                    },
+                    onError: (e) => toast.error((e as Error).message),
+                  });
+                }}
+              >
+                Save driver
+              </Button>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <Table>
@@ -564,13 +628,14 @@ function DriversTab() {
             <TableRow>
               <TableHead>Driver</TableHead><TableHead>Phone</TableHead><TableHead>Licence</TableHead>
               <TableHead>Licence expiry</TableHead><TableHead>Qualifications</TableHead><TableHead>Status</TableHead>
+              <TableHead>Account</TableHead><TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {pager.slice.map((d) => {
               const n = daysUntil(d.licence_expiry);
               return (
-                <TableRow key={d.id}>
+                <TableRow key={d.id} className={d.active === false ? "opacity-60" : ""}>
                   <TableCell className="font-medium">{d.full_name}</TableCell>
                   <TableCell>{d.phone ?? "—"}</TableCell>
                   <TableCell>{d.licence_number ?? "—"}</TableCell>
@@ -590,11 +655,46 @@ function DriversTab() {
                       </SelectContent>
                     </Select>
                   </TableCell>
+                  <TableCell>
+                    <Badge variant={d.active === false ? "outline" : "secondary"}>
+                      {d.active === false ? "Deactivated" : "Active"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => update.mutate(
+                          { id: d.id, patch: { active: d.active === false, ...(d.active === false ? {} : { status: "offline" }) } },
+                          {
+                            onSuccess: () => toast.success(d.active === false ? "Driver reactivated" : "Driver deactivated"),
+                            onError: (e) => toast.error((e as Error).message),
+                          },
+                        )}
+                      >
+                        {d.active === false ? "Activate" : "Deactivate"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (!window.confirm(`Remove ${d.full_name} from the driver roster?`)) return;
+                          remove.mutate(d.id, {
+                            onSuccess: () => toast.success("Driver removed"),
+                            onError: (e: unknown) => toast.error((e as Error).message),
+                          });
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               );
             })}
             {rows.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-muted-foreground">No drivers.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-muted-foreground">No drivers.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -603,6 +703,7 @@ function DriversTab() {
     </Card>
   );
 }
+
 
 /* ------------------------------------------------------------------- pricing */
 
