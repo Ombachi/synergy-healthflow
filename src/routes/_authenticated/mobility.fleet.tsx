@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   useDrivers, useInsertRow, useMaintenance, usePricingRules, useUpdateRow,
-  useVehicleDocuments, useVehicleEquipment, useEquipmentTypes, useVehicles,
+  useVehicleDocuments, useVehicleEquipment, useEquipmentTypes, useVehicles, useDeleteRow,
 } from "@/modules/mobility/api";
 import {
   VEHICLE_STATUSES, VEHICLE_STATUS_CLASS, VEHICLE_STATUS_LABEL,
@@ -682,7 +682,7 @@ function DriversTab() {
                           if (!window.confirm(`Remove ${d.full_name} from the driver roster?`)) return;
                           remove.mutate(d.id, {
                             onSuccess: () => toast.success("Driver removed"),
-                            onError: (e) => toast.error((e as Error).message),
+                            onError: (e: unknown) => toast.error((e as Error).message),
                           });
                         }}
                       >
