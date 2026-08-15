@@ -107,7 +107,7 @@ export function PlacePicker({
         )}
       </div>
 
-      <div className="relative">
+      <div className="relative z-[1200]">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-9"
@@ -117,7 +117,7 @@ export function PlacePicker({
         />
         {searching && <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />}
         {results.length > 0 && (
-          <div className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover shadow-lg">
+          <div className="absolute z-[1200] mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover shadow-lg">
             {results.map((r, i) => (
               <button
                 key={`${r.lat}-${r.lng}-${i}`}
@@ -140,16 +140,19 @@ export function PlacePicker({
         )}
       </div>
 
-      <LiveMap
-        height={240}
-        markers={markers}
-        center={value.lat != null && value.lng != null ? { lat: value.lat, lng: value.lng } : null}
-        onPick={dropPin}
-        fit={false}
-      />
+      <div className="relative z-0 isolate overflow-hidden rounded-md">
+        <LiveMap
+          height={240}
+          markers={markers}
+          center={value.lat != null && value.lng != null ? { lat: value.lat, lng: value.lng } : null}
+          onPick={dropPin}
+          fit={false}
+        />
+      </div>
       <p className="text-xs text-muted-foreground">
         Tap the map to drop a pin if the address is hard to describe.
       </p>
+
 
       <div className="grid gap-2 sm:grid-cols-2">
         <Input

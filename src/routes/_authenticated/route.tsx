@@ -136,7 +136,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     // Finance trims
     "/cash-reconciliation", "/credit-notes", "/preauth",
     // Mobility trims
-    "/mobility/request",
+    "/mobility/request", "/mobility/trips", "/mobility/driver",
     // Admin group trims
     "/roster",
   ],
