@@ -352,7 +352,14 @@ function LabReportViewerDialog({ doc: d, canAmend, onClose }: { doc: LabDoc; can
           </aside>
           <div className="h-[75vh] bg-neutral-100">
             {url ? (
-              <iframe title="Laboratory report PDF" src={url} className="h-full w-full" />
+              <object data={url} type="application/pdf" className="h-full w-full">
+                <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-muted-foreground">
+                  <span>Your browser blocked the inline PDF preview.</span>
+                  <Button size="sm" variant="outline" onClick={() => exportLabReportPDF(input)}>
+                    <Download className="h-4 w-4" /> Download report
+                  </Button>
+                </div>
+              </object>
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Rendering report…</div>
             )}
