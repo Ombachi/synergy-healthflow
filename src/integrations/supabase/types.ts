@@ -3400,6 +3400,8 @@ export type Database = {
           model: string | null
           name: string
           notes: string | null
+          qc_panel_codes: string[]
+          qc_profile: string
           serial_number: string | null
           status: string
           updated_at: string
@@ -3416,6 +3418,8 @@ export type Database = {
           model?: string | null
           name: string
           notes?: string | null
+          qc_panel_codes?: string[]
+          qc_profile?: string
           serial_number?: string | null
           status?: string
           updated_at?: string
@@ -3432,6 +3436,8 @@ export type Database = {
           model?: string | null
           name?: string
           notes?: string | null
+          qc_panel_codes?: string[]
+          qc_profile?: string
           serial_number?: string | null
           status?: string
           updated_at?: string
@@ -8580,6 +8586,7 @@ export type Database = {
         Row: {
           code: string | null
           created_at: string
+          daily_bed_rate_cents: number
           department: string | null
           id: string
           name: string
@@ -8589,6 +8596,7 @@ export type Database = {
         Insert: {
           code?: string | null
           created_at?: string
+          daily_bed_rate_cents?: number
           department?: string | null
           id?: string
           name: string
@@ -8598,6 +8606,7 @@ export type Database = {
         Update: {
           code?: string | null
           created_at?: string
+          daily_bed_rate_cents?: number
           department?: string | null
           id?: string
           name?: string
@@ -9110,6 +9119,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      post_inpatient_daily_charges: { Args: { _day?: string }; Returns: number }
       recompute_abp_baseline: {
         Args: { _athlete: string; _marker: string; _n?: number }
         Returns: {
