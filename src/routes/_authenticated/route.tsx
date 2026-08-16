@@ -137,8 +137,12 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/cash-reconciliation", "/credit-notes", "/preauth",
     // Mobility trims
     "/mobility/request", "/mobility/trips", "/mobility/driver",
+    // Clinical/ops screens owned by their specialist roles
+    "/immunization", "/my-vaccines", "/instruments", "/critical-results",
+    "/referrals", "/pharmacy-safety", "/controlled-drugs",
+    "/mobility/dispatch", "/mobility/fleet",
     // Admin group trims
-    "/roster",
+    "/roster", "/admin-kpi",
   ],
 
 };
@@ -349,7 +353,6 @@ const GROUPS: Group[] = [
   {
     key: "admin", label: "Administration", icon: ShieldCheck,
     items: [
-      { title: "KPI command center", url: "/admin-kpi", icon: Gauge },
       { title: "User management", url: "/users", icon: ShieldCheck },
       { title: "Rostering", url: "/roster", icon: CalendarDays },
       { title: "Audit log", url: "/audit", icon: Shield },
