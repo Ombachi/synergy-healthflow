@@ -260,12 +260,39 @@ function LabReportViewerDialog({ doc: d, canAmend, onClose }: { doc: LabDoc; can
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.isLoading, summary.isLoading, input]);
 
+  /**
+   * Print via a hidden same-origin iframe. Opening a blob: URL in a new tab is
+   * blocked by Chrome ("This page has been blocked by Chrome"), so we never
+   * navigate to it — we embed it and call print() on the frame instead.
+   */
   async function handlePrint() {
-    const built = await buildLabReportPDF(input);
-    const b = built.output("bloburl") as unknown as string;
-    const win = window.open(b, "_blank");
-    if (win) setTimeout(() => win.print(), 500);
-    else toast.error("Pop-up blocked — allow pop-ups to print.");
+    try {
+      const built = await buildLabReportPDF(input);
+      const blobUrl = URL.createObjectURL(built.output("blob") as Blob);
+      const frame = document.createElement("iframe");
+      frame.style.position = "fixed";
+      frame.style.right = "0";
+      frame.style.bottom = "0";
+      frame.style.width = "0";
+      frame.style.height = "0";
+      frame.style.border = "0";
+      frame.src = blobUrl;
+      frame.onload = () => {
+        try {
+          frame.contentWindow?.focus();
+          frame.contentWindow?.print();
+        } catch {
+          toast.error("Printing blocked — use Download instead.");
+        }
+        setTimeout(() => {
+          URL.revokeObjectURL(blobUrl);
+          frame.remove();
+        }, 60_000);
+      };
+      document.body.appendChild(frame);
+    } catch {
+      toast.error("Could not build the report for printing.");
+    }
   }
 
   async function handleEmail() {
