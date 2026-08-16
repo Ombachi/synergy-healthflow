@@ -164,10 +164,6 @@ function PharmacyPortal() {
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
           <div className="border-b p-3">
             <div className="flex items-center gap-2 font-semibold"><Pill className="h-4 w-4 text-rose-500" /> Prescription queue</div>
-            <div className="relative mt-2">
-              <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input placeholder="Search medication..." value={search} onChange={(e)=>setSearch(e.target.value)} className="h-8 pl-7 text-xs" />
-            </div>
             <div className="mt-2">
               <EncounterTabs value={encFilter} onChange={setEncFilter} counts={encCounts} />
             </div>
