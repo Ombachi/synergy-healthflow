@@ -242,10 +242,10 @@ function BillingPage() {
           </thead>
           <tbody>
             {invoices.isLoading && (
-              <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">Loading invoices…</td></tr>
+              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">Loading invoices…</td></tr>
             )}
             {!invoices.isLoading && filtered.length === 0 && (
-              <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">No invoices{search ? " match your search" : ""}.</td></tr>
+              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">No invoices{search ? " match your search" : ""}.</td></tr>
             )}
             {filtered.map((inv) => {
               const due = inv.total_cents - inv.paid_cents;
@@ -258,6 +258,7 @@ function BillingPage() {
                   <td className="px-3 py-2 font-mono text-xs">INV-{inv.id.slice(0,8).toUpperCase()}</td>
                   <td className="px-3 py-2 font-medium">{patientName(inv.patient_id)}</td>
                   <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{patientMrn(inv.patient_id) || "—"}</td>
+                  <td className="px-3 py-2">{encounterPill(encounterOf(inv))}</td>
                   <td className="px-3 py-2 text-muted-foreground">{doctorForVisit(inv.visit_id)}</td>
                   <td className="px-3 py-2 text-muted-foreground">{new Date(inv.created_at).toLocaleDateString("en-GB")}</td>
                   <td className="px-3 py-2 text-right font-semibold">{money(inv.total_cents)}</td>
