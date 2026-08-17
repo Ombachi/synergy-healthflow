@@ -143,6 +143,7 @@ function BillingPage() {
   const filtered = useMemo(() => {
     let list = invoices.data ?? [];
     if (statusFilter !== "all") list = list.filter((i) => i.status === statusFilter);
+    if (encounterFilter !== "all") list = list.filter((i) => encounterOf(i) === encounterFilter);
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter((i) => {
@@ -151,7 +152,13 @@ function BillingPage() {
       });
     }
     return list;
-  }, [invoices.data, patients.data, search, statusFilter]);
+  }, [invoices.data, patients.data, search, statusFilter, encounterFilter, inpatientVisitIds]);
+
+  const encounterPill = (kind: "inpatient" | "outpatient") => (
+    <span className={`rounded px-2 py-0.5 text-xs ${kind === "inpatient" ? "bg-violet-500/10 text-violet-700" : "bg-sky-500/10 text-sky-700"}`}>
+      {kind === "inpatient" ? "Inpatient" : "Outpatient"}
+    </span>
+  );
 
   const statusPill = (s: string) => (
     <span className={`rounded px-2 py-0.5 text-xs ${
