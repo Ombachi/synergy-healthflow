@@ -213,6 +213,14 @@ function BillingPage() {
             <SelectItem value="void">Void</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={encounterFilter} onValueChange={setEncounterFilter}>
+          <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All encounters</SelectItem>
+            <SelectItem value="outpatient">Outpatient bills</SelectItem>
+            <SelectItem value="inpatient">Inpatient bills</SelectItem>
+          </SelectContent>
+        </Select>
         <span className="ml-auto text-xs text-muted-foreground">{filtered.length} invoice{filtered.length === 1 ? "" : "s"}</span>
       </div>
 
