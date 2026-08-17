@@ -31,6 +31,7 @@ function BillingPage() {
   const [openInvoice, setOpenInvoice] = useState<Invoice | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [encounterFilter, setEncounterFilter] = useState<string>("all");
 
   const invoices = useQuery({
     queryKey: ["invoices"],
@@ -80,6 +81,21 @@ function BillingPage() {
       return (data as unknown as Profile[]) ?? [];
     },
   });
+  // Inpatient encounters — used to label and separate inpatient vs outpatient bills.
+  const admissions = useQuery({
+    queryKey: ["bill-admissions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("admissions" as never).select("visit_id");
+      if (error) throw error;
+      return (data as unknown as { visit_id: string | null }[]) ?? [];
+    },
+  });
+  const inpatientVisitIds = useMemo(
+    () => new Set((admissions.data ?? []).map((a) => a.visit_id).filter(Boolean) as string[]),
+    [admissions.data],
+  );
+  const encounterOf = (inv: Invoice): "inpatient" | "outpatient" =>
+    inv.visit_id && inpatientVisitIds.has(inv.visit_id) ? "inpatient" : "outpatient";
 
   const issue = useMutation({
     mutationFn: async (id: string) => {
@@ -127,6 +143,7 @@ function BillingPage() {
   const filtered = useMemo(() => {
     let list = invoices.data ?? [];
     if (statusFilter !== "all") list = list.filter((i) => i.status === statusFilter);
+    if (encounterFilter !== "all") list = list.filter((i) => encounterOf(i) === encounterFilter);
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter((i) => {
@@ -135,7 +152,13 @@ function BillingPage() {
       });
     }
     return list;
-  }, [invoices.data, patients.data, search, statusFilter]);
+  }, [invoices.data, patients.data, search, statusFilter, encounterFilter, inpatientVisitIds]);
+
+  const encounterPill = (kind: "inpatient" | "outpatient") => (
+    <span className={`rounded px-2 py-0.5 text-xs ${kind === "inpatient" ? "bg-violet-500/10 text-violet-700" : "bg-sky-500/10 text-sky-700"}`}>
+      {kind === "inpatient" ? "Inpatient" : "Outpatient"}
+    </span>
+  );
 
   const statusPill = (s: string) => (
     <span className={`rounded px-2 py-0.5 text-xs ${
@@ -190,6 +213,14 @@ function BillingPage() {
             <SelectItem value="void">Void</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={encounterFilter} onValueChange={setEncounterFilter}>
+          <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All encounters</SelectItem>
+            <SelectItem value="outpatient">Outpatient bills</SelectItem>
+            <SelectItem value="inpatient">Inpatient bills</SelectItem>
+          </SelectContent>
+        </Select>
         <span className="ml-auto text-xs text-muted-foreground">{filtered.length} invoice{filtered.length === 1 ? "" : "s"}</span>
       </div>
 
@@ -200,6 +231,7 @@ function BillingPage() {
               <th className="px-3 py-2">Invoice #</th>
               <th className="px-3 py-2">Patient</th>
               <th className="px-3 py-2">MRN</th>
+              <th className="px-3 py-2">Encounter</th>
               <th className="px-3 py-2">Doctor</th>
               <th className="px-3 py-2">Date</th>
               <th className="px-3 py-2 text-right">Total</th>
@@ -210,10 +242,10 @@ function BillingPage() {
           </thead>
           <tbody>
             {invoices.isLoading && (
-              <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">Loading invoices…</td></tr>
+              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">Loading invoices…</td></tr>
             )}
             {!invoices.isLoading && filtered.length === 0 && (
-              <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">No invoices{search ? " match your search" : ""}.</td></tr>
+              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">No invoices{search ? " match your search" : ""}.</td></tr>
             )}
             {filtered.map((inv) => {
               const due = inv.total_cents - inv.paid_cents;
@@ -226,6 +258,7 @@ function BillingPage() {
                   <td className="px-3 py-2 font-mono text-xs">INV-{inv.id.slice(0,8).toUpperCase()}</td>
                   <td className="px-3 py-2 font-medium">{patientName(inv.patient_id)}</td>
                   <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{patientMrn(inv.patient_id) || "—"}</td>
+                  <td className="px-3 py-2">{encounterPill(encounterOf(inv))}</td>
                   <td className="px-3 py-2 text-muted-foreground">{doctorForVisit(inv.visit_id)}</td>
                   <td className="px-3 py-2 text-muted-foreground">{new Date(inv.created_at).toLocaleDateString("en-GB")}</td>
                   <td className="px-3 py-2 text-right font-semibold">{money(inv.total_cents)}</td>
@@ -246,6 +279,7 @@ function BillingPage() {
           invoice={openInvoice}
           patient={patientById(openInvoice.patient_id) ?? null}
           doctorName={doctorForVisit(openInvoice.visit_id)}
+          encounter={encounterOf(openInvoice)}
           items={(items.data ?? []).filter((i) => i.invoice_id === openInvoice.id)}
           payments={(payments.data ?? []).filter((p) => p.invoice_id === openInvoice.id)}
           cashierNameFor={(uid) => profileName(uid)}
@@ -287,11 +321,12 @@ function BillingPage() {
 }
 
 function InvoiceDocumentDialog({
-  invoice, patient, doctorName, items, payments, cashierNameFor, onClose, onIssue, onTakePayment,
+  invoice, patient, doctorName, encounter, items, payments, cashierNameFor, onClose, onIssue, onTakePayment,
 }: {
   invoice: Invoice;
   patient: Patient | null;
   doctorName: string;
+  encounter: "inpatient" | "outpatient";
   items: InvoiceItem[];
   payments: Payment[];
   cashierNameFor: (uid: string | null) => string;
@@ -342,7 +377,7 @@ function InvoiceDocumentDialog({
           <div className="flex items-start justify-between gap-4 border-b pb-4">
             <div>
               <div className="text-lg font-semibold">Litu Vault Hospital</div>
-              <div className="text-xs text-muted-foreground">Tax invoice</div>
+              <div className="text-xs text-muted-foreground capitalize">{encounter} tax invoice</div>
             </div>
             <div className="text-right text-xs">
               <div className="font-mono">INV-{invoice.id.slice(0,8).toUpperCase()}</div>
@@ -360,7 +395,7 @@ function InvoiceDocumentDialog({
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Attending clinician</div>
               <div className="mt-1 font-medium">{doctorName}</div>
-              <div className="text-xs text-muted-foreground">Department: Outpatient</div>
+              <div className="text-xs text-muted-foreground capitalize">Encounter: {encounter}</div>
             </div>
           </div>
 
