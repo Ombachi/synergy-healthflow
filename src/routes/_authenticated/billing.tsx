@@ -31,6 +31,7 @@ function BillingPage() {
   const [openInvoice, setOpenInvoice] = useState<Invoice | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [encounterFilter, setEncounterFilter] = useState<string>("all");
 
   const invoices = useQuery({
     queryKey: ["invoices"],
