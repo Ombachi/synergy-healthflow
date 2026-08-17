@@ -17,14 +17,16 @@ export const Route = createFileRoute("/_authenticated/beds")({
   component: () => <RoleGate path="/beds"><BedsPage /></RoleGate>,
 });
 
-interface Ward { id: string; name: string; code: string | null; department: string | null }
+interface Ward { id: string; name: string; code: string | null; department: string | null; daily_bed_rate_cents: number | null }
 interface Bed { id: string; ward_id: string; code: string; status: string }
 interface Patient { id: string; full_name: string; medical_record_number: string | null }
 interface Admission { id: string; patient_id: string; bed_id: string | null; admitted_at: string; status: string; admission_reason: string | null }
 
 function BedsPage() {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
+  const isAdmin = hasRole("admin");
+  const [rateDraft, setRateDraft] = useState<Record<string, string>>({});
   const [wardOpen, setWardOpen] = useState(false);
   const [wardForm, setWardForm] = useState({ name: "", code: "", department: "" });
   const [bedOpen, setBedOpen] = useState(false);
@@ -72,6 +74,14 @@ function BedsPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Bed added"); setBedOpen(false); setBedForm({ward_id:"",code:""}); qc.invalidateQueries({queryKey:["beds"]}); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const saveRate = useMutation({
+    mutationFn: async ({ wardId, cents }: { wardId: string; cents: number }) => {
+      const { error } = await supabase.from("wards" as never).update({ daily_bed_rate_cents: cents } as never).eq("id", wardId);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Daily bed rate updated"); qc.invalidateQueries({ queryKey: ["wards"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
   const admit = useMutation({
@@ -217,6 +227,30 @@ function BedsPage() {
                     );
                   })}
                   {wb.length === 0 && <p className="col-span-4 text-xs text-muted-foreground">No beds — add some.</p>}
+                </div>
+                <div className="mt-3 flex items-center gap-2 border-t pt-3 text-xs">
+                  <span className="text-muted-foreground">Daily bed rate (KES)</span>
+                  {isAdmin ? (
+                    <>
+                      <Input
+                        className="h-7 w-24 text-xs"
+                        type="number"
+                        min={0}
+                        value={rateDraft[w.id] ?? String(((w.daily_bed_rate_cents ?? 0) / 100))}
+                        onChange={(e) => setRateDraft({ ...rateDraft, [w.id]: e.target.value })}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7"
+                        onClick={() => saveRate.mutate({ wardId: w.id, cents: Math.round(parseFloat(rateDraft[w.id] ?? String((w.daily_bed_rate_cents ?? 0) / 100)) * 100) || 0 })}
+                      >
+                        Save
+                      </Button>
+                    </>
+                  ) : (
+                    <span className="font-medium">{((w.daily_bed_rate_cents ?? 0) / 100).toLocaleString("en-GB")}</span>
+                  )}
                 </div>
               </CardContent>
             </Card>
