@@ -7,7 +7,7 @@ import { exportImagingReportPDF } from "@/lib/imaging-report-pdf";
 
 interface ImagingOrder {
   id: string; modality: string; body_part: string | null; clinical_question: string | null;
-  status: string; findings: string | null; report: string | null; image_path: string | null;
+  status: string; findings: string | null; report: string | null; image_path: string | null; performed_by: string | null;
   created_at: string; performed_at: string | null; patient_id: string; visit_id: string | null;
 }
 
@@ -26,11 +26,23 @@ export function ImagingViewer({ patientId, patientName, mrn }: ImagingViewerProp
     queryKey: ["iv-orders", patientId],
     queryFn: async () => {
       const { data } = await supabase.from("imaging_orders" as never)
-        .select("id, modality, body_part, clinical_question, status, findings, report, image_path, created_at, performed_at, patient_id, visit_id")
+        .select("id, modality, body_part, clinical_question, status, findings, report, image_path, created_at, performed_at, patient_id, visit_id, performed_by")
         .eq("patient_id", patientId).order("created_at", { ascending: false });
       return (data as unknown as ImagingOrder[]) ?? [];
     },
   });
+
+  const radiologistIds = Array.from(new Set((orders.data ?? []).map((o) => o.performed_by).filter(Boolean) as string[]));
+  const radiologists = useQuery({
+    queryKey: ["iv-radiologists", radiologistIds.join(",")], enabled: radiologistIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles" as never)
+        .select("id, full_name").in("id", radiologistIds as never);
+      return (data as unknown as { id: string; full_name: string | null }[]) ?? [];
+    },
+  });
+  const radiologistName = (id: string | null | undefined) =>
+    (id ? radiologists.data?.find((r) => r.id === id)?.full_name ?? null : null);
 
   const selected = useMemo(
     () => (orders.data ?? []).find((o) => o.id === selectedId) ?? (orders.data ?? [])[0] ?? null,
@@ -65,6 +77,7 @@ export function ImagingViewer({ patientId, patientName, mrn }: ImagingViewerProp
       order_id: selected.id, modality: selected.modality, ordered_at: selected.created_at,
       findings: selected.findings, report: selected.report,
       patient_name: patientName, mrn, image_data_url: dataUrl,
+      radiologist: radiologistName(selected.performed_by),
     });
   }
 

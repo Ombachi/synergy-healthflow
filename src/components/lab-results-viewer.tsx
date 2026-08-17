@@ -10,7 +10,7 @@ interface LabOrder {
   id: string; test_id: string; created_at: string; status: string; patient_id: string; visit_id: string | null;
 }
 interface LabTest { id: string; name: string; code: string; specimen: string | null }
-interface LabResult { id: string; order_id: string; result_value: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; performed_at: string | null; comments: string | null }
+interface LabResult { id: string; order_id: string; result_value: string | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; performed_at: string | null; comments: string | null; performed_by: string | null; verified_by: string | null }
 interface LabValue { id: string; order_id: string; parameter_name: string; value_text: string | null; value_numeric: number | null; units: string | null; reference_range: string | null; abnormal_flag: string | null; template_id: string | null }
 
 export interface LabResultsViewerProps {
@@ -58,6 +58,21 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
       return (data as unknown as LabValue[]) ?? [];
     },
   });
+
+  // Names of the professionals who performed / verified the assay, for the report signature block.
+  const staffIds = Array.from(new Set(
+    (results.data ?? []).flatMap((r) => [r.performed_by, r.verified_by]).filter(Boolean) as string[],
+  ));
+  const staff = useQuery({
+    queryKey: ["lrv-staff", staffIds.join(",")], enabled: staffIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles" as never)
+        .select("id, full_name").in("id", staffIds as never);
+      return (data as unknown as { id: string; full_name: string | null }[]) ?? [];
+    },
+  });
+  const staffName = (id: string | null | undefined) =>
+    (id ? staff.data?.find((s) => s.id === id)?.full_name ?? null : null);
 
   const testOf = (id: string) => tests.data?.find((t) => t.id === id);
   const testName = (id: string) => testOf(id)?.name ?? "Test";
@@ -119,6 +134,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
       performed_at: selSummary?.performed_at ?? null,
       patient_name: patientName, mrn, age, gender,
       parameters: rows, comments: selSummary?.comments ?? null,
+      pathologist: staffName(selSummary?.verified_by) ?? staffName(selSummary?.performed_by),
     });
   }
 
