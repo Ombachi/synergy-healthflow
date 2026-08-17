@@ -279,6 +279,7 @@ function BillingPage() {
           invoice={openInvoice}
           patient={patientById(openInvoice.patient_id) ?? null}
           doctorName={doctorForVisit(openInvoice.visit_id)}
+          encounter={encounterOf(openInvoice)}
           items={(items.data ?? []).filter((i) => i.invoice_id === openInvoice.id)}
           payments={(payments.data ?? []).filter((p) => p.invoice_id === openInvoice.id)}
           cashierNameFor={(uid) => profileName(uid)}
@@ -320,11 +321,12 @@ function BillingPage() {
 }
 
 function InvoiceDocumentDialog({
-  invoice, patient, doctorName, items, payments, cashierNameFor, onClose, onIssue, onTakePayment,
+  invoice, patient, doctorName, encounter, items, payments, cashierNameFor, onClose, onIssue, onTakePayment,
 }: {
   invoice: Invoice;
   patient: Patient | null;
   doctorName: string;
+  encounter: "inpatient" | "outpatient";
   items: InvoiceItem[];
   payments: Payment[];
   cashierNameFor: (uid: string | null) => string;
@@ -375,7 +377,7 @@ function InvoiceDocumentDialog({
           <div className="flex items-start justify-between gap-4 border-b pb-4">
             <div>
               <div className="text-lg font-semibold">Litu Vault Hospital</div>
-              <div className="text-xs text-muted-foreground">Tax invoice</div>
+              <div className="text-xs text-muted-foreground capitalize">{encounter} tax invoice</div>
             </div>
             <div className="text-right text-xs">
               <div className="font-mono">INV-{invoice.id.slice(0,8).toUpperCase()}</div>
@@ -393,7 +395,7 @@ function InvoiceDocumentDialog({
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Attending clinician</div>
               <div className="mt-1 font-medium">{doctorName}</div>
-              <div className="text-xs text-muted-foreground">Department: Outpatient</div>
+              <div className="text-xs text-muted-foreground capitalize">Encounter: {encounter}</div>
             </div>
           </div>
 
