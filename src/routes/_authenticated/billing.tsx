@@ -80,6 +80,21 @@ function BillingPage() {
       return (data as unknown as Profile[]) ?? [];
     },
   });
+  // Inpatient encounters — used to label and separate inpatient vs outpatient bills.
+  const admissions = useQuery({
+    queryKey: ["bill-admissions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("admissions" as never).select("visit_id");
+      if (error) throw error;
+      return (data as unknown as { visit_id: string | null }[]) ?? [];
+    },
+  });
+  const inpatientVisitIds = useMemo(
+    () => new Set((admissions.data ?? []).map((a) => a.visit_id).filter(Boolean) as string[]),
+    [admissions.data],
+  );
+  const encounterOf = (inv: Invoice): "inpatient" | "outpatient" =>
+    inv.visit_id && inpatientVisitIds.has(inv.visit_id) ? "inpatient" : "outpatient";
 
   const issue = useMutation({
     mutationFn: async (id: string) => {
