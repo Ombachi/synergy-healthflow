@@ -231,6 +231,7 @@ function BillingPage() {
               <th className="px-3 py-2">Invoice #</th>
               <th className="px-3 py-2">Patient</th>
               <th className="px-3 py-2">MRN</th>
+              <th className="px-3 py-2">Encounter</th>
               <th className="px-3 py-2">Doctor</th>
               <th className="px-3 py-2">Date</th>
               <th className="px-3 py-2 text-right">Total</th>
