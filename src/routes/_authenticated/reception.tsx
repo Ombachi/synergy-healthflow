@@ -335,14 +335,17 @@ function ReceptionPage() {
           <div className="divide-y">
             {activeVisits.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No active visits.</div>}
             {activeVisits.data?.map((v) => (
-              <div key={v.id} className="flex items-center justify-between gap-2 p-3 text-sm">
+              <div key={v.id} className="flex items-center justify-between gap-2 p-3 text-sm hover:bg-muted/30">
                 <div>
-                  <div className="font-medium">{visitPatientName(v.patient_id)}</div>
+                  <Link to="/visits/$visitId" params={{ visitId: v.id }} className="font-medium hover:underline">
+                    {visitPatientName(v.patient_id)}
+                  </Link>
                   <div className="text-xs text-muted-foreground">{v.current_stage ?? "—"} · {new Date(v.opened_at).toLocaleTimeString("en-GB")}</div>
                 </div>
                 <span className="text-xs text-muted-foreground">In progress</span>
               </div>
             ))}
+
           </div>
         </div>
       </div>
