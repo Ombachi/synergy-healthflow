@@ -253,6 +253,8 @@ function AppointmentsPage() {
             patientName={patientName}
             doctorName={doctorName}
             onEdit={openEdit}
+            onCheckIn={(a) => checkIn.mutate(a)}
+
             onStatus={(id, status) => setStatus.mutate({ id, status })}
             canCheckIn={canCheckIn}
           />
