@@ -54,9 +54,17 @@ function age(dob: string | null): string | null {
   return `${years} yrs`;
 }
 
+/** Clinician roles that can receive an internal consult request. */
+const CLINICIAN_ROLES = [
+  "doctor", "consultant", "specialist", "surgeon", "radiologist",
+  "physiotherapist", "nutritionist", "pharmacist", "dentist", "admin",
+];
+
 function ReferralsPage() {
   const qc = useQueryClient();
-  const { user, profile } = useAuth();
+  const { user, profile, hasRole } = useAuth();
+  // Nurses may only refer patients under their own care and never see the whole register.
+  const nurseScoped = hasRole("nurse") && !hasRole("doctor") && !hasRole("admin");
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     patient_id: "", specialty: SPECIALTIES[0], referred_to: "", external_facility: "",
@@ -70,6 +78,18 @@ function ReferralsPage() {
       const { data, error } = await supabase.rpc("patient_directory" as never);
       if (error) throw error;
       return (data as unknown as Patient[]) ?? [];
+    },
+  });
+
+  /** Patient ids on visits currently assigned to this nurse. */
+  const myVisitPatients = useQuery({
+    queryKey: ["ref-nurse-visits", user?.id],
+    enabled: nurseScoped && !!user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("visits" as never)
+        .select("patient_id").eq("assigned_nurse_id", user!.id);
+      if (error) throw error;
+      return new Set(((data as unknown as { patient_id: string }[]) ?? []).map((v) => v.patient_id));
     },
   });
 
@@ -91,13 +111,24 @@ function ReferralsPage() {
     },
   });
 
+  const referralTargets = useMemo(
+    () => (staff.data ?? []).filter((s) => CLINICIAN_ROLES.includes(s.role)),
+    [staff.data],
+  );
+
   const filteredPatients = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return (patients.data ?? []).slice(0, 25);
-    return (patients.data ?? []).filter((p) =>
+    let base = patients.data ?? [];
+    if (nurseScoped) {
+      const allowed = myVisitPatients.data;
+      base = allowed ? base.filter((p) => allowed.has(p.id)) : [];
+    }
+    if (!q) return base.slice(0, 25);
+    return base.filter((p) =>
       p.full_name.toLowerCase().includes(q) || (p.medical_record_number ?? "").toLowerCase().includes(q),
     ).slice(0, 25);
-  }, [patients.data, search]);
+  }, [patients.data, search, nurseScoped, myVisitPatients.data]);
+
 
   const patientById = (id: string) => patients.data?.find((p) => p.id === id);
   const staffName = (id: string | null) => (id ? staff.data?.find((s) => s.id === id)?.full_name ?? "—" : null);
