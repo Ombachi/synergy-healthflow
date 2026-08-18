@@ -340,9 +340,12 @@ function ReferralsPage() {
           {outgoing.length === 0 && <div className="rounded border p-4 text-sm text-muted-foreground">You have not sent any referrals yet.</div>}
           {outgoing.map((r) => card(r, "out"))}
         </TabsContent>
-        <TabsContent value="all" className="mt-4 space-y-3">
-          {(referrals.data ?? []).map((r) => card(r, "out"))}
-        </TabsContent>
+        {!nurseScoped && (
+          <TabsContent value="all" className="mt-4 space-y-3">
+            {(referrals.data ?? []).map((r) => card(r, "out"))}
+          </TabsContent>
+        )}
+
       </Tabs>
     </div>
   );
