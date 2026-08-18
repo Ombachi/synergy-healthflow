@@ -310,7 +310,7 @@ function ReferralsPage() {
                   <select value={form.referred_to} onChange={(e) => setForm({ ...form, referred_to: e.target.value })}
                     className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm">
                     <option value="">— external / unassigned —</option>
-                    {staff.data?.map((s) => <option key={s.id} value={s.id}>{s.full_name} ({s.role})</option>)}
+                    {referralTargets.map((s) => <option key={s.id} value={s.id}>{s.full_name} ({s.role})</option>)}
                   </select>
                 </div>
                 <div>
