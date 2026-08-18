@@ -267,7 +267,7 @@ function ReferralsPage() {
           <TabsTrigger value="new">New referral</TabsTrigger>
           <TabsTrigger value="incoming">Incoming ({incoming.length})</TabsTrigger>
           <TabsTrigger value="outgoing">Sent ({outgoing.length})</TabsTrigger>
-          <TabsTrigger value="all">All ({referrals.data?.length ?? 0})</TabsTrigger>
+          {!nurseScoped && <TabsTrigger value="all">All ({referrals.data?.length ?? 0})</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="new" className="mt-4">
