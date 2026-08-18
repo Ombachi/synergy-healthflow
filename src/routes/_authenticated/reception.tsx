@@ -397,7 +397,6 @@ function ReceptionPage() {
               );
             })
 
-            ))
           )}
         </div>
       </div>
