@@ -26,8 +26,19 @@ function grade(z: number | null): "pass" | "warn" | "fail" {
 /**
  * Multi-level QC entry: one control lot, every analyte of a panel (FBC/UEC/LFT…)
  * captured across the low / normal / high control materials in a single save.
+ *
+ * `panelCodes` (instruments.qc_panel_codes) restricts the picker to the panels an
+ * analyzer actually runs; `profile` (instruments.qc_profile) narrows the control
+ * levels for non-chemistry equipment (fridges log a single reading, coagulation
+ * uses normal/abnormal, radiology QC is a single pass/fail phantom run).
  */
-export function QcPanelEntry({ instrumentId, section, canWrite }: { instrumentId: string; section: string; canWrite: boolean }) {
+export function QcPanelEntry({ instrumentId, section, canWrite, panelCodes, profile }: {
+  instrumentId: string;
+  section: string;
+  canWrite: boolean;
+  panelCodes?: string[] | null;
+  profile?: string | null;
+}) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [panelId, setPanelId] = useState("");
@@ -47,12 +58,19 @@ export function QcPanelEntry({ instrumentId, section, canWrite }: { instrumentId
 
   const available = useMemo(() => {
     const all = panels.data ?? [];
+    const codes = (panelCodes ?? []).filter(Boolean);
+    if (codes.length) {
+      const configured = all.filter((p) => codes.includes(p.code));
+      if (configured.length) return configured;
+    }
     const mine = all.filter((p) => p.section.toLowerCase() === section.toLowerCase());
     return mine.length ? mine : all;
-  }, [panels.data, section]);
+  }, [panels.data, section, panelCodes]);
 
+  const profileLevels = PROFILE_LEVELS[(profile ?? "").toLowerCase()] ?? null;
   const panel = available.find((p) => p.id === panelId) ?? null;
-  const levels = panel?.levels ?? ["low", "normal", "high"];
+  const levels = profileLevels ?? panel?.levels ?? ["low", "normal", "high"];
+
 
   useEffect(() => { setValues({}); }, [panelId]);
 

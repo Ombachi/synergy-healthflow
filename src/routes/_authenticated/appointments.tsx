@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -116,6 +116,32 @@ function AppointmentsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  /** Check-in opens (or reuses) the consultation encounter and queues the patient for triage. */
+  const checkIn = useMutation({
+    mutationFn: async (a: Appointment) => {
+      let visitId = a.visit_id;
+      if (!visitId) {
+        const { data: v, error: ve } = await supabase.from("visits" as never).insert({
+          patient_id: a.patient_id,
+          opened_by: user?.id ?? null,
+          reason: a.reason ?? "Scheduled appointment",
+          triage_level: "routine",
+          status: "open",
+        } as never).select("id").single();
+        if (ve) throw ve;
+        visitId = (v as { id: string }).id;
+        await supabase.from("visit_queue" as never).insert({ visit_id: visitId, queue_type: "triage", priority: 3 } as never);
+      }
+      const { error } = await supabase.from("appointments" as never)
+        .update({ status: "checked_in", visit_id: visitId } as never).eq("id", a.id);
+      if (error) throw error;
+      return visitId as string;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["appointments"] }); toast.success("Checked in — consultation opened"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   const patientName = (id: string) => patients.data?.find((p) => p.id === id)?.full_name ?? "—";
   const doctorName = (id: string | null) => id ? doctors.data?.find((d) => d.id === id)?.full_name ?? "—" : "Any";
 
@@ -227,6 +253,8 @@ function AppointmentsPage() {
             patientName={patientName}
             doctorName={doctorName}
             onEdit={openEdit}
+            onCheckIn={(a) => checkIn.mutate(a)}
+
             onStatus={(id, status) => setStatus.mutate({ id, status })}
             canCheckIn={canCheckIn}
           />
@@ -245,7 +273,12 @@ function AppointmentsPage() {
                   <div className="col-span-2 flex justify-end gap-1">
                     <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>Edit</Button>
                     {canCheckIn && a.status === "booked" && (
-                      <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: a.id, status: "checked_in" })}>Check in</Button>
+                      <Button size="sm" variant="outline" onClick={() => checkIn.mutate(a)} disabled={checkIn.isPending}>Check in</Button>
+                    )}
+                    {a.visit_id && (
+                      <Button asChild size="sm" variant="ghost">
+                        <Link to="/visits/$visitId" params={{ visitId: a.visit_id }}>Open consultation</Link>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -258,12 +291,14 @@ function AppointmentsPage() {
   );
 }
 
-function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, canCheckIn }: {
+function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, onCheckIn, canCheckIn }: {
   day: Date; items: Appointment[]; patientName: (id: string) => string;
   doctorName: (id: string | null) => string;
   onEdit: (a: Appointment) => void; onStatus: (id: string, status: string) => void;
+  onCheckIn: (a: Appointment) => void;
   canCheckIn: boolean;
 }) {
+
   const hours = Array.from({ length: 12 }, (_, i) => 8 + i); // 8..19
   return (
     <div className="rounded-lg border bg-card">
@@ -285,7 +320,13 @@ function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, canC
                     <div className="flex gap-1">
                       <span className={`rounded px-2 py-0.5 text-xs ${STATUS_COLOR[a.status] ?? STATUS_COLOR.booked}`}>{a.status}</span>
                       <Button size="sm" variant="ghost" onClick={() => onEdit(a)}>Edit</Button>
-                      {canCheckIn && a.status === "booked" && <Button size="sm" variant="outline" onClick={() => onStatus(a.id, "checked_in")}>Check in</Button>}
+                      {canCheckIn && a.status === "booked" && <Button size="sm" variant="outline" onClick={() => onCheckIn(a)}>Check in</Button>}
+                      {a.visit_id && (
+                        <Button asChild size="sm" variant="ghost">
+                          <Link to="/visits/$visitId" params={{ visitId: a.visit_id }}>Open consultation</Link>
+                        </Button>
+                      )}
+
                     </div>
                   </div>
                 ))}
