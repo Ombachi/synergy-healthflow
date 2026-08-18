@@ -116,6 +116,32 @@ function AppointmentsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  /** Check-in opens (or reuses) the consultation encounter and queues the patient for triage. */
+  const checkIn = useMutation({
+    mutationFn: async (a: Appointment) => {
+      let visitId = a.visit_id;
+      if (!visitId) {
+        const { data: v, error: ve } = await supabase.from("visits" as never).insert({
+          patient_id: a.patient_id,
+          opened_by: user?.id ?? null,
+          reason: a.reason ?? "Scheduled appointment",
+          triage_level: "routine",
+          status: "open",
+        } as never).select("id").single();
+        if (ve) throw ve;
+        visitId = (v as { id: string }).id;
+        await supabase.from("visit_queue" as never).insert({ visit_id: visitId, queue_type: "triage", priority: 3 } as never);
+      }
+      const { error } = await supabase.from("appointments" as never)
+        .update({ status: "checked_in", visit_id: visitId } as never).eq("id", a.id);
+      if (error) throw error;
+      return visitId as string;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["appointments"] }); toast.success("Checked in — consultation opened"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   const patientName = (id: string) => patients.data?.find((p) => p.id === id)?.full_name ?? "—";
   const doctorName = (id: string | null) => id ? doctors.data?.find((d) => d.id === id)?.full_name ?? "—" : "Any";
 
