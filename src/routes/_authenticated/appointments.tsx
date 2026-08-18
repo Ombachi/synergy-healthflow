@@ -318,7 +318,13 @@ function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, onCh
                     <div className="flex gap-1">
                       <span className={`rounded px-2 py-0.5 text-xs ${STATUS_COLOR[a.status] ?? STATUS_COLOR.booked}`}>{a.status}</span>
                       <Button size="sm" variant="ghost" onClick={() => onEdit(a)}>Edit</Button>
-                      {canCheckIn && a.status === "booked" && <Button size="sm" variant="outline" onClick={() => onStatus(a.id, "checked_in")}>Check in</Button>}
+                      {canCheckIn && a.status === "booked" && <Button size="sm" variant="outline" onClick={() => onCheckIn(a)}>Check in</Button>}
+                      {a.visit_id && (
+                        <Button asChild size="sm" variant="ghost">
+                          <Link to="/visits/$visitId" params={{ visitId: a.visit_id }}>Open consultation</Link>
+                        </Button>
+                      )}
+
                     </div>
                   </div>
                 ))}
