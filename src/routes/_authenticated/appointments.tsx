@@ -271,7 +271,12 @@ function AppointmentsPage() {
                   <div className="col-span-2 flex justify-end gap-1">
                     <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>Edit</Button>
                     {canCheckIn && a.status === "booked" && (
-                      <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: a.id, status: "checked_in" })}>Check in</Button>
+                      <Button size="sm" variant="outline" onClick={() => checkIn.mutate(a)} disabled={checkIn.isPending}>Check in</Button>
+                    )}
+                    {a.visit_id && (
+                      <Button asChild size="sm" variant="ghost">
+                        <Link to="/visits/$visitId" params={{ visitId: a.visit_id }}>Open consultation</Link>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -284,12 +289,14 @@ function AppointmentsPage() {
   );
 }
 
-function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, canCheckIn }: {
+function DayAgenda({ day, items, patientName, doctorName, onEdit, onStatus, onCheckIn, canCheckIn }: {
   day: Date; items: Appointment[]; patientName: (id: string) => string;
   doctorName: (id: string | null) => string;
   onEdit: (a: Appointment) => void; onStatus: (id: string, status: string) => void;
+  onCheckIn: (a: Appointment) => void;
   canCheckIn: boolean;
 }) {
+
   const hours = Array.from({ length: 12 }, (_, i) => 8 + i); // 8..19
   return (
     <div className="rounded-lg border bg-card">
