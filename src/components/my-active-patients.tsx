@@ -16,7 +16,7 @@ interface PatientRow { id: string; full_name: string }
 
 export function MyActivePatients() {
   const { user, hasAnyRole } = useAuth();
-  const isClinical = hasAnyRole(["doctor", "nurse", "admin"]);
+  const isClinical = hasAnyRole(["doctor", "nurse", "admin", "physio", "nutritionist"]);
 
   const visits = useQuery({
     queryKey: ["my-active-visits", user?.id],
@@ -26,10 +26,12 @@ export function MyActivePatients() {
         .from("visits" as never)
         .select("id, patient_id, status, triage_level, current_stage, opened_at")
         .or(`assigned_doctor_id.eq.${user!.id},assigned_nurse_id.eq.${user!.id}`)
-        .neq("status", "completed")
+        .not("status", "in", "(completed,closed,cancelled)")
         .order("opened_at", { ascending: false });
       if (error) throw error;
-      return (data as unknown as VisitRow[]) ?? [];
+      return ((data as unknown as VisitRow[]) ?? []).filter(
+        (v) => v.current_stage !== "closed" && v.current_stage !== "completed",
+      );
     },
   });
 
