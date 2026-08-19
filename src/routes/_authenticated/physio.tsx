@@ -12,6 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Check } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DoctorStation } from "@/components/workstations/doctor-station";
+import { MyActivePatients } from "@/components/my-active-patients";
 
 export const Route = createFileRoute("/_authenticated/physio")({
   component: PhysioDashboard,
