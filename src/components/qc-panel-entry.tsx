@@ -13,7 +13,17 @@ interface PanelAnalyte { analyte: string; units?: string | null; target?: number
 interface QcPanel { id: string; code: string; name: string; section: string; analytes: PanelAnalyte[]; levels: string[] }
 
 /** Level multiplier applied to the panel's normal-level target to seed low/high controls. */
-const LEVEL_FACTOR: Record<string, number> = { low: 0.7, normal: 1, high: 1.35 };
+const LEVEL_FACTOR: Record<string, number> = { low: 0.7, normal: 1, abnormal: 1.35, high: 1.35 };
+
+/** Control levels per analyzer QC profile; null/unknown falls back to the panel's own levels. */
+const PROFILE_LEVELS: Record<string, string[]> = {
+  temperature: ["normal"],
+  refrigerator: ["normal"],
+  freezer: ["normal"],
+  coagulation: ["normal", "abnormal"],
+  radiology: ["normal"],
+  imaging: ["normal"],
+};
 
 function grade(z: number | null): "pass" | "warn" | "fail" {
   if (z == null || Number.isNaN(z)) return "pass";
@@ -69,7 +79,7 @@ export function QcPanelEntry({ instrumentId, section, canWrite, panelCodes, prof
 
   const profileLevels = PROFILE_LEVELS[(profile ?? "").toLowerCase()] ?? null;
   const panel = available.find((p) => p.id === panelId) ?? null;
-  const levels = profileLevels ?? panel?.levels ?? ["low", "normal", "high"];
+  const levels: string[] = profileLevels ?? panel?.levels ?? ["low", "normal", "high"];
 
 
   useEffect(() => { setValues({}); }, [panelId]);
