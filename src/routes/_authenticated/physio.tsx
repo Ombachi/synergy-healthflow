@@ -157,6 +157,7 @@ function PhysioDashboard() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }
