@@ -201,7 +201,12 @@ export function DoctorStation() {
     },
   });
 
-  const pendingCount = (pendingLabs.data?.length ?? 0) + (pendingImaging.data?.length ?? 0);
+  // Orders belonging to visits that are already closed/completed must not show as
+  // "pending results" under the in-progress consultation view.
+  const closedVisitIds = new Set((completedVisits.data ?? []).map((v) => v.id));
+  const openPendingLabs = (pendingLabs.data ?? []).filter((o) => !o.visit_id || !closedVisitIds.has(o.visit_id));
+  const openPendingImaging = (pendingImaging.data ?? []).filter((o) => !o.visit_id || !closedVisitIds.has(o.visit_id));
+  const pendingCount = openPendingLabs.length + openPendingImaging.length;
 
   // Names for visits that are not in the live queue
   const extraPatientIds = Array.from(new Set([
@@ -314,7 +319,7 @@ export function DoctorStation() {
           <ResultsGroup
             title="Laboratory"
             empty="No laboratory investigations awaiting review."
-            rows={(pendingLabs.data ?? []).map((o) => ({
+            rows={openPendingLabs.map((o) => ({
               id: o.id, visitId: o.visit_id, label: `Lab order · ${o.status}`, at: o.ordered_at,
             }))}
             nameOf={nameOf}
@@ -323,7 +328,7 @@ export function DoctorStation() {
           <ResultsGroup
             title="Radiology"
             empty="No imaging studies awaiting review."
-            rows={(pendingImaging.data ?? []).map((o) => ({
+            rows={openPendingImaging.map((o) => ({
               id: o.id, visitId: o.visit_id, label: `${o.modality}${o.body_part ? ` · ${o.body_part}` : ""} · ${o.status}`, at: o.ordered_at,
             }))}
             nameOf={nameOf}
