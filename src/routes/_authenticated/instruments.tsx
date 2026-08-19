@@ -41,6 +41,7 @@ interface Instrument {
   id: string; name: string; manufacturer: string | null; model: string | null; serial_number: string | null;
   asset_tag: string | null; location: string | null; lab_section: string; modality: string; status: string;
   commissioned_on: string | null; notes: string | null;
+  qc_profile?: string | null; qc_panel_codes?: string[] | null;
 }
 
 const d = (s: string | null | undefined) => (s ? new Date(s).toLocaleDateString("en-GB") : "—");
@@ -456,7 +457,7 @@ function InstrumentWorkspace({ inst, canWrite }: { inst: Instrument; canWrite: b
 
         <TabsContent value="qc" className="mt-3 space-y-3">
           <div className="mb-2 flex justify-end">
-            <QcPanelEntry instrumentId={inst.id} section={inst.lab_section} canWrite={canWrite} />
+            <QcPanelEntry instrumentId={inst.id} section={inst.lab_section} canWrite={canWrite} panelCodes={inst.qc_panel_codes} profile={inst.qc_profile ?? inst.modality} />
           </div>
           <QcHistory instrumentId={inst.id} instrument={inst} />
           <div className="pt-1 text-xs font-medium text-muted-foreground">Add or manage individual QC runs</div>
