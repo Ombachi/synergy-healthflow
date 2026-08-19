@@ -75,11 +75,28 @@ function PhysioDashboard() {
   const nameOf = (id: string) => athletes.data?.find((a) => a.id === id)?.full_name ?? id.slice(0, 8);
 
   return (
-    <div className="space-y-6">
+    <Tabs defaultValue="clinic" className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Physiotherapy</h1>
+        <p className="text-sm text-muted-foreground">
+          Patient consultations, plus sports injuries and return-to-play clearance.
+        </p>
+      </div>
+      <TabsList>
+        <TabsTrigger value="clinic">Consultations</TabsTrigger>
+        <TabsTrigger value="sports">Sports injuries</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="clinic" className="space-y-6">
+        <DoctorStation />
+        <MyActivePatients />
+      </TabsContent>
+
+      <TabsContent value="sports" className="space-y-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Physiotherapy</h1>
-          <p className="text-sm text-muted-foreground">Active injuries, treatments, return-to-play clearance.</p>
+          <h2 className="text-lg font-medium">Sports injuries</h2>
+          <p className="text-sm text-muted-foreground">Athlete injuries, treatments, return-to-play clearance.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4" />Report injury</Button></DialogTrigger>
