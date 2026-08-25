@@ -37,6 +37,7 @@ import { Route as AuthenticatedPreauthRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPhysioRouteImport } from './routes/_authenticated/physio'
 import { Route as AuthenticatedPharmacySafetyRouteImport } from './routes/_authenticated/pharmacy-safety'
 import { Route as AuthenticatedPharmacyRouteImport } from './routes/_authenticated/pharmacy'
+import { Route as AuthenticatedPatientsRouteImport } from './routes/_authenticated/patients'
 import { Route as AuthenticatedNutritionRouteImport } from './routes/_authenticated/nutrition'
 import { Route as AuthenticatedNursingStationRouteImport } from './routes/_authenticated/nursing-station'
 import { Route as AuthenticatedMyVaccinesRouteImport } from './routes/_authenticated/my-vaccines'
@@ -247,6 +248,11 @@ const AuthenticatedPharmacySafetyRoute =
 const AuthenticatedPharmacyRoute = AuthenticatedPharmacyRouteImport.update({
   id: '/pharmacy',
   path: '/pharmacy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPatientsRoute = AuthenticatedPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNutritionRoute = AuthenticatedNutritionRouteImport.update({
@@ -667,6 +673,7 @@ export interface FileRoutesByFullPath {
   '/my-vaccines': typeof AuthenticatedMyVaccinesRoute
   '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
+  '/patients': typeof AuthenticatedPatientsRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/pharmacy-safety': typeof AuthenticatedPharmacySafetyRoute
   '/physio': typeof AuthenticatedPhysioRoute
@@ -763,6 +770,7 @@ export interface FileRoutesByTo {
   '/my-vaccines': typeof AuthenticatedMyVaccinesRoute
   '/nursing-station': typeof AuthenticatedNursingStationRoute
   '/nutrition': typeof AuthenticatedNutritionRoute
+  '/patients': typeof AuthenticatedPatientsRoute
   '/pharmacy': typeof AuthenticatedPharmacyRoute
   '/pharmacy-safety': typeof AuthenticatedPharmacySafetyRoute
   '/physio': typeof AuthenticatedPhysioRoute
@@ -861,6 +869,7 @@ export interface FileRoutesById {
   '/_authenticated/my-vaccines': typeof AuthenticatedMyVaccinesRoute
   '/_authenticated/nursing-station': typeof AuthenticatedNursingStationRoute
   '/_authenticated/nutrition': typeof AuthenticatedNutritionRoute
+  '/_authenticated/patients': typeof AuthenticatedPatientsRoute
   '/_authenticated/pharmacy': typeof AuthenticatedPharmacyRoute
   '/_authenticated/pharmacy-safety': typeof AuthenticatedPharmacySafetyRoute
   '/_authenticated/physio': typeof AuthenticatedPhysioRoute
@@ -959,6 +968,7 @@ export interface FileRouteTypes {
     | '/my-vaccines'
     | '/nursing-station'
     | '/nutrition'
+    | '/patients'
     | '/pharmacy'
     | '/pharmacy-safety'
     | '/physio'
@@ -1055,6 +1065,7 @@ export interface FileRouteTypes {
     | '/my-vaccines'
     | '/nursing-station'
     | '/nutrition'
+    | '/patients'
     | '/pharmacy'
     | '/pharmacy-safety'
     | '/physio'
@@ -1152,6 +1163,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-vaccines'
     | '/_authenticated/nursing-station'
     | '/_authenticated/nutrition'
+    | '/_authenticated/patients'
     | '/_authenticated/pharmacy'
     | '/_authenticated/pharmacy-safety'
     | '/_authenticated/physio'
@@ -1412,6 +1424,13 @@ declare module '@tanstack/react-router' {
       path: '/pharmacy'
       fullPath: '/pharmacy'
       preLoaderRoute: typeof AuthenticatedPharmacyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/patients': {
+      id: '/_authenticated/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof AuthenticatedPatientsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/nutrition': {
@@ -1938,6 +1957,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMyVaccinesRoute: typeof AuthenticatedMyVaccinesRoute
   AuthenticatedNursingStationRoute: typeof AuthenticatedNursingStationRoute
   AuthenticatedNutritionRoute: typeof AuthenticatedNutritionRoute
+  AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRoute
   AuthenticatedPharmacyRoute: typeof AuthenticatedPharmacyRoute
   AuthenticatedPharmacySafetyRoute: typeof AuthenticatedPharmacySafetyRoute
   AuthenticatedPhysioRoute: typeof AuthenticatedPhysioRoute
@@ -2027,6 +2047,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMyVaccinesRoute: AuthenticatedMyVaccinesRoute,
   AuthenticatedNursingStationRoute: AuthenticatedNursingStationRoute,
   AuthenticatedNutritionRoute: AuthenticatedNutritionRoute,
+  AuthenticatedPatientsRoute: AuthenticatedPatientsRoute,
   AuthenticatedPharmacyRoute: AuthenticatedPharmacyRoute,
   AuthenticatedPharmacySafetyRoute: AuthenticatedPharmacySafetyRoute,
   AuthenticatedPhysioRoute: AuthenticatedPhysioRoute,
