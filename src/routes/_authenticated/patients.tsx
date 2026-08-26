@@ -183,7 +183,7 @@ function PatientsPage() {
         </table>
       </div>
 
-      <Pager page={page} pageCount={pageCount} onPage={setPage} />
+      <Pager page={page} pageCount={pageCount} total={filtered.length} pageSize={PAGE_SIZE} setPage={setPage} label="patients" />
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="max-w-2xl">
