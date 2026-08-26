@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Receipt, DollarSign, Search, FileText, Printer } from "lucide-react";
+import { Receipt, DollarSign, Search, FileText, Printer, Smartphone, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { exportInvoicePDF } from "@/lib/invoice-pdf";
+import { initiateMpesaPayment, getMpesaPaymentStatus } from "@/lib/mpesa.functions";
 
 export const Route = createFileRoute("/_authenticated/billing")({ component: BillingPage });
 
