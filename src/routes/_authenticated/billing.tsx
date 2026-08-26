@@ -344,14 +344,14 @@ function BillingPage() {
         />
       )}
 
-      <Dialog open={!!payOpen} onOpenChange={(v) => !v && setPayOpen(null)}>
+      <Dialog open={!!payOpen} onOpenChange={(v) => !v && closePayDialog()}>
         <DialogContent>
           <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Amount</Label><Input type="number" step="0.01" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} /></div>
+            <div><Label>Amount</Label><Input type="number" step="0.01" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} disabled={!!mpesaTx} /></div>
             <div>
               <Label>Method</Label>
-              <Select value={payForm.method} onValueChange={(v) => setPayForm({ ...payForm, method: v })}>
+              <Select value={payForm.method} onValueChange={(v) => { setPayForm({ ...payForm, method: v }); setMpesaTx(null); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cash">Cash</SelectItem>
@@ -362,9 +362,59 @@ function BillingPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Reference</Label><Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} /></div>
+            {payForm.method === "mpesa" ? (
+              <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+                <div>
+                  <Label>Patient M-Pesa phone</Label>
+                  <Input
+                    placeholder="e.g. 0712 345 678"
+                    value={mpesaPhone}
+                    onChange={(e) => setMpesaPhone(e.target.value)}
+                    disabled={!!mpesaTx && mpesaTx.status === "pending"}
+                  />
+                </div>
+                {!mpesaTx && (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => mpesaPush.mutate()}
+                    disabled={mpesaPush.isPending || !mpesaPhone.trim()}
+                  >
+                    {mpesaPush.isPending ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending prompt…</>
+                    ) : (
+                      <><Smartphone className="mr-2 h-4 w-4" /> Send M-Pesa prompt to patient</>
+                    )}
+                  </Button>
+                )}
+                {mpesaTx?.status === "pending" && (
+                  <div className="flex items-center gap-2 rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Waiting for the patient to enter their M-Pesa PIN…
+                  </div>
+                )}
+                {mpesaTx?.status === "success" && (
+                  <div className="rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-700">
+                    Payment confirmed and posted to this invoice automatically.
+                  </div>
+                )}
+                {mpesaTx && mpesaTx.status !== "pending" && mpesaTx.status !== "success" && (
+                  <div className="rounded-md bg-rose-500/10 px-3 py-2 text-sm text-rose-700">
+                    {mpesaTx.resultDesc ?? "Payment failed or was cancelled by the patient."}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div><Label>Reference</Label><Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} /></div>
+            )}
           </div>
-          <DialogFooter><Button onClick={() => takePayment.mutate()} disabled={takePayment.isPending}>Record</Button></DialogFooter>
+          <DialogFooter>
+            {payForm.method === "mpesa" ? (
+              <Button variant="outline" onClick={closePayDialog}>Close</Button>
+            ) : (
+              <Button onClick={() => takePayment.mutate()} disabled={takePayment.isPending}>Record</Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
