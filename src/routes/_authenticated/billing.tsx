@@ -128,6 +128,55 @@ function BillingPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // ---- M-Pesa STK push flow ----
+  const [mpesaPhone, setMpesaPhone] = useState("");
+  const [mpesaTx, setMpesaTx] = useState<{ checkoutRequestId: string; status: string; resultDesc?: string | null } | null>(null);
+  const sendStkPush = useServerFn(initiateMpesaPayment);
+  const pollStkStatus = useServerFn(getMpesaPaymentStatus);
+
+  const mpesaPush = useMutation({
+    mutationFn: async () => {
+      if (!payOpen) throw new Error("No invoice selected");
+      if (!mpesaPhone.trim()) throw new Error("Enter the patient's M-Pesa phone number");
+      return sendStkPush({ data: { invoiceId: payOpen.id, phone: mpesaPhone.trim() } });
+    },
+    onSuccess: (res) => {
+      setMpesaTx({ checkoutRequestId: res.checkoutRequestId, status: "pending" });
+      toast.success("M-Pesa prompt sent", { description: res.message });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Live-poll the transaction until it settles, then refresh invoices/payments.
+  useEffect(() => {
+    if (!mpesaTx || mpesaTx.status !== "pending") return;
+    const timer = setInterval(async () => {
+      try {
+        const res = await pollStkStatus({ data: { checkoutRequestId: mpesaTx.checkoutRequestId } });
+        if (res.status !== "pending") {
+          setMpesaTx({ checkoutRequestId: mpesaTx.checkoutRequestId, status: res.status, resultDesc: res.resultDesc });
+          clearInterval(timer);
+          if (res.status === "success") {
+            qc.invalidateQueries({ queryKey: ["invoices"] });
+            qc.invalidateQueries({ queryKey: ["payments"] });
+            toast.success(`M-Pesa payment received${res.receipt ? ` · ${res.receipt}` : ""}`);
+          } else {
+            toast.error(res.resultDesc ?? "M-Pesa payment failed or was cancelled");
+          }
+        }
+      } catch {
+        // keep polling; transient errors are fine
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [mpesaTx, pollStkStatus, qc]);
+
+  const closePayDialog = () => {
+    setPayOpen(null);
+    setMpesaTx(null);
+    setMpesaPhone("");
+  };
+
   const patientById = (id: string) => patients.data?.find((p) => p.id === id);
   const patientName = (id: string) => patientById(id)?.full_name ?? "—";
   const patientMrn = (id: string) => patientById(id)?.medical_record_number ?? "";
