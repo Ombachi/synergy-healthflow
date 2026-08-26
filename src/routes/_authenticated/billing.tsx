@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Receipt, DollarSign, Search, FileText, Printer } from "lucide-react";
+import { Receipt, DollarSign, Search, FileText, Printer, Smartphone, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { exportInvoicePDF } from "@/lib/invoice-pdf";
+import { initiateMpesaPayment, getMpesaPaymentStatus } from "@/lib/mpesa.functions";
 
 export const Route = createFileRoute("/_authenticated/billing")({ component: BillingPage });
 
@@ -125,6 +127,55 @@ function BillingPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  // ---- M-Pesa STK push flow ----
+  const [mpesaPhone, setMpesaPhone] = useState("");
+  const [mpesaTx, setMpesaTx] = useState<{ checkoutRequestId: string; status: string; resultDesc?: string | null } | null>(null);
+  const sendStkPush = useServerFn(initiateMpesaPayment);
+  const pollStkStatus = useServerFn(getMpesaPaymentStatus);
+
+  const mpesaPush = useMutation({
+    mutationFn: async () => {
+      if (!payOpen) throw new Error("No invoice selected");
+      if (!mpesaPhone.trim()) throw new Error("Enter the patient's M-Pesa phone number");
+      return sendStkPush({ data: { invoiceId: payOpen.id, phone: mpesaPhone.trim() } });
+    },
+    onSuccess: (res) => {
+      setMpesaTx({ checkoutRequestId: res.checkoutRequestId, status: "pending" });
+      toast.success("M-Pesa prompt sent", { description: res.message });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Live-poll the transaction until it settles, then refresh invoices/payments.
+  useEffect(() => {
+    if (!mpesaTx || mpesaTx.status !== "pending") return;
+    const timer = setInterval(async () => {
+      try {
+        const res = await pollStkStatus({ data: { checkoutRequestId: mpesaTx.checkoutRequestId } });
+        if (res.status !== "pending") {
+          setMpesaTx({ checkoutRequestId: mpesaTx.checkoutRequestId, status: res.status, resultDesc: res.resultDesc });
+          clearInterval(timer);
+          if (res.status === "success") {
+            qc.invalidateQueries({ queryKey: ["invoices"] });
+            qc.invalidateQueries({ queryKey: ["payments"] });
+            toast.success(`M-Pesa payment received${res.receipt ? ` · ${res.receipt}` : ""}`);
+          } else {
+            toast.error(res.resultDesc ?? "M-Pesa payment failed or was cancelled");
+          }
+        }
+      } catch {
+        // keep polling; transient errors are fine
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [mpesaTx, pollStkStatus, qc]);
+
+  const closePayDialog = () => {
+    setPayOpen(null);
+    setMpesaTx(null);
+    setMpesaPhone("");
+  };
 
   const patientById = (id: string) => patients.data?.find((p) => p.id === id);
   const patientName = (id: string) => patientById(id)?.full_name ?? "—";
@@ -293,14 +344,14 @@ function BillingPage() {
         />
       )}
 
-      <Dialog open={!!payOpen} onOpenChange={(v) => !v && setPayOpen(null)}>
+      <Dialog open={!!payOpen} onOpenChange={(v) => !v && closePayDialog()}>
         <DialogContent>
           <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Amount</Label><Input type="number" step="0.01" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} /></div>
+            <div><Label>Amount</Label><Input type="number" step="0.01" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} disabled={!!mpesaTx} /></div>
             <div>
               <Label>Method</Label>
-              <Select value={payForm.method} onValueChange={(v) => setPayForm({ ...payForm, method: v })}>
+              <Select value={payForm.method} onValueChange={(v) => { setPayForm({ ...payForm, method: v }); setMpesaTx(null); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cash">Cash</SelectItem>
@@ -311,9 +362,59 @@ function BillingPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Reference</Label><Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} /></div>
+            {payForm.method === "mpesa" ? (
+              <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+                <div>
+                  <Label>Patient M-Pesa phone</Label>
+                  <Input
+                    placeholder="e.g. 0712 345 678"
+                    value={mpesaPhone}
+                    onChange={(e) => setMpesaPhone(e.target.value)}
+                    disabled={!!mpesaTx && mpesaTx.status === "pending"}
+                  />
+                </div>
+                {!mpesaTx && (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => mpesaPush.mutate()}
+                    disabled={mpesaPush.isPending || !mpesaPhone.trim()}
+                  >
+                    {mpesaPush.isPending ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending prompt…</>
+                    ) : (
+                      <><Smartphone className="mr-2 h-4 w-4" /> Send M-Pesa prompt to patient</>
+                    )}
+                  </Button>
+                )}
+                {mpesaTx?.status === "pending" && (
+                  <div className="flex items-center gap-2 rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Waiting for the patient to enter their M-Pesa PIN…
+                  </div>
+                )}
+                {mpesaTx?.status === "success" && (
+                  <div className="rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-700">
+                    Payment confirmed and posted to this invoice automatically.
+                  </div>
+                )}
+                {mpesaTx && mpesaTx.status !== "pending" && mpesaTx.status !== "success" && (
+                  <div className="rounded-md bg-rose-500/10 px-3 py-2 text-sm text-rose-700">
+                    {mpesaTx.resultDesc ?? "Payment failed or was cancelled by the patient."}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div><Label>Reference</Label><Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} /></div>
+            )}
           </div>
-          <DialogFooter><Button onClick={() => takePayment.mutate()} disabled={takePayment.isPending}>Record</Button></DialogFooter>
+          <DialogFooter>
+            {payForm.method === "mpesa" ? (
+              <Button variant="outline" onClick={closePayDialog}>Close</Button>
+            ) : (
+              <Button onClick={() => takePayment.mutate()} disabled={takePayment.isPending}>Record</Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -30,6 +30,7 @@ const EMERGENCY_ROLES: AppRole[] = ["doctor", "nurse", "receptionist"];
 export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Front desk / patient flow
   "/reception": ["receptionist"],
+  "/patients": ["receptionist"],
   "/appointments": ["receptionist", "doctor"],
   // Queue is a clinical/front-desk board only — no pharmacist/lab_tech/cashier/billing.
   "/queue": ["receptionist", "nurse", "doctor"],

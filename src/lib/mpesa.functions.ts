@@ -49,7 +49,7 @@ export async function settleMpesaTransaction(tx: {
   const paymentId = (payment as { id: string }).id;
 
   const { error: txErr } = await supabaseAdmin
-    .from("mpesa_transactions")
+    .from("mpesa_transactions" as never)
     .update({ posted_payment_id: paymentId } as never)
     .eq("id", tx.id)
     .is("posted_payment_id", null);

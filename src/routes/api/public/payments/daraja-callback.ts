@@ -28,11 +28,16 @@ export const Route = createFileRoute("/api/public/payments/daraja-callback")({
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: tx } = await supabaseAdmin
-          .from("mpesa_transactions")
+        const { data: rawTx } = await supabaseAdmin
+          .from("mpesa_transactions" as never)
           .select("id, invoice_id, amount_cents, mpesa_receipt, initiated_by, posted_payment_id, status")
           .eq("checkout_request_id", checkoutRequestId)
           .single();
+        const tx = rawTx as {
+          id: string; invoice_id: string; amount_cents: number;
+          mpesa_receipt: string | null; initiated_by: string;
+          posted_payment_id: string | null; status: string;
+        } | null;
         if (!tx) {
           return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
         }
