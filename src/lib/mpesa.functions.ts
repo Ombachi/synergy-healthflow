@@ -6,15 +6,31 @@ import { getMpesaConfig, normalizeKenyanPhone, stkPush } from "./mpesa.server";
 
 const FINANCE_ROLES = ["cashier", "billing_officer", "admin"] as const;
 
-async function assertFinanceRole(supabase: any, userId: string) {
+async function hasFinanceRole(supabase: any, userId: string) {
   const { data } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
   const roles = ((data ?? []) as { role: string }[]).map((r) => r.role);
-  if (!roles.some((r) => (FINANCE_ROLES as readonly string[]).includes(r))) {
+  return roles.some((r) => (FINANCE_ROLES as readonly string[]).includes(r));
+}
+
+async function assertFinanceRole(supabase: any, userId: string) {
+  if (!(await hasFinanceRole(supabase, userId))) {
     throw new Error("Only billing staff can initiate M-Pesa payments");
   }
+}
+
+/** Billing staff, or the patient paying their own invoice. */
+async function assertCanPayInvoice(supabase: any, userId: string, patientId: string) {
+  if (await hasFinanceRole(supabase, userId)) return;
+  const { data } = await supabase
+    .from("patients")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("id", patientId)
+    .maybeSingle();
+  if (!data) throw new Error("You are not allowed to pay this invoice");
 }
 
 /**
@@ -84,7 +100,6 @@ export const initiateMpesaPayment = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
-    await assertFinanceRole(supabase, userId);
 
     const cfg = getMpesaConfig();
     if (!cfg) {
@@ -106,6 +121,7 @@ export const initiateMpesaPayment = createServerFn({ method: "POST" })
       paid_cents: number;
       status: string;
     };
+    await assertCanPayInvoice(supabase, userId, inv.patient_id);
     const dueCents = inv.total_cents - inv.paid_cents;
     if (dueCents <= 0) throw new Error("Invoice is already fully paid");
     if (inv.status === "void") throw new Error("Invoice is void");
@@ -143,7 +159,6 @@ export const getMpesaPaymentStatus = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
-    await assertFinanceRole(supabase, userId);
 
     const { data: tx, error } = await supabase
       .from("mpesa_transactions")
@@ -161,6 +176,7 @@ export const getMpesaPaymentStatus = createServerFn({ method: "GET" })
       status: string;
       result_desc: string | null;
     };
+    if (row.initiated_by !== userId) await assertFinanceRole(supabase, userId);
 
     if (row.status === "success" && !row.posted_payment_id) {
       await settleMpesaTransaction(row);

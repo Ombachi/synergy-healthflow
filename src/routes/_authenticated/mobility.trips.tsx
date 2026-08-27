@@ -14,6 +14,7 @@ import {
 } from "@/modules/mobility/types";
 import type { MobilityRequest, TripStatus } from "@/modules/mobility/types";
 import { formatKes } from "@/modules/mobility/pricing/pricing";
+import { MpesaPayPanel } from "@/components/mpesa-pay";
 
 export const Route = createFileRoute("/_authenticated/mobility/trips")({
   component: MyTripsPage,
@@ -119,6 +120,20 @@ function MyTripsPage() {
               <dd>{formatKes(trip?.fare_cents || r.estimated_fare_cents)}</dd>
             </div>
           </dl>
+
+          {status === "COMPLETED" && trip?.invoice_id && (
+            <div className="pt-1">
+              <p className="mb-2 text-sm font-medium">Pay this trip fare</p>
+              <MpesaPayPanel
+                invoiceId={trip.invoice_id}
+                defaultPhone={r.requester_phone ?? null}
+                invalidateKeys={[["mobility"], ["my-invoices"], ["invoices"]]}
+                label="Pay fare with M-Pesa"
+              />
+            </div>
+          )}
+
+
 
           {live && (
             <div className="flex flex-wrap gap-2 pt-1">
