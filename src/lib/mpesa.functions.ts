@@ -121,6 +121,7 @@ export const initiateMpesaPayment = createServerFn({ method: "POST" })
       paid_cents: number;
       status: string;
     };
+    await assertCanPayInvoice(supabase, userId, inv.patient_id);
     const dueCents = inv.total_cents - inv.paid_cents;
     if (dueCents <= 0) throw new Error("Invoice is already fully paid");
     if (inv.status === "void") throw new Error("Invoice is void");
