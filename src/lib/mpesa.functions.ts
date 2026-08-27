@@ -100,7 +100,6 @@ export const initiateMpesaPayment = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
-    await assertFinanceRole(supabase, userId);
 
     const cfg = getMpesaConfig();
     if (!cfg) {
