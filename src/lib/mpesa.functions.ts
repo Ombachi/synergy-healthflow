@@ -6,15 +6,31 @@ import { getMpesaConfig, normalizeKenyanPhone, stkPush } from "./mpesa.server";
 
 const FINANCE_ROLES = ["cashier", "billing_officer", "admin"] as const;
 
-async function assertFinanceRole(supabase: any, userId: string) {
+async function hasFinanceRole(supabase: any, userId: string) {
   const { data } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
   const roles = ((data ?? []) as { role: string }[]).map((r) => r.role);
-  if (!roles.some((r) => (FINANCE_ROLES as readonly string[]).includes(r))) {
+  return roles.some((r) => (FINANCE_ROLES as readonly string[]).includes(r));
+}
+
+async function assertFinanceRole(supabase: any, userId: string) {
+  if (!(await hasFinanceRole(supabase, userId))) {
     throw new Error("Only billing staff can initiate M-Pesa payments");
   }
+}
+
+/** Billing staff, or the patient paying their own invoice. */
+async function assertCanPayInvoice(supabase: any, userId: string, patientId: string) {
+  if (await hasFinanceRole(supabase, userId)) return;
+  const { data } = await supabase
+    .from("patients")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("id", patientId)
+    .maybeSingle();
+  if (!data) throw new Error("You are not allowed to pay this invoice");
 }
 
 /**
