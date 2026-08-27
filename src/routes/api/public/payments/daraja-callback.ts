@@ -51,14 +51,14 @@ export const Route = createFileRoute("/api/public/payments/daraja-callback")({
 
         const status = resultCode === 0 ? "success" : "failed";
         await supabaseAdmin
-          .from("mpesa_transactions")
+          .from("mpesa_transactions" as never)
           .update({
             status,
             result_code: resultCode,
             result_desc: resultDesc,
             mpesa_receipt: receipt ?? null,
           } as never)
-          .eq("id", (tx as { id: string }).id);
+          .eq("id", tx.id);
 
         if (status === "success") {
           await settleMpesaTransaction({ ...(tx as any), status, mpesa_receipt: receipt ?? null });
