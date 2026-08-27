@@ -159,7 +159,6 @@ export const getMpesaPaymentStatus = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
-    await assertFinanceRole(supabase, userId);
 
     const { data: tx, error } = await supabase
       .from("mpesa_transactions")
@@ -177,6 +176,7 @@ export const getMpesaPaymentStatus = createServerFn({ method: "GET" })
       status: string;
       result_desc: string | null;
     };
+    if (row.initiated_by !== userId) await assertFinanceRole(supabase, userId);
 
     if (row.status === "success" && !row.posted_payment_id) {
       await settleMpesaTransaction(row);
