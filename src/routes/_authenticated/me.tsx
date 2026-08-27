@@ -497,7 +497,7 @@ function PatientTimeline() {
               <div className="space-y-3">
                 <div>
                   <Label>Amount (KES)</Label>
-                  <Input inputMode="decimal" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} />
+                  <Input inputMode="decimal" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} disabled={payForm.method === "mpesa"} />
                   {payFor && <p className="mt-1 text-xs text-muted-foreground">Balance due {money(payFor.total_cents - payFor.paid_cents)}</p>}
                 </div>
                 <div>
@@ -512,13 +512,27 @@ function PatientTimeline() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Reference (transaction code)</Label>
-                  <Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} placeholder="e.g. SFE4XY12Z" />
-                </div>
+                {payForm.method === "mpesa" ? (
+                  payFor && (
+                    <MpesaPayPanel
+                      invoiceId={payFor.id}
+                      invalidateKeys={[["my-invoices"], ["my-payments"]]}
+                      label="Pay now with M-Pesa"
+                    />
+                  )
+                ) : (
+                  <div>
+                    <Label>Reference (transaction code)</Label>
+                    <Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} placeholder="e.g. SFE4XY12Z" />
+                  </div>
+                )}
               </div>
               <DialogFooter>
-                <Button onClick={() => pay.mutate()} disabled={pay.isPending}>{pay.isPending ? "Submitting…" : "Submit payment"}</Button>
+                {payForm.method === "mpesa" ? (
+                  <Button variant="outline" onClick={() => setPayFor(null)}>Close</Button>
+                ) : (
+                  <Button onClick={() => pay.mutate()} disabled={pay.isPending}>{pay.isPending ? "Submitting…" : "Submit payment"}</Button>
+                )}
               </DialogFooter>
             </DialogContent>
           </Dialog>
