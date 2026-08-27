@@ -18,6 +18,7 @@ import { exportPrescriptionPDF } from "@/lib/prescription-pdf";
 import { exportReceiptPDF } from "@/lib/receipt-pdf";
 
 import { LabResultsViewer } from "@/components/lab-results-viewer";
+import { MpesaPayPanel } from "@/components/mpesa-pay";
 import { ImagingViewer } from "@/components/imaging-viewer";
 
 export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
