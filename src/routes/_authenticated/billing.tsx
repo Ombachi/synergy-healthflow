@@ -326,6 +326,7 @@ function BillingPage() {
             })}
           </tbody>
         </table>
+        <Pager {...pager} label="invoices" />
       </div>
 
       {openInvoice && (

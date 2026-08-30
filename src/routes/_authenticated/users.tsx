@@ -188,6 +188,7 @@ function UsersPage() {
             })}
           </tbody>
         </table>
+        <Pager {...pager} label="users" />
       </div>
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
