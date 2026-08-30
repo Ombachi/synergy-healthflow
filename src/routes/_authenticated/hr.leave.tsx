@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -46,6 +47,8 @@ function HrLeavePage() {
   const [forApproval, setForApproval] = useState<LR[]>([]);
   const [refreshTick, setRefreshTick] = useState(0);
 
+  const minePager = usePager(mine, 10);
+  const approvalPager = usePager(forApproval, 10);
   // Form state
   const [typeId, setTypeId] = useState("");
   const [start, setStart] = useState("");
@@ -187,7 +190,7 @@ function HrLeavePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mine.map((r) => (
+                    {minePager.slice.map((r) => (
                       <tr key={r.id} className="border-t">
                         <td className="p-2">{r.leave_types?.name ?? "—"}</td>
                         <td className="p-2">{r.start_date} → {r.end_date}</td>
@@ -203,6 +206,8 @@ function HrLeavePage() {
                     ))}
                   </tbody>
                 </table>
+                <Pager {...approvalPager} label="approvals" />
+                <Pager {...minePager} label="requests" />
               )}
             </CardContent>
           </Card>
@@ -224,7 +229,7 @@ function HrLeavePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {forApproval.map((r) => (
+                    {approvalPager.slice.map((r) => (
                       <tr key={r.id} className="border-t">
                         <td className="p-2">{r.employees?.full_name ?? "—"}</td>
                         <td className="p-2">{r.leave_types?.name ?? "—"}</td>
@@ -238,6 +243,8 @@ function HrLeavePage() {
                     ))}
                   </tbody>
                 </table>
+                <Pager {...approvalPager} label="approvals" />
+                <Pager {...minePager} label="requests" />
               )}
               <p className="mt-2 text-xs text-muted-foreground">
                 {isHR ? "You are approving as HR — approval decrements the employee's leave balance." : "You are approving as the supervisor; HR will finalise."}

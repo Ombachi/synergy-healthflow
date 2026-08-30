@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -143,6 +144,8 @@ function CriticalResults() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alerts.data, status, search, patients.data, orders.data, tests.data]);
+  const pager = usePager(rows, 20);
+
 
   function submitNotify() {
     if (!notifyFor) return;
@@ -221,10 +224,10 @@ function CriticalResults() {
             {alerts.isLoading && (
               <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">Loading…</td></tr>
             )}
-            {!alerts.isLoading && rows.length === 0 && (
+            {!alerts.isLoading && pager.total === 0 && (
               <tr><td colSpan={9} className="px-3 py-10 text-center text-muted-foreground">No critical results in this view.</td></tr>
             )}
-            {rows.map((a) => {
+            {pager.slice.map((a) => {
               const p = patientOf(a.patient_id);
               return (
                 <tr key={a.id} className={`border-t ${a.status === "pending" ? "bg-destructive/5" : ""}`}>
@@ -273,6 +276,7 @@ function CriticalResults() {
             })}
           </tbody>
         </table>
+        <Pager {...pager} label="results" />
       </div>
 
       <Dialog open={!!notifyFor} onOpenChange={(o) => !o && setNotifyFor(null)}>

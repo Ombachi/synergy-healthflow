@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -38,6 +39,7 @@ function LeaveInbox() {
 
   if (!allowed) return <p className="text-sm text-muted-foreground">Manager/HR access only.</p>;
 
+  const pager = usePager(decided, 20);
   const pending = (q.data ?? []).filter((r) => r.status === "pending" || r.status === "clarification");
   const decided = (q.data ?? []).filter((r) => !["pending", "clarification"].includes(r.status));
 
@@ -65,18 +67,20 @@ function LeaveInbox() {
               </div>
             </div>
           ))}
+          <Pager {...pager} label="decided requests" />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader><CardTitle>Decided ({decided.length})</CardTitle></CardHeader>
         <CardContent className="space-y-1">
-          {decided.slice(0, 30).map((r) => (
+          {pager.slice.map((r) => (
             <div key={r.id} className="flex justify-between rounded border p-2 text-sm">
               <span>{r.start_date} → {r.end_date}</span>
               <span className="rounded bg-muted px-2 text-xs">{r.status}</span>
             </div>
           ))}
+          <Pager {...pager} label="decided requests" />
         </CardContent>
       </Card>
     </div>

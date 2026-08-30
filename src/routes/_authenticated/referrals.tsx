@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -192,6 +193,7 @@ function ReferralsPage() {
   }
 
   const [replyDraft, setReplyDraft] = useState<Record<string, string>>({});
+  const allPager = usePager(referrals.data ?? [], 20);
   const incoming = (referrals.data ?? []).filter((r) => r.referred_to === user?.id);
   const outgoing = (referrals.data ?? []).filter((r) => r.referred_by === user?.id);
 
@@ -342,7 +344,8 @@ function ReferralsPage() {
         </TabsContent>
         {!nurseScoped && (
           <TabsContent value="all" className="mt-4 space-y-3">
-            {(referrals.data ?? []).map((r) => card(r, "out"))}
+            {allPager.slice.map((r) => card(r, "out"))}
+            <Pager {...allPager} label="referrals" />
           </TabsContent>
         )}
 

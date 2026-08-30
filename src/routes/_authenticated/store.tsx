@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,6 +91,8 @@ function StoreDashboard() {
     qc.invalidateQueries({ queryKey: ["store-grns"] });
   }
 
+  const batchPager = usePager(batches.data ?? [], 20);
+
   if (!allowed) return <p className="text-sm text-muted-foreground">Storekeeper access only.</p>;
 
   const lowStock = (items.data ?? []).filter((i) => i.quantity <= i.reorder_threshold);
@@ -147,11 +150,11 @@ function StoreDashboard() {
       <Card>
         <CardHeader><CardTitle>Batches on hand (FEFO order)</CardTitle></CardHeader>
         <CardContent>
-          {batches.data?.length === 0 ? <p className="text-sm text-muted-foreground">No active batches.</p> : (
+          {batchPager.total === 0 ? <p className="text-sm text-muted-foreground">No active batches.</p> : (
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground"><tr><th className="pb-2">Item</th><th>Batch</th><th>Expiry</th><th className="text-right">Qty</th></tr></thead>
               <tbody>
-                {batches.data?.map((b) => {
+                {batchPager.slice.map((b) => {
                   const item = items.data?.find((i) => i.id === b.item_id);
                   const days = b.expiry_date ? (new Date(b.expiry_date).getTime() - Date.now()) / 86400000 : null;
                   return (
@@ -165,6 +168,7 @@ function StoreDashboard() {
                 })}
               </tbody>
             </table>
+            <Pager {...batchPager} label="batches" />
           )}
         </CardContent>
       </Card>

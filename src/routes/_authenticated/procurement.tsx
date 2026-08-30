@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,6 +84,9 @@ function ProcurementDashboard() {
     qc.invalidateQueries({ queryKey: ["proc-pos"] });
   }
 
+  const poPager = usePager(pos.data ?? [], 20);
+  const supPager = usePager(suppliers.data ?? [], 20);
+
   if (!allowed) return <p className="text-sm text-muted-foreground">Procurement access only.</p>;
 
   return (
@@ -136,9 +140,9 @@ function ProcurementDashboard() {
       <Card>
         <CardHeader><CardTitle>Purchase orders</CardTitle></CardHeader>
         <CardContent>
-          {pos.data?.length === 0 ? <p className="text-sm text-muted-foreground">No POs yet.</p> : (
+          {poPager.total === 0 ? <p className="text-sm text-muted-foreground">No POs yet.</p> : (
             <div className="space-y-2">
-              {pos.data?.map((p) => {
+              {poPager.slice.map((p) => {
                 const s = suppliers.data?.find((x) => x.id === p.supplier_id);
                 return (
                   <div key={p.id} className="flex items-center justify-between rounded border p-3 text-sm">
@@ -158,14 +162,15 @@ function ProcurementDashboard() {
       <Card>
         <CardHeader><CardTitle>Suppliers</CardTitle></CardHeader>
         <CardContent>
-          {suppliers.data?.length === 0 ? <p className="text-sm text-muted-foreground">No suppliers yet.</p> : (
+          {supPager.total === 0 ? <p className="text-sm text-muted-foreground">No suppliers yet.</p> : (
             <div className="grid gap-2 md:grid-cols-2">
-              {suppliers.data?.map((s) => (
+              {supPager.slice.map((s) => (
                 <div key={s.id} className="rounded border p-3 text-sm">
                   <div className="font-medium">{s.name}</div>
                   <div className="text-xs text-muted-foreground">{s.email ?? "—"} • {s.phone ?? "—"}</div>
                 </div>
               ))}
+              <Pager {...poPager} label="purchase orders" />
             </div>
           )}
         </CardContent>

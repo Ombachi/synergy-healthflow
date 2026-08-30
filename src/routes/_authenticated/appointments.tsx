@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -59,7 +60,9 @@ function AppointmentsPage() {
     queryFn: async () => {
       const { data, error } = await supabase.from("appointments" as never).select("*").order("scheduled_at");
       if (error) throw error;
-      return (data as unknown as Appointment[]) ?? [];
+        const pager = usePager(appts.data ?? [], 20);
+
+  return (data as unknown as Appointment[]) ?? [];
     },
   });
   const patients = useQuery({
@@ -263,8 +266,8 @@ function AppointmentsPage() {
         <TabsContent value="list" className="mt-3">
           <div className="rounded-lg border bg-card">
             <div className="divide-y">
-              {(appts.data ?? []).length === 0 && <div className="p-4 text-sm text-muted-foreground">No appointments.</div>}
-              {appts.data?.map((a) => (
+              {pager.total === 0 && <div className="p-4 text-sm text-muted-foreground">No appointments.</div>}
+              {pager.slice.map((a) => (
                 <div key={a.id} className="grid grid-cols-12 items-center gap-2 p-3 text-sm">
                   <div className="col-span-3 font-medium">{patientName(a.patient_id)}</div>
                   <div className="col-span-3 text-muted-foreground">{new Date(a.scheduled_at).toLocaleString("en-GB")}</div>
@@ -284,6 +287,7 @@ function AppointmentsPage() {
                 </div>
               ))}
             </div>
+            <Pager {...pager} label="appointments" />
           </div>
         </TabsContent>
       </Tabs>

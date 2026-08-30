@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -38,6 +39,8 @@ function AttendancePage() {
     enabled: isManager,
   });
 
+  const minePager = usePager(mine.data ?? [], 10);
+  const allPager = usePager(all.data ?? [], 20);
   const open = (mine.data ?? []).find((a) => a.clock_in && !a.clock_out);
 
   async function clockIn() {
@@ -88,12 +91,13 @@ function AttendancePage() {
         <CardContent>
           {(mine.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No records yet.</p> : (
             <div className="space-y-1 text-sm">
-              {mine.data?.map((a) => (
+              {minePager.slice.map((a) => (
                 <div key={a.id} className="flex justify-between rounded border p-2">
                   <span>{a.clock_in ? new Date(a.clock_in).toLocaleString("en-GB") : "—"}</span>
                   <span>{a.clock_out ? new Date(a.clock_out).toLocaleString("en-GB") : "in progress"}</span>
                 </div>
               ))}
+              <Pager {...minePager} label="entries" />
             </div>
           )}
         </CardContent>
@@ -106,12 +110,13 @@ function AttendancePage() {
             {(all.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No records.</p> : (
               <div className="space-y-1 text-sm">
                 <div className="text-xs text-muted-foreground">Total entries: {all.data?.length}</div>
-                {all.data?.slice(0, 50).map((a) => (
+                {allPager.slice.map((a) => (
                   <div key={a.id} className="flex justify-between rounded border p-2">
                     <span className="font-mono text-xs">{a.user_id.slice(0, 8)}</span>
                     <span>{a.clock_in ? new Date(a.clock_in).toLocaleString("en-GB") : "—"} → {a.clock_out ? new Date(a.clock_out).toLocaleTimeString("en-GB") : "open"}</span>
                   </div>
                 ))}
+                <Pager {...allPager} label="team entries" />
               </div>
             )}
           </CardContent>
