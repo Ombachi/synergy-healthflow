@@ -53,6 +53,8 @@ function ConsentAdmin() {
     },
   });
 
+  if (!isAdmin) return <p className="text-muted-foreground">Admin only.</p>;
+
   return (
     <div className="space-y-4">
       <div>
