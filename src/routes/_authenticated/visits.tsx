@@ -102,6 +102,8 @@ function Visits() {
     );
   });
 
+  const pager = usePager(filteredVisits, 20);
+
 
   const create = useMutation({
     mutationFn: async () => {
@@ -235,7 +237,7 @@ function Visits() {
             {!visits.isLoading && filteredVisits.length === 0 && (
               <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{search ? "No matches." : "No visits yet."}</td></tr>
             )}
-            {filteredVisits.map((v) => {
+            {pager.slice.map((v) => {
               const mrn = patientMrn(v.patient_id);
               return (
                 <tr key={v.id} className="border-t">
@@ -257,6 +259,7 @@ function Visits() {
             })}
           </tbody>
         </table>
+        <Pager {...pager} label="visits" />
       </div>
     </div>
 
