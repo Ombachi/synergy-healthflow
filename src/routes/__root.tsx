@@ -36,6 +36,21 @@ function NotFoundComponent() {
   );
 }
 
+function isBackendUnavailable(error: Error): boolean {
+  const msg = `${error?.name ?? ""} ${error?.message ?? ""}`.toLowerCase();
+  return (
+    msg.includes("failed to fetch") ||
+    msg.includes("networkerror") ||
+    msg.includes("network request failed") ||
+    msg.includes("load failed") ||
+    msg.includes("503") ||
+    msg.includes("502") ||
+    msg.includes("paused") ||
+    msg.includes("econnrefused") ||
+    msg.includes("timeout")
+  );
+}
+
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
@@ -43,14 +58,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
+  const backendDown = isBackendUnavailable(error);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          {backendDown ? "Backend temporarily unavailable" : "This page didn't load"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          {backendDown
+            ? "Litu Vault cannot reach its database right now. If the backend is paused, resume it from the Backend panel, then try again."
+            : "Something went wrong on our end. You can try refreshing or head back home."}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
