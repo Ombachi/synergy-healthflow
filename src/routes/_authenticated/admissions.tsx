@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,21 +40,27 @@ function AdmissionsPage() {
     queryKey: ["adm-req"],
     queryFn: async () => {
       const { data } = await supabase.from("admission_requests" as never).select("*").order("created_at", { ascending: false });
-      return (data as unknown as Req[]) ?? [];
+      const pendingPager = usePager(pending, 10);
+
+  return (data as unknown as Req[]) ?? [];
     },
   });
   const wards = useQuery({
     queryKey: ["wards"],
     queryFn: async () => {
       const { data } = await supabase.from("wards" as never).select("id, name").order("name");
-      return (data as unknown as { id: string; name: string }[]) ?? [];
+      const pendingPager = usePager(pending, 10);
+
+  return (data as unknown as { id: string; name: string }[]) ?? [];
     },
   });
   const beds = useQuery({
     queryKey: ["beds-free"],
     queryFn: async () => {
       const { data } = await supabase.from("beds" as never).select("id, code, ward_id, status, bed_type").eq("status", "free");
-      return (data as unknown as { id: string; code: string; ward_id: string; status: string; bed_type: string }[]) ?? [];
+      const pendingPager = usePager(pending, 10);
+
+  return (data as unknown as { id: string; code: string; ward_id: string; status: string; bed_type: string }[]) ?? [];
     },
   });
   const patientSearch = useQuery({
@@ -62,7 +69,9 @@ function AdmissionsPage() {
     queryFn: async () => {
       const { data } = await supabase.from("patients" as never).select("id, full_name, medical_record_number")
         .or(`full_name.ilike.%${search}%,medical_record_number.ilike.%${search}%`).limit(10);
-      return (data as unknown as { id: string; full_name: string; medical_record_number: string | null }[]) ?? [];
+      const pendingPager = usePager(pending, 10);
+
+  return (data as unknown as { id: string; full_name: string; medical_record_number: string | null }[]) ?? [];
     },
   });
   const pIds = Array.from(new Set((requests.data ?? []).map((r) => r.patient_id)));
@@ -71,7 +80,9 @@ function AdmissionsPage() {
     enabled: pIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase.from("patients" as never).select("id, full_name").in("id", pIds as never);
-      return (data as unknown as { id: string; full_name: string }[]) ?? [];
+      const pendingPager = usePager(pending, 10);
+
+  return (data as unknown as { id: string; full_name: string }[]) ?? [];
     },
   });
 
@@ -134,6 +145,8 @@ function AdmissionsPage() {
 
   const pName = (id: string) => patients.data?.find((p) => p.id === id)?.full_name ?? id.slice(0, 8);
   const pending = (requests.data ?? []).filter((r) => r.status === "pending");
+
+  const pendingPager = usePager(pending, 10);
 
   return (
     <div className="space-y-6">
@@ -208,7 +221,7 @@ function AdmissionsPage() {
         <CardHeader className="pb-2"><CardTitle className="text-base">Pending ({pending.length})</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {pending.length === 0 && <p className="text-sm text-muted-foreground">No pending requests.</p>}
-          {pending.map((r) => (
+          {pendingPager.slice.map((r) => (
             <div key={r.id} className="flex items-center justify-between rounded border p-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-sm font-medium">
@@ -227,6 +240,7 @@ function AdmissionsPage() {
               </div>
             </div>
           ))}
+          <Pager {...pendingPager} label="pending requests" />
         </CardContent>
       </Card>
 
@@ -239,6 +253,7 @@ function AdmissionsPage() {
               <Badge variant="outline" className="capitalize">{r.status}</Badge>
             </div>
           ))}
+          <Pager {...pendingPager} label="pending requests" />
         </CardContent>
       </Card>
     </div>

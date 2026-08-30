@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -147,6 +148,7 @@ function PharmacyPortal() {
     });
   }, [rx.data, dispenses.data, filter, encFilter, search, encMap.data?.inpatientVisitIds]); // eslint-disable-line
 
+  const pager = usePager(filtered, 20);
   const selected = filtered.find((r) => r.id === selectedId) ?? filtered[0] ?? null;
   const selDispense = selected && dispenses.data?.find((d) => d.prescription_id === selected.id);
   const selPid = selected && patientFor(selected.visit_id);
@@ -175,8 +177,8 @@ function PharmacyPortal() {
             </div>
           </div>
           <div className="flex-1 overflow-auto">
-            {filtered.length === 0 && <div className="p-4 text-xs text-muted-foreground">No prescriptions.</div>}
-            {filtered.map((r) => {
+{pager.total === 0 && <div className="p-4 text-xs text-muted-foreground">No prescriptions.</div>}
+            {pager.slice.map((r) => {
               const active = r.id === selected?.id;
               const s = statusOf(r);
               return (
@@ -190,8 +192,8 @@ function PharmacyPortal() {
                   </div>
                   <span className="text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</span>
                 </button>
-              );
-            })}
+              ))}
+            <Pager {...pager} label="prescriptions" />
           </div>
         </div>
       </div>

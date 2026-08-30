@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -78,7 +79,8 @@ function ServiceCatalogPage() {
     setOpen(true);
   }
 
-  const grouped = (list.data ?? []).reduce<Record<string, Service[]>>((acc, s) => {
+  const pager = usePager(list.data ?? [], 50); // Larger page for catalog
+  const grouped = (pager.slice).reduce<Record<string, Service[]>>((acc, s) => {
     (acc[s.category] ??= []).push(s); return acc;
   }, {});
 
@@ -106,7 +108,8 @@ function ServiceCatalogPage() {
         </Dialog>
       </div>
 
-      {Object.entries(grouped).map(([cat, items]) => (
+      <div className="space-y-6">
+        {Object.entries(grouped).map(([cat, items]) => (
         <div key={cat} className="rounded-lg border bg-card">
           <div className="border-b p-3 font-medium capitalize">{cat}</div>
           <div className="divide-y">
@@ -126,6 +129,8 @@ function ServiceCatalogPage() {
           </div>
         </div>
       ))}
+        <Pager {...pager} label="services" />
+      </div>
     </div>
   );
 }

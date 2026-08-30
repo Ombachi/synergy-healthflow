@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -240,6 +241,8 @@ function ImmunizationModule() {
     const q = search.toLowerCase();
     return p.full_name.toLowerCase().includes(q) || (p.medical_record_number ?? "").toLowerCase().includes(q);
   });
+  const pager = usePager(filteredPatients, 20);
+
 
   // ---- Export / print / email (permission based) ----
   const canDownload = roles.some((r) =>
@@ -392,7 +395,7 @@ function ImmunizationModule() {
 
           <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
             <div className="max-h-[70vh] overflow-auto rounded-lg border bg-card">
-              {filteredPatients.map((p) => (
+              {pager.slice.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setPatientId(p.id)}
@@ -402,6 +405,7 @@ function ImmunizationModule() {
                   <div className="text-xs text-muted-foreground">{p.medical_record_number ?? "—"}</div>
                 </button>
               ))}
+              <Pager {...pager} label="patients" />
             </div>
             <div className="rounded-lg border bg-card p-4">
               {!patientId ? (

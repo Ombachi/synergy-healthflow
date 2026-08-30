@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -113,6 +114,8 @@ function InstrumentsPage() {
         .some((v) => (v ?? "").toLowerCase().includes(q));
     });
   }, [instruments.data, search, modality, scope]);
+  const pager = usePager(list, 20);
+
 
   const selected = list.find((i) => i.id === selectedId) ?? list[0] ?? null;
 
@@ -154,8 +157,8 @@ function InstrumentsPage() {
           )}
 
           <div className="max-h-[70vh] overflow-auto rounded-lg border bg-card">
-            {list.length === 0 && <div className="p-4 text-sm text-muted-foreground">No instruments.</div>}
-            {list.map((i) => (
+            {pager.total === 0 && <div className="p-4 text-sm text-muted-foreground">No instruments.</div>}
+            {pager.slice.map((i) => (
               <button key={i.id} onClick={() => setSelectedId(i.id)}
                 className={`flex w-full flex-col gap-0.5 border-l-4 border-b px-3 py-2 text-left text-sm transition ${
                   i.id === selected?.id ? "border-l-primary bg-accent" : "border-l-transparent hover:bg-accent/40"
@@ -167,6 +170,7 @@ function InstrumentsPage() {
                 <span className="text-xs text-muted-foreground">{i.lab_section} · {i.manufacturer ?? "—"} {i.model ?? ""}</span>
               </button>
             ))}
+            <Pager {...pager} label="instruments" />
           </div>
         </div>
 

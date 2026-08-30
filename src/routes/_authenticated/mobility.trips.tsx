@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useMemo, useState } from "react";
 import { Ambulance, MapPin } from "lucide-react";
 
@@ -57,6 +58,8 @@ function MyTripsPage() {
     }
     return { active, upcoming, history };
   }, [requests]);
+  const historyPager = usePager(buckets.history, 20);
+
 
   function TripCard({ r }: { r: MobilityRequest }) {
     const trip = tripFor(r);
@@ -192,7 +195,12 @@ function MyTripsPage() {
             <List rows={buckets.upcoming} empty="No upcoming bookings." />
           </TabsContent>
           <TabsContent value="history" className="mt-4">
-            <List rows={buckets.history} empty="No past trips yet." />
+            {historyPager.total === 0 ? <p className="text-sm text-muted-foreground">No past trips yet.</p> : (
+              <div className="grid gap-3">
+                {historyPager.slice.map((r) => <TripCard key={r.id} r={r} />)}
+                <Pager {...historyPager} label="trips" />
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

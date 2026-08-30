@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -337,6 +338,12 @@ function InsurancePage() {
   });
 
 
+  
+  const policyPager = usePager(policies.data ?? [], 20);
+  const claimPager = usePager(claims.data ?? [], 20);
+  const subPager = usePager(submissions.data ?? [], 20);
+  const batchPager = usePager(batches.data ?? [], 20);
+
   const patientById = (id: string) => patients.data?.find((p) => p.id === id);
   const policyById = (id: string | null) => id ? policies.data?.find((p) => p.id === id) : undefined;
   const invoiceById = (id: string) => allInvoices.data?.find((i) => i.id === id);
@@ -457,8 +464,8 @@ function InsurancePage() {
 
           <div className="rounded-lg border bg-card">
             <div className="divide-y">
-              {claims.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No claims yet.</div>}
-              {claims.data?.map((c) => {
+              {claimPager.total === 0 && <div className="p-4 text-sm text-muted-foreground">No claims yet.</div>}
+              {claimPager.slice.map((c) => {
                 const inv = invoiceById(c.invoice_id);
                 const pol = policyById(c.policy_id);
                 const pat = inv ? patientById(inv.patient_id) : undefined;
@@ -524,7 +531,7 @@ function InsurancePage() {
           <p className="text-xs text-muted-foreground">Real-time status updates as payers acknowledge, process and adjudicate submitted claims.</p>
           <div className="rounded-lg border bg-card divide-y">
             {(submissions.data ?? []).length === 0 && <div className="p-4 text-sm text-muted-foreground">No submissions yet.</div>}
-            {submissions.data?.map((s) => {
+            {subPager.slice.map((s) => {
               const c = claims.data?.find((cl) => cl.id === s.claim_id);
               const inv = c ? invoiceById(c.invoice_id) : undefined;
               const pat = inv ? patientById(inv.patient_id) : undefined;
@@ -625,7 +632,7 @@ function InsurancePage() {
 
           <div className="rounded-lg border bg-card">
             <div className="divide-y">
-              {policies.data?.length === 0 && <div className="p-4 text-sm text-muted-foreground">No policies.</div>}
+              {policyPager.total === 0 && <div className="p-4 text-sm text-muted-foreground">No policies.</div>}
               {policies.data?.map((p) => (
                 <div key={p.id} className="flex items-center justify-between p-3 text-sm">
                   <div>

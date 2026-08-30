@@ -23,11 +23,11 @@ function ConsentAdmin() {
   const { hasRole } = useAuth();
   const qc = useQueryClient();
   const [tab, setTab] = useState("templates");
-
-  if (!hasRole("admin")) return <p className="text-muted-foreground">Admin only.</p>;
+  const isAdmin = hasRole("admin");
 
   const templates = useQuery({
     queryKey: ["consent-templates"],
+    enabled: isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("consent_templates" as never)
@@ -41,6 +41,7 @@ function ConsentAdmin() {
 
   const events = useQuery({
     queryKey: ["consent-events-recent"],
+    enabled: isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("consent_events" as never)
@@ -51,6 +52,8 @@ function ConsentAdmin() {
       return (data as unknown as any[]) ?? [];
     },
   });
+
+  if (!isAdmin) return <p className="text-muted-foreground">Admin only.</p>;
 
   return (
     <div className="space-y-4">

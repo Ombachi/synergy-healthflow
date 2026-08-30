@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { RoleGate } from "@/components/role-gate";
-import { Pager } from "@/components/pager";
+import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/patients")({
   component: () => (
@@ -38,12 +38,12 @@ interface PatientRow {
   created_at: string;
 }
 
-const PAGE_SIZE = 25;
+
 
 function PatientsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
+  
   const [editing, setEditing] = useState<PatientRow | null>(null);
   const [form, setForm] = useState<Partial<PatientRow>>({});
 
@@ -70,9 +70,10 @@ function PatientsPage() {
         .includes(q),
     );
   }, [patients.data, search]);
+  const pager = usePager(filtered, 25);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageRows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  
+  
 
   const update = useMutation({
     mutationFn: async () => {
@@ -128,7 +129,7 @@ function PatientsPage() {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setPage(0);
+              pager.setPage(0);
             }}
             className="pl-8"
           />
@@ -156,10 +157,10 @@ function PatientsPage() {
             {patients.isLoading && (
               <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Loading patients…</td></tr>
             )}
-            {!patients.isLoading && pageRows.length === 0 && (
+            {!patients.isLoading && pager.slice.length === 0 && (
               <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">No patients{search ? " match your search" : ""}.</td></tr>
             )}
-            {pageRows.map((p) => (
+            {pager.slice.map((p) => (
               <tr key={p.id} className="border-t hover:bg-accent/40">
                 <td className="px-3 py-2 font-medium">
                   <Link to="/reception" className="hover:underline">{p.full_name}</Link>
@@ -183,7 +184,7 @@ function PatientsPage() {
         </table>
       </div>
 
-      <Pager page={page} pageCount={pageCount} total={filtered.length} pageSize={PAGE_SIZE} setPage={setPage} label="patients" />
+      <Pager {...pager} label="patients" />
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="max-w-2xl">

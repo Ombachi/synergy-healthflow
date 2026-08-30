@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Pager, usePager } from "@/components/pager";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -56,6 +57,8 @@ export function CrudPage<T extends { id: string }>({
       return (data as unknown as T[]) ?? [];
     },
   });
+  const pager = usePager(list.data ?? [], 20);
+
 
   const create = useMutation({
     mutationFn: async (payload: Partial<T>) => {
@@ -145,7 +148,7 @@ export function CrudPage<T extends { id: string }>({
                 </td>
               </tr>
             )}
-            {list.data?.map((row) => (
+            {pager.slice.map((row) => (
               <tr key={row.id} className="border-t">
                 {columns.map((c) => (
                   <td key={c.key} className="px-4 py-2">
@@ -167,6 +170,7 @@ export function CrudPage<T extends { id: string }>({
             ))}
           </tbody>
         </table>
+        <Pager {...pager} label={title.toLowerCase()} />
       </div>
     </div>
   );

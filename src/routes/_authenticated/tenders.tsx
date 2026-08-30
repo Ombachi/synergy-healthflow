@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +86,7 @@ function TendersPage() {
     qc.invalidateQueries({ queryKey: ["bids", b.tender_id] });
   }
 
+  const pager = usePager(tenders.data?.filter(t => t.status === "open") ?? [], 20);
   const open_tenders = (tenders.data ?? []).filter((t) => t.status === "open");
   const closed_tenders = (tenders.data ?? []).filter((t) => t.status !== "open");
 
@@ -119,7 +121,7 @@ function TendersPage() {
           <TabsTrigger value="closed">Closed/Awarded ({closed_tenders.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="open" className="space-y-3">
-          {open_tenders.map((t) => (
+          {pager.slice.map((t) => (
             <Card key={t.id}>
               <CardHeader className="pb-2">
                 <div className="flex justify-between">
@@ -151,6 +153,7 @@ function TendersPage() {
               </CardContent>
             </Card>
           ))}
+          <Pager {...pager} label="open tenders" />
         </TabsContent>
         <TabsContent value="closed" className="space-y-2">
           {closed_tenders.map((t) => (

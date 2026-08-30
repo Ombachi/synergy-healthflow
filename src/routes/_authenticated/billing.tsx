@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { exportInvoicePDF } from "@/lib/invoice-pdf";
 import { initiateMpesaPayment, getMpesaPaymentStatus } from "@/lib/mpesa.functions";
+import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/billing")({ component: BillingPage });
 
@@ -205,6 +206,8 @@ function BillingPage() {
     return list;
   }, [invoices.data, patients.data, search, statusFilter, encounterFilter, inpatientVisitIds]);
 
+  const pager = usePager(filtered, 20);
+
   const encounterPill = (kind: "inpatient" | "outpatient") => (
     <span className={`rounded px-2 py-0.5 text-xs ${kind === "inpatient" ? "bg-violet-500/10 text-violet-700" : "bg-sky-500/10 text-sky-700"}`}>
       {kind === "inpatient" ? "Inpatient" : "Outpatient"}
@@ -298,7 +301,7 @@ function BillingPage() {
             {!invoices.isLoading && filtered.length === 0 && (
               <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">No invoices{search ? " match your search" : ""}.</td></tr>
             )}
-            {filtered.map((inv) => {
+            {pager.slice.map((inv) => {
               const due = inv.total_cents - inv.paid_cents;
               return (
                 <tr
@@ -323,6 +326,7 @@ function BillingPage() {
             })}
           </tbody>
         </table>
+        <Pager {...pager} label="invoices" />
       </div>
 
       {openInvoice && (

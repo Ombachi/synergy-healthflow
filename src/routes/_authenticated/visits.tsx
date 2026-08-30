@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/visits")({
   component: VisitsRouteShell,
@@ -100,6 +101,8 @@ function Visits() {
       (v.chief_complaint ?? "").toLowerCase().includes(q)
     );
   });
+
+  const pager = usePager(filteredVisits, 20);
 
 
   const create = useMutation({
@@ -234,7 +237,7 @@ function Visits() {
             {!visits.isLoading && filteredVisits.length === 0 && (
               <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{search ? "No matches." : "No visits yet."}</td></tr>
             )}
-            {filteredVisits.map((v) => {
+            {pager.slice.map((v) => {
               const mrn = patientMrn(v.patient_id);
               return (
                 <tr key={v.id} className="border-t">
@@ -256,6 +259,7 @@ function Visits() {
             })}
           </tbody>
         </table>
+        <Pager {...pager} label="visits" />
       </div>
     </div>
 

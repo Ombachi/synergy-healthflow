@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Pager, usePager } from "@/components/pager";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -60,6 +61,7 @@ function PreauthPage() {
   }});
   const nameOf = (id: string) => pNames.data?.find(p=>p.id===id)?.full_name ?? id.slice(0,8);
 
+  const pager = usePager(list.data ?? [], 20);
   const create = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("preauth_requests" as never).insert({
@@ -135,7 +137,7 @@ function PreauthPage() {
           <table className="w-full text-sm">
             <thead><tr className="text-left text-muted-foreground"><th className="py-1">Patient</th><th>Procedure</th><th>Cost</th><th>Status</th><th>Ref #</th><th></th></tr></thead>
             <tbody>
-              {(list.data ?? []).map(p => (
+              {pager.slice.map(p => (
                 <tr key={p.id} className="border-t">
                   <td className="py-1">{nameOf(p.patient_id)}</td>
                   <td>{p.procedure_name}{p.procedure_code?` (${p.procedure_code})`:""}</td>
@@ -147,7 +149,7 @@ function PreauthPage() {
                   )}</td>
                 </tr>
               ))}
-              {(list.data ?? []).length===0 && <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">No requests yet.</td></tr>}
+              {pager.total===0 && <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">No requests yet.</td></tr>}
             </tbody>
           </table>
         </CardContent>
