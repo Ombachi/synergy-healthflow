@@ -15,6 +15,7 @@ import {
 } from "@/lib/admin-users.functions";
 import { seedDemoUsers } from "@/lib/seed-demo.functions";
 import { Ban, CheckCircle2, ShieldCheck, Sparkles, Trash2, UserCog } from "lucide-react";
+import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/users")({
   component: UsersPage,
@@ -50,6 +51,7 @@ function UsersPage() {
 
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [draftRoles, setDraftRoles] = useState<AppRole[]>([]);
+  const pager = usePager(usersQ.data ?? [], 20);
 
   const banM = useMutation({
     mutationFn: (v: { userId: string; banned: boolean }) => banFn({ data: v }),
@@ -128,7 +130,7 @@ function UsersPage() {
             {usersQ.isLoading && (
               <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">Loading…</td></tr>
             )}
-            {usersQ.data?.map((u) => {
+            {pager.slice.map((u) => {
               const isSelf = u.id === user?.id;
               const banned = !!u.banned_until && new Date(u.banned_until) > new Date();
               return (
