@@ -151,6 +151,7 @@ function StoreDashboard() {
         <CardHeader><CardTitle>Batches on hand (FEFO order)</CardTitle></CardHeader>
         <CardContent>
           {batchPager.total === 0 ? <p className="text-sm text-muted-foreground">No active batches.</p> : (
+            <>
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground"><tr><th className="pb-2">Item</th><th>Batch</th><th>Expiry</th><th className="text-right">Qty</th></tr></thead>
               <tbody>

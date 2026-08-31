@@ -192,7 +192,8 @@ function PharmacyPortal() {
                   </div>
                   <span className="text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</span>
                 </button>
-              ))}
+              );
+            })}
             <Pager {...pager} label="prescriptions" />
           </div>
         </div>
