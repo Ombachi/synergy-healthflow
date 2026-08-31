@@ -170,6 +170,7 @@ function StoreDashboard() {
               </tbody>
             </table>
             <Pager {...batchPager} label="batches" />
+            </>
           )}
         </CardContent>
       </Card>
