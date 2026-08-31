@@ -37,11 +37,11 @@ function LeaveInbox() {
     qc.invalidateQueries({ queryKey: ["leave-inbox"] });
   }
 
-  if (!allowed) return <p className="text-sm text-muted-foreground">Manager/HR access only.</p>;
-
-  const pager = usePager(decided, 20);
   const pending = (q.data ?? []).filter((r) => r.status === "pending" || r.status === "clarification");
   const decided = (q.data ?? []).filter((r) => !["pending", "clarification"].includes(r.status));
+  const pager = usePager(decided, 20);
+
+  if (!allowed) return <p className="text-sm text-muted-foreground">Manager/HR access only.</p>;
 
   return (
     <div className="space-y-6">

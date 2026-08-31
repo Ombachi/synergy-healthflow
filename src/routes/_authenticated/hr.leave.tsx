@@ -178,6 +178,7 @@ function HrLeavePage() {
             <CardHeader><CardTitle>My leave requests</CardTitle></CardHeader>
             <CardContent>
               {mine.length === 0 ? <p className="text-sm text-muted-foreground">No requests yet.</p> : (
+                <>
                 <table className="w-full text-sm">
                   <thead className="text-muted-foreground">
                     <tr>
@@ -206,8 +207,8 @@ function HrLeavePage() {
                     ))}
                   </tbody>
                 </table>
-                <Pager {...approvalPager} label="approvals" />
                 <Pager {...minePager} label="requests" />
+                </>
               )}
             </CardContent>
           </Card>
@@ -218,6 +219,7 @@ function HrLeavePage() {
             <CardHeader><CardTitle>Pending approvals</CardTitle></CardHeader>
             <CardContent>
               {forApproval.length === 0 ? <p className="text-sm text-muted-foreground">Nothing waiting on you.</p> : (
+                <>
                 <table className="w-full text-sm">
                   <thead className="text-muted-foreground">
                     <tr>
@@ -244,7 +246,7 @@ function HrLeavePage() {
                   </tbody>
                 </table>
                 <Pager {...approvalPager} label="approvals" />
-                <Pager {...minePager} label="requests" />
+                </>
               )}
               <p className="mt-2 text-xs text-muted-foreground">
                 {isHR ? "You are approving as HR — approval decrements the employee's leave balance." : "You are approving as the supervisor; HR will finalise."}
