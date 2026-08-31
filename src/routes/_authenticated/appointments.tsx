@@ -60,11 +60,10 @@ function AppointmentsPage() {
     queryFn: async () => {
       const { data, error } = await supabase.from("appointments" as never).select("*").order("scheduled_at");
       if (error) throw error;
-        const pager = usePager(appts.data ?? [], 20);
-
-  return (data as unknown as Appointment[]) ?? [];
+      return (data as unknown as Appointment[]) ?? [];
     },
   });
+  const pager = usePager(appts.data ?? [], 20);
   const patients = useQuery({
     queryKey: ["appt-patients"],
     queryFn: async () => {
