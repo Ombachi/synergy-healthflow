@@ -101,6 +101,7 @@ import { Route as AuthenticatedAdminConsentRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminBreachesRouteImport } from './routes/_authenticated/admin.breaches'
 import { Route as AuthenticatedAdminAccessReviewsRouteImport } from './routes/_authenticated/admin.access-reviews'
 import { Route as ApiPublicPaymentsDarajaCallbackRouteImport } from './routes/api/public/payments/daraja-callback'
+import { Route as ApiPublicFhirSplatRouteImport } from './routes/api/public/fhir/$'
 import { Route as AuthenticatedPrintWristbandPatientIdRouteImport } from './routes/_authenticated/print.wristband.$patientId'
 import { Route as AuthenticatedPrintSampleSampleIdRouteImport } from './routes/_authenticated/print.sample.$sampleId'
 import { Route as AuthenticatedPrintPrescriptionRxIdRouteImport } from './routes/_authenticated/print.prescription.$rxId'
@@ -604,6 +605,11 @@ const ApiPublicPaymentsDarajaCallbackRoute =
     path: '/api/public/payments/daraja-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicFhirSplatRoute = ApiPublicFhirSplatRouteImport.update({
+  id: '/api/public/fhir/$',
+  path: '/api/public/fhir/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPrintWristbandPatientIdRoute =
   AuthenticatedPrintWristbandPatientIdRouteImport.update({
     id: '/print/wristband/$patientId',
@@ -724,6 +730,7 @@ export interface FileRoutesByFullPath {
   '/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
   '/print/sample/$sampleId': typeof AuthenticatedPrintSampleSampleIdRoute
   '/print/wristband/$patientId': typeof AuthenticatedPrintWristbandPatientIdRoute
+  '/api/public/fhir/$': typeof ApiPublicFhirSplatRoute
   '/api/public/payments/daraja-callback': typeof ApiPublicPaymentsDarajaCallbackRoute
 }
 export interface FileRoutesByTo {
@@ -821,6 +828,7 @@ export interface FileRoutesByTo {
   '/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
   '/print/sample/$sampleId': typeof AuthenticatedPrintSampleSampleIdRoute
   '/print/wristband/$patientId': typeof AuthenticatedPrintWristbandPatientIdRoute
+  '/api/public/fhir/$': typeof ApiPublicFhirSplatRoute
   '/api/public/payments/daraja-callback': typeof ApiPublicPaymentsDarajaCallbackRoute
 }
 export interface FileRoutesById {
@@ -920,6 +928,7 @@ export interface FileRoutesById {
   '/_authenticated/print/prescription/$rxId': typeof AuthenticatedPrintPrescriptionRxIdRoute
   '/_authenticated/print/sample/$sampleId': typeof AuthenticatedPrintSampleSampleIdRoute
   '/_authenticated/print/wristband/$patientId': typeof AuthenticatedPrintWristbandPatientIdRoute
+  '/api/public/fhir/$': typeof ApiPublicFhirSplatRoute
   '/api/public/payments/daraja-callback': typeof ApiPublicPaymentsDarajaCallbackRoute
 }
 export interface FileRouteTypes {
@@ -1019,6 +1028,7 @@ export interface FileRouteTypes {
     | '/print/prescription/$rxId'
     | '/print/sample/$sampleId'
     | '/print/wristband/$patientId'
+    | '/api/public/fhir/$'
     | '/api/public/payments/daraja-callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1116,6 +1126,7 @@ export interface FileRouteTypes {
     | '/print/prescription/$rxId'
     | '/print/sample/$sampleId'
     | '/print/wristband/$patientId'
+    | '/api/public/fhir/$'
     | '/api/public/payments/daraja-callback'
   id:
     | '__root__'
@@ -1214,6 +1225,7 @@ export interface FileRouteTypes {
     | '/_authenticated/print/prescription/$rxId'
     | '/_authenticated/print/sample/$sampleId'
     | '/_authenticated/print/wristband/$patientId'
+    | '/api/public/fhir/$'
     | '/api/public/payments/daraja-callback'
   fileRoutesById: FileRoutesById
 }
@@ -1225,6 +1237,7 @@ export interface RootRouteChildren {
   DisplayQueueRoute: typeof DisplayQueueRoute
   VerifyTypeIdRoute: typeof VerifyTypeIdRoute
   VerifyRxRxIdRoute: typeof VerifyRxRxIdRoute
+  ApiPublicFhirSplatRoute: typeof ApiPublicFhirSplatRoute
   ApiPublicPaymentsDarajaCallbackRoute: typeof ApiPublicPaymentsDarajaCallbackRoute
 }
 
@@ -1874,6 +1887,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsDarajaCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/fhir/$': {
+      id: '/api/public/fhir/$'
+      path: '/api/public/fhir/$'
+      fullPath: '/api/public/fhir/$'
+      preLoaderRoute: typeof ApiPublicFhirSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/print/wristband/$patientId': {
       id: '/_authenticated/print/wristband/$patientId'
       path: '/print/wristband/$patientId'
@@ -2110,6 +2130,7 @@ const rootRouteChildren: RootRouteChildren = {
   DisplayQueueRoute: DisplayQueueRoute,
   VerifyTypeIdRoute: VerifyTypeIdRoute,
   VerifyRxRxIdRoute: VerifyRxRxIdRoute,
+  ApiPublicFhirSplatRoute: ApiPublicFhirSplatRoute,
   ApiPublicPaymentsDarajaCallbackRoute: ApiPublicPaymentsDarajaCallbackRoute,
 }
 export const routeTree = rootRouteImport
