@@ -64,6 +64,7 @@ import { Route as AuthenticatedCriticalResultsRouteImport } from './routes/_auth
 import { Route as AuthenticatedCreditNotesRouteImport } from './routes/_authenticated/credit-notes'
 import { Route as AuthenticatedControlledDrugsRouteImport } from './routes/_authenticated/controlled-drugs'
 import { Route as AuthenticatedCompletedRouteImport } from './routes/_authenticated/completed'
+import { Route as AuthenticatedChronicCareRouteImport } from './routes/_authenticated/chronic-care'
 import { Route as AuthenticatedCashReconciliationRouteImport } from './routes/_authenticated/cash-reconciliation'
 import { Route as AuthenticatedCarePlansRouteImport } from './routes/_authenticated/care-plans'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
@@ -397,6 +398,12 @@ const AuthenticatedCompletedRoute = AuthenticatedCompletedRouteImport.update({
   path: '/completed',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChronicCareRoute =
+  AuthenticatedChronicCareRouteImport.update({
+    id: '/chronic-care',
+    path: '/chronic-care',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCashReconciliationRoute =
   AuthenticatedCashReconciliationRouteImport.update({
     id: '/cash-reconciliation',
@@ -653,6 +660,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AuthenticatedBillingRoute
   '/care-plans': typeof AuthenticatedCarePlansRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
+  '/chronic-care': typeof AuthenticatedChronicCareRoute
   '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
@@ -751,6 +759,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/care-plans': typeof AuthenticatedCarePlansRoute
   '/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
+  '/chronic-care': typeof AuthenticatedChronicCareRoute
   '/completed': typeof AuthenticatedCompletedRoute
   '/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/credit-notes': typeof AuthenticatedCreditNotesRoute
@@ -851,6 +860,7 @@ export interface FileRoutesById {
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/care-plans': typeof AuthenticatedCarePlansRoute
   '/_authenticated/cash-reconciliation': typeof AuthenticatedCashReconciliationRoute
+  '/_authenticated/chronic-care': typeof AuthenticatedChronicCareRoute
   '/_authenticated/completed': typeof AuthenticatedCompletedRoute
   '/_authenticated/controlled-drugs': typeof AuthenticatedControlledDrugsRoute
   '/_authenticated/credit-notes': typeof AuthenticatedCreditNotesRoute
@@ -951,6 +961,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/care-plans'
     | '/cash-reconciliation'
+    | '/chronic-care'
     | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
@@ -1049,6 +1060,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/care-plans'
     | '/cash-reconciliation'
+    | '/chronic-care'
     | '/completed'
     | '/controlled-drugs'
     | '/credit-notes'
@@ -1148,6 +1160,7 @@ export interface FileRouteTypes {
     | '/_authenticated/billing'
     | '/_authenticated/care-plans'
     | '/_authenticated/cash-reconciliation'
+    | '/_authenticated/chronic-care'
     | '/_authenticated/completed'
     | '/_authenticated/controlled-drugs'
     | '/_authenticated/credit-notes'
@@ -1628,6 +1641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompletedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/chronic-care': {
+      id: '/_authenticated/chronic-care'
+      path: '/chronic-care'
+      fullPath: '/chronic-care'
+      preLoaderRoute: typeof AuthenticatedChronicCareRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cash-reconciliation': {
       id: '/_authenticated/cash-reconciliation'
       path: '/cash-reconciliation'
@@ -1951,6 +1971,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCarePlansRoute: typeof AuthenticatedCarePlansRoute
   AuthenticatedCashReconciliationRoute: typeof AuthenticatedCashReconciliationRoute
+  AuthenticatedChronicCareRoute: typeof AuthenticatedChronicCareRoute
   AuthenticatedCompletedRoute: typeof AuthenticatedCompletedRoute
   AuthenticatedControlledDrugsRoute: typeof AuthenticatedControlledDrugsRoute
   AuthenticatedCreditNotesRoute: typeof AuthenticatedCreditNotesRoute
@@ -2041,6 +2062,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCarePlansRoute: AuthenticatedCarePlansRoute,
   AuthenticatedCashReconciliationRoute: AuthenticatedCashReconciliationRoute,
+  AuthenticatedChronicCareRoute: AuthenticatedChronicCareRoute,
   AuthenticatedCompletedRoute: AuthenticatedCompletedRoute,
   AuthenticatedControlledDrugsRoute: AuthenticatedControlledDrugsRoute,
   AuthenticatedCreditNotesRoute: AuthenticatedCreditNotesRoute,
