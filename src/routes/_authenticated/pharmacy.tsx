@@ -17,6 +17,7 @@ import { RoleGate } from "@/components/role-gate";
 import { WorkflowChip } from "@/components/workflow-chip";
 import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
 import { EncounterTabs } from "@/components/encounter-tabs";
+import { RefillQueue } from "@/components/chronic/refill-queue";
 
 export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
