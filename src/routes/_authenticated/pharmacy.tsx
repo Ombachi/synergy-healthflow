@@ -163,6 +163,8 @@ function PharmacyPortal() {
           </div>
         )}
         {/* Stock requests now live in the global Orders area */}
+        <RefillQueue />
+
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
           <div className="border-b p-3">
             <div className="flex items-center gap-2 font-semibold"><Pill className="h-4 w-4 text-rose-500" /> Prescription queue</div>
