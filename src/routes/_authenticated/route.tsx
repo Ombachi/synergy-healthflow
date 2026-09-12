@@ -301,6 +301,7 @@ const GROUPS: Group[] = [
       { title: "Instrument QC", url: "/instruments", icon: Gauge },
       { title: "Referrals & consults", url: "/referrals", icon: FileText },
       { title: "Pharmacy safety", url: "/pharmacy-safety", icon: Pill },
+      { title: "Chronic care & refills", url: "/chronic-care", icon: HeartPulse },
     ],
   },
 
