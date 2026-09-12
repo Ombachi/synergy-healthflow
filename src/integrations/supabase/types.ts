@@ -1290,6 +1290,89 @@ export type Database = {
         }
         Relationships: []
       }
+      chronic_medications: {
+        Row: {
+          condition: string | null
+          controlled: boolean
+          created_at: string
+          dose: string | null
+          duration_days: number | null
+          encounter_id: string | null
+          encounter_type: string | null
+          expected_completion: string | null
+          frequency: string | null
+          id: string
+          medication: string
+          notes: string | null
+          patient_id: string
+          prescriber: string | null
+          quantity: number | null
+          refill_threshold_days: number
+          refills_allowed: number
+          refills_used: number
+          route: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          condition?: string | null
+          controlled?: boolean
+          created_at?: string
+          dose?: string | null
+          duration_days?: number | null
+          encounter_id?: string | null
+          encounter_type?: string | null
+          expected_completion?: string | null
+          frequency?: string | null
+          id?: string
+          medication: string
+          notes?: string | null
+          patient_id: string
+          prescriber?: string | null
+          quantity?: number | null
+          refill_threshold_days?: number
+          refills_allowed?: number
+          refills_used?: number
+          route?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          condition?: string | null
+          controlled?: boolean
+          created_at?: string
+          dose?: string | null
+          duration_days?: number | null
+          encounter_id?: string | null
+          encounter_type?: string | null
+          expected_completion?: string | null
+          frequency?: string | null
+          id?: string
+          medication?: string
+          notes?: string | null
+          patient_id?: string
+          prescriber?: string | null
+          quantity?: number | null
+          refill_threshold_days?: number
+          refills_allowed?: number
+          refills_used?: number
+          route?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chronic_medications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_lines: {
         Row: {
           approved_cents: number | null
@@ -2392,6 +2475,48 @@ export type Database = {
           occurred_at?: string
           route?: string | null
           stack?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      fhir_access_log: {
+        Row: {
+          created_at: string
+          id: string
+          interaction: string | null
+          ip_address: string | null
+          outcome: string
+          query: string | null
+          resource_id: string | null
+          resource_type: string | null
+          status_code: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction?: string | null
+          ip_address?: string | null
+          outcome?: string
+          query?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction?: string | null
+          ip_address?: string | null
+          outcome?: string
+          query?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          status_code?: number | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -6985,6 +7110,123 @@ export type Database = {
             columns: ["visit_id"]
             isOneToOne: false
             referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refill_policies: {
+        Row: {
+          controlled_requires_review: boolean
+          created_at: string
+          earliest_refill_days_before: number
+          id: string
+          max_refills_without_review: number
+          reminder_days_before: number
+          review_after_days: number
+          scope: string
+        }
+        Insert: {
+          controlled_requires_review?: boolean
+          created_at?: string
+          earliest_refill_days_before?: number
+          id?: string
+          max_refills_without_review?: number
+          reminder_days_before?: number
+          review_after_days?: number
+          scope?: string
+        }
+        Update: {
+          controlled_requires_review?: boolean
+          created_at?: string
+          earliest_refill_days_before?: number
+          id?: string
+          max_refills_without_review?: number
+          reminder_days_before?: number
+          review_after_days?: number
+          scope?: string
+        }
+        Relationships: []
+      }
+      refill_requests: {
+        Row: {
+          decision: string | null
+          dispensed_at: string | null
+          dispensed_by: string | null
+          dispensed_quantity: number | null
+          dose: string | null
+          encounter_id: string | null
+          frequency: string | null
+          id: string
+          inventory_item_id: string | null
+          medication: string
+          medication_id: string
+          notes: string | null
+          patient_id: string
+          quantity: number | null
+          reason: string | null
+          requested_by: string | null
+          requested_on: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          decision?: string | null
+          dispensed_at?: string | null
+          dispensed_by?: string | null
+          dispensed_quantity?: number | null
+          dose?: string | null
+          encounter_id?: string | null
+          frequency?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          medication: string
+          medication_id: string
+          notes?: string | null
+          patient_id: string
+          quantity?: number | null
+          reason?: string | null
+          requested_by?: string | null
+          requested_on?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          decision?: string | null
+          dispensed_at?: string | null
+          dispensed_by?: string | null
+          dispensed_quantity?: number | null
+          dose?: string | null
+          encounter_id?: string | null
+          frequency?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          medication?: string
+          medication_id?: string
+          notes?: string | null
+          patient_id?: string
+          quantity?: number | null
+          reason?: string | null
+          requested_by?: string | null
+          requested_on?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refill_requests_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "chronic_medications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refill_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
