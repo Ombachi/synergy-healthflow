@@ -241,7 +241,7 @@ async function handle(request: Request, splat: string): Promise<Response> {
 
       let q = supabaseAdmin
         .from("visits")
-        .select("id, patient_id, encounter_type, status, created_at, closed_at, reason, assigned_doctor_id")
+        .select("id, patient_id, status, created_at, closed_at, reason, assigned_doctor_id")
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(100);
