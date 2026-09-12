@@ -17,6 +17,7 @@ import { RoleGate } from "@/components/role-gate";
 import { WorkflowChip } from "@/components/workflow-chip";
 import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
 import { EncounterTabs } from "@/components/encounter-tabs";
+import { RefillQueue } from "@/components/chronic/refill-queue";
 
 export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
@@ -163,6 +164,8 @@ function PharmacyPortal() {
           </div>
         )}
         {/* Stock requests now live in the global Orders area */}
+        <RefillQueue />
+
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
           <div className="border-b p-3">
             <div className="flex items-center gap-2 font-semibold"><Pill className="h-4 w-4 text-rose-500" /> Prescription queue</div>

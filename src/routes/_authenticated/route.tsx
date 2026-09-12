@@ -139,7 +139,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     "/mobility/request", "/mobility/trips", "/mobility/driver",
     // Clinical/ops screens owned by their specialist roles
     "/immunization", "/my-vaccines", "/instruments", "/critical-results",
-    "/referrals", "/pharmacy-safety", "/controlled-drugs",
+    "/referrals", "/pharmacy-safety", "/controlled-drugs", "/chronic-care",
     "/mobility/dispatch", "/mobility/fleet",
     // Admin group trims
     "/roster", "/admin-kpi",
@@ -149,8 +149,8 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility/request", "/mobility/trips"],
-  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/mobility/request", "/mobility/trips"],
+  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
+  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue", "/patients"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
   fleet_manager:     ["/dashboard", "/messages", "/mobility/dispatch", "/mobility/fleet", "/mobility/trips", "/mobility/request"],
@@ -301,6 +301,7 @@ const GROUPS: Group[] = [
       { title: "Instrument QC", url: "/instruments", icon: Gauge },
       { title: "Referrals & consults", url: "/referrals", icon: FileText },
       { title: "Pharmacy safety", url: "/pharmacy-safety", icon: Pill },
+      { title: "Chronic care & refills", url: "/chronic-care", icon: HeartPulse },
     ],
   },
 
