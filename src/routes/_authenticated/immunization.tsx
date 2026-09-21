@@ -117,14 +117,6 @@ function ImmunizationModule() {
       return (data as unknown as Immunization[]) ?? [];
     },
   });
-  const stock = useQuery({
-    queryKey: ["vaccine-stock"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("vaccine_stock" as never).select("*").order("expiry_date");
-      if (error) throw error;
-      return (data as unknown as StockRow[]) ?? [];
-    },
-  });
   const aefi = useQuery({
     queryKey: ["aefi-events"],
     queryFn: async () => {
@@ -168,13 +160,6 @@ function ImmunizationModule() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patients.data, schedule.data, immunizations.data]);
 
-  const lowStock = (stock.data ?? []).filter((s) => s.quantity <= s.reorder_level);
-  const coldChainAlerts = (stock.data ?? []).filter(
-    (s) => !s.cold_chain_ok || (s.storage_temp_c !== null && (s.storage_temp_c < 2 || s.storage_temp_c > 8)),
-  );
-  const expiringSoon = (stock.data ?? []).filter(
-    (s) => s.expiry_date && new Date(s.expiry_date).getTime() - Date.now() < 90 * DAY,
-  );
 
   // ---- Record a vaccination ----
   const [form, setForm] = useState<Record<string, string>>({});
@@ -309,60 +294,6 @@ function ImmunizationModule() {
           </button>
         ))}
       </div>
-
-      {tab === "dashboard" && (
-        <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat icon={Syringe} label="Today's vaccinations" value={todayCount} tone="sky" />
-            <Stat icon={CalendarClock} label="Doses due" value={dueSummary.due} tone="amber" />
-            <Stat icon={AlertTriangle} label="Missed / overdue" value={dueSummary.missed} tone="rose" />
-            <Stat icon={Activity} label="Catch-up needed" value={dueSummary.catchUp} tone="violet" />
-            <Stat icon={Package} label="Vaccine stock alerts" value={lowStock.length} tone="amber" />
-            <Stat icon={Thermometer} label="Cold chain alerts" value={coldChainAlerts.length} tone="rose" />
-            <Stat icon={ShieldAlert} label="AEFI reports" value={aefi.data?.length ?? 0} tone="rose" />
-            <Stat
-              icon={Activity}
-              label="Coverage (fully due given)"
-              value={`${coverage(patients.data ?? [], dueFor)}%`}
-              tone="emerald"
-            />
-          </div>
-
-          <div className="overflow-hidden rounded-lg border bg-card">
-            <div className="border-b px-4 py-2 text-sm font-medium">Patients due / overdue</div>
-            <ul className="divide-y">
-              {(patients.data ?? []).flatMap((p) => {
-                const rows = dueFor(p.id);
-                if (rows.length === 0) return [];
-                return [(
-                  <li key={p.id} className="flex items-start justify-between gap-4 px-4 py-3">
-                    <div>
-                      <div className="font-medium">{p.full_name}</div>
-                      <div className="text-xs text-muted-foreground">MRN {p.medical_record_number ?? "—"}</div>
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-1">
-                      {rows.slice(0, 6).map((r) => (
-                        <span
-                          key={r.id}
-                          className={`rounded border px-1.5 py-0.5 text-xs ${r.overdue ? "border-rose-500/40 bg-rose-500/10 text-rose-700" : "border-amber-500/40 bg-amber-500/10 text-amber-700"}`}
-                        >
-                          {vaccineById(r.vaccine_id)?.code ?? "?"} d{r.dose_number} · {r.label}
-                        </span>
-                      ))}
-                    </div>
-                    <Button size="sm" variant="secondary" onClick={() => { setPatientId(p.id); setTab("workspace"); }}>
-                      Vaccinate
-                    </Button>
-                  </li>
-                )];
-              })}
-              {(patients.data ?? []).every((p) => dueFor(p.id).length === 0) && (
-                <li className="p-6 text-center text-sm text-muted-foreground">No vaccinations currently due.</li>
-              )}
-            </ul>
-          </div>
-        </div>
-      )}
 
       {tab === "registry" && (
         <div className="space-y-4">
@@ -557,52 +488,6 @@ function ImmunizationModule() {
               {patientHistory.length === 0 && <li>No history.</li>}
             </ul>
           </div>
-        </div>
-      )}
-
-      {tab === "stock" && (
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left">
-              <tr>
-                <th className="px-4 py-2 font-medium">Vaccine</th>
-                <th className="px-4 py-2 font-medium">Batch</th>
-                <th className="px-4 py-2 font-medium">Qty</th>
-                <th className="px-4 py-2 font-medium">Expiry</th>
-                <th className="px-4 py-2 font-medium">Storage</th>
-                <th className="px-4 py-2 font-medium">Temp</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(stock.data ?? []).map((s) => {
-                const expSoon = expiringSoon.some((e) => e.id === s.id);
-                const low = s.quantity <= s.reorder_level;
-                const cold = !s.cold_chain_ok || (s.storage_temp_c !== null && (s.storage_temp_c < 2 || s.storage_temp_c > 8));
-                return (
-                  <tr key={s.id} className="border-t">
-                    <td className="px-4 py-2">{vaccineById(s.vaccine_id)?.name ?? "—"}</td>
-                    <td className="px-4 py-2 font-mono text-xs">{s.batch_number}</td>
-                    <td className="px-4 py-2">{s.quantity}</td>
-                    <td className="px-4 py-2">{s.expiry_date ?? "—"}</td>
-                    <td className="px-4 py-2">{s.storage_location ?? "—"}</td>
-                    <td className="px-4 py-2">{s.storage_temp_c ?? "—"}°C</td>
-                    <td className="px-4 py-2">
-                      <div className="flex flex-wrap gap-1 text-xs">
-                        {low && <span className="rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-amber-700">low stock</span>}
-                        {cold && <span className="rounded border border-rose-500/40 bg-rose-500/10 px-1.5 py-0.5 text-rose-700">cold chain</span>}
-                        {expSoon && <span className="rounded border border-rose-500/40 bg-rose-500/10 px-1.5 py-0.5 text-rose-700">expiring</span>}
-                        {!low && !cold && !expSoon && <span className="text-muted-foreground">OK</span>}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {(stock.data ?? []).length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No vaccine stock recorded.</td></tr>
-              )}
-            </tbody>
-          </table>
         </div>
       )}
 
