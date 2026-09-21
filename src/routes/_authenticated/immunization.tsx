@@ -25,9 +25,9 @@ export const Route = createFileRoute("/_authenticated/immunization")({
   head: () => ({
     meta: [
       { title: "Immunization — Litu Vault" },
-      { name: "description", content: "KEPI immunization dashboard, vaccination registry, vaccine stock and AEFI monitoring." },
+      { name: "description", content: "KEPI vaccination registry, vaccination workspace and AEFI monitoring." },
       { property: "og:title", content: "Immunization — Litu Vault" },
-      { property: "og:description", content: "KEPI immunization dashboard, registry, cold chain and AEFI monitoring." },
+      { property: "og:description", content: "KEPI vaccination registry, workspace and AEFI monitoring." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -57,7 +57,7 @@ interface StockRow {
 interface AefiRow { id: string; patient_id: string; onset_at: string; severity: string; description: string; outcome: string | null }
 interface PatientOpt { id: string; full_name: string; date_of_birth: string | null; gender?: string | null; medical_record_number: string | null }
 
-type Tab = "dashboard" | "registry" | "workspace" | "stock" | "aefi";
+type Tab = "registry" | "workspace" | "aefi";
 
 const DAY = 24 * 3600 * 1000;
 const ageDays = (dob: string | null) => (dob ? Math.floor((Date.now() - new Date(dob).getTime()) / DAY) : null);
@@ -66,7 +66,7 @@ function ImmunizationModule() {
   const { user, profile, roles } = useAuth();
   const qc = useQueryClient();
 
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const [tab, setTab] = useState<Tab>("registry");
   const [patientId, setPatientId] = useState("");
   const [search, setSearch] = useState("");
 
@@ -143,22 +143,7 @@ function ImmunizationModule() {
       .map((s) => ({ ...s, overdue: age > s.due_age_days + s.window_days }));
   };
 
-  const todayCount = (immunizations.data ?? []).filter(
-    (i) => new Date(i.administered_at).toDateString() === new Date().toDateString(),
-  ).length;
 
-  const dueSummary = useMemo(() => {
-    let due = 0, missed = 0, catchUp = 0;
-    for (const p of patients.data ?? []) {
-      const rows = dueFor(p.id);
-      due += rows.length;
-      missed += rows.filter((r) => r.overdue).length;
-      const age = ageDays(p.date_of_birth);
-      if (age !== null && age > 365 && rows.some((r) => r.due_age_days < 365)) catchUp += 1;
-    }
-    return { due, missed, catchUp };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patients.data, schedule.data, immunizations.data]);
 
 
   // ---- Record a vaccination ----
@@ -265,10 +250,8 @@ function ImmunizationModule() {
 
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: "dashboard", label: "Dashboard" },
     { key: "registry", label: "Registry" },
     { key: "workspace", label: "Vaccination workspace" },
-    { key: "stock", label: "Vaccine stock & cold chain" },
     { key: "aefi", label: "AEFI monitoring" },
   ];
 
@@ -279,7 +262,7 @@ function ImmunizationModule() {
           <Syringe className="h-6 w-6 text-primary" /> Immunization
         </h1>
         <p className="text-sm text-muted-foreground">
-          Kenya EPI schedule, lifelong vaccination registry, cold chain and adverse-event monitoring.
+          Kenya EPI schedule, lifelong vaccination registry and adverse-event monitoring.
         </p>
       </div>
 
