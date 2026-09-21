@@ -377,11 +377,9 @@ function ReceptionPage() {
                   </div>
                 </div>
                 {openVisit ? (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/visits/$visitId" params={{ visitId: openVisit.id }}>
-                      <Stethoscope className="h-3.5 w-3.5" /> Open visit
-                    </Link>
-                  </Button>
+                  <span className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+                    <Stethoscope className="mr-1 inline h-3.5 w-3.5" /> Visit in progress
+                  </span>
                 ) : (
                   <Button size="sm" onClick={() => openCheckIn({ patient: { id: p.id, full_name: p.full_name }, defaultReason: "Walk-in" })}>
                     <ClipboardCheck className="h-3.5 w-3.5" /> Book in
