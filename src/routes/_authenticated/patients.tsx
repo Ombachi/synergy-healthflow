@@ -47,29 +47,43 @@ function PatientsPage() {
   const [editing, setEditing] = useState<PatientRow | null>(null);
   const [form, setForm] = useState<Partial<PatientRow>>({});
 
+  const term = search.trim();
+  const searching = isSearching(term);
+
+  // Default view: only patients with an encounter logged today. The full
+  // historical dataset is never sent to the browser — it is reachable only
+  // through an explicit server-side search.
   const patients = useQuery({
-    queryKey: ["patient-directory"],
+    queryKey: ["patient-directory", searching ? term.toLowerCase() : "today"],
     queryFn: async () => {
+      if (searching) {
+        const like = `%${term}%`;
+        const { data, error } = await supabase
+          .from("patients" as never)
+          .select("*")
+          .is("deleted_at", null)
+          .or(
+            `full_name.ilike.${like},medical_record_number.ilike.${like},phone.ilike.${like},id_number.ilike.${like},email.ilike.${like}`,
+          )
+          .order("created_at", { ascending: false })
+          .limit(100);
+        if (error) throw error;
+        return (data as unknown as PatientRow[]) ?? [];
+      }
+      const ids = await fetchTodayPatientIds();
+      if (ids.length === 0) return [];
       const { data, error } = await supabase
         .from("patients" as never)
         .select("*")
         .is("deleted_at", null)
+        .in("id", ids as never)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data as unknown as PatientRow[]) ?? [];
     },
   });
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const list = patients.data ?? [];
-    if (!q) return list;
-    return list.filter((p) =>
-      `${p.full_name} ${p.medical_record_number ?? ""} ${p.phone ?? ""} ${p.id_number ?? ""} ${p.email ?? ""}`
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [patients.data, search]);
+  const filtered = useMemo(() => patients.data ?? [], [patients.data]);
   const pager = usePager(filtered, 25);
 
   
