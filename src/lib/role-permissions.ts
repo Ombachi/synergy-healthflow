@@ -30,7 +30,7 @@ const EMERGENCY_ROLES: AppRole[] = ["doctor", "nurse", "receptionist"];
 export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Front desk / patient flow
   "/reception": ["receptionist"],
-  "/patients": ["receptionist"],
+  "/patients": ["doctor", "nurse", "admissions_officer"],
   "/appointments": ["receptionist", "doctor"],
   // Queue is a clinical/front-desk board only — no pharmacist/lab_tech/cashier/billing.
   "/queue": ["receptionist", "nurse", "doctor"],
@@ -51,7 +51,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/assessments": ["patient", "athlete"],
 
   // Clinical — reception/nursing open visits; doctors/therapists continue consultations.
-  "/visits": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
+  "/visits": ["nurse", "doctor", "physio", "nutritionist"],
   "/lab": ["lab_tech"],
   "/lab-order": ["doctor", "physio", "nurse"],
   "/pharmacy": ["pharmacist"],
@@ -135,7 +135,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/controlled-drugs": ["pharmacist"],
   "/pharmacy-safety": ["pharmacist"],
   "/referrals": ["doctor", "physio", "nurse", "nutritionist"],
-  "/chronic-care": ["doctor", "nurse", "pharmacist", "physio", "patient", "athlete"],
+  "/chronic-care": ["pharmacist", "patient", "athlete"],
 
 
   // Finance ops
@@ -160,7 +160,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 
 // Prefix-based rules for dynamic routes (path starts with key).
 export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
-  "/visits/": ["receptionist", "nurse", "doctor", "physio", "nutritionist"],
+  "/visits/": ["nurse", "doctor", "physio", "nutritionist"],
   "/department/": [],
   "/orders/": ["lab_tech", "pharmacist", "store_keeper", "nurse"],
   "/print/wristband/": ["receptionist", "nurse", "doctor"],

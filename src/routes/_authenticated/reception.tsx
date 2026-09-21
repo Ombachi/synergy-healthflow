@@ -337,9 +337,7 @@ function ReceptionPage() {
             {activeVisits.data?.map((v) => (
               <div key={v.id} className="flex items-center justify-between gap-2 p-3 text-sm hover:bg-muted/30">
                 <div>
-                  <Link to="/visits/$visitId" params={{ visitId: v.id }} className="font-medium hover:underline">
-                    {visitPatientName(v.patient_id)}
-                  </Link>
+                  <div className="font-medium">{visitPatientName(v.patient_id)}</div>
                   <div className="text-xs text-muted-foreground">{v.current_stage ?? "—"} · {new Date(v.opened_at).toLocaleTimeString("en-GB")}</div>
                 </div>
                 <span className="text-xs text-muted-foreground">In progress</span>
@@ -371,11 +369,7 @@ function ReceptionPage() {
               return (
               <div key={p.id} className="flex items-center justify-between gap-2 p-3 text-sm hover:bg-muted/30">
                 <div className="min-w-0">
-                  {openVisit ? (
-                    <Link to="/visits/$visitId" params={{ visitId: openVisit.id }} className="font-medium hover:underline">{p.full_name}</Link>
-                  ) : (
-                    <div className="font-medium">{p.full_name}</div>
-                  )}
+                  <div className="font-medium">{p.full_name}</div>
                   <div className="text-xs text-muted-foreground">
                     <span className="font-mono">{p.medical_record_number ?? "MRN pending"}</span>
                     {p.phone ? ` · ${p.phone}` : ""}
@@ -383,11 +377,9 @@ function ReceptionPage() {
                   </div>
                 </div>
                 {openVisit ? (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/visits/$visitId" params={{ visitId: openVisit.id }}>
-                      <Stethoscope className="h-3.5 w-3.5" /> Open visit
-                    </Link>
-                  </Button>
+                  <span className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+                    <Stethoscope className="mr-1 inline h-3.5 w-3.5" /> Visit in progress
+                  </span>
                 ) : (
                   <Button size="sm" onClick={() => openCheckIn({ patient: { id: p.id, full_name: p.full_name }, defaultReason: "Walk-in" })}>
                     <ClipboardCheck className="h-3.5 w-3.5" /> Book in
