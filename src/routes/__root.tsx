@@ -59,7 +59,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
-  const backendDown = isBackendUnavailable(error);
+  const backendDown = isBackendUnavailable(error as Error);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
