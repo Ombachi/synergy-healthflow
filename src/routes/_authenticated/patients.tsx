@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { RoleGate } from "@/components/role-gate";
 import { Pager, usePager } from "@/components/pager";
+import { isSearching, fetchTodayPatientIds } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/patients")({
   component: () => (
