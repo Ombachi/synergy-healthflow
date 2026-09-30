@@ -4,6 +4,7 @@
 
 export type CodingSystem =
   | "ICD-10"
+  | "ICD-11"
   | "SNOMED-CT"
   | "LOINC"
   | "UCUM"
@@ -14,6 +15,7 @@ export type CodingSystem =
 
 export const SYSTEM_URI: Record<CodingSystem, string> = {
   "ICD-10": "http://hl7.org/fhir/sid/icd-10",
+  "ICD-11": "http://id.who.int/icd/release/11/mms",
   "SNOMED-CT": "http://snomed.info/sct",
   LOINC: "http://loinc.org",
   UCUM: "http://unitsofmeasure.org",
