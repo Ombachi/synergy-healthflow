@@ -14,6 +14,7 @@ import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DisplayQueueRouteImport } from './routes/display.queue'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWardRoundsRouteImport } from './routes/_authenticated/ward-rounds'
 import { Route as AuthenticatedWardAnalyticsRouteImport } from './routes/_authenticated/ward-analytics'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
@@ -130,6 +131,11 @@ const IndexRoute = IndexRouteImport.update({
 const DisplayQueueRoute = DisplayQueueRouteImport.update({
   id: '/display/queue',
   path: '/display/queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWardRoundsRoute = AuthenticatedWardRoundsRouteImport.update({
@@ -711,6 +717,7 @@ export interface FileRoutesByFullPath {
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/ward-analytics': typeof AuthenticatedWardAnalyticsRoute
   '/ward-rounds': typeof AuthenticatedWardRoundsRoute
+  '/api/health': typeof ApiHealthRoute
   '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
@@ -810,6 +817,7 @@ export interface FileRoutesByTo {
   '/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/ward-analytics': typeof AuthenticatedWardAnalyticsRoute
   '/ward-rounds': typeof AuthenticatedWardRoundsRoute
+  '/api/health': typeof ApiHealthRoute
   '/display/queue': typeof DisplayQueueRoute
   '/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/admin/breaches': typeof AuthenticatedAdminBreachesRoute
@@ -911,6 +919,7 @@ export interface FileRoutesById {
   '/_authenticated/visits': typeof AuthenticatedVisitsRouteWithChildren
   '/_authenticated/ward-analytics': typeof AuthenticatedWardAnalyticsRoute
   '/_authenticated/ward-rounds': typeof AuthenticatedWardRoundsRoute
+  '/api/health': typeof ApiHealthRoute
   '/display/queue': typeof DisplayQueueRoute
   '/_authenticated/admin/access-reviews': typeof AuthenticatedAdminAccessReviewsRoute
   '/_authenticated/admin/breaches': typeof AuthenticatedAdminBreachesRoute
@@ -1012,6 +1021,7 @@ export interface FileRouteTypes {
     | '/visits'
     | '/ward-analytics'
     | '/ward-rounds'
+    | '/api/health'
     | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
@@ -1111,6 +1121,7 @@ export interface FileRouteTypes {
     | '/visits'
     | '/ward-analytics'
     | '/ward-rounds'
+    | '/api/health'
     | '/display/queue'
     | '/admin/access-reviews'
     | '/admin/breaches'
@@ -1211,6 +1222,7 @@ export interface FileRouteTypes {
     | '/_authenticated/visits'
     | '/_authenticated/ward-analytics'
     | '/_authenticated/ward-rounds'
+    | '/api/health'
     | '/display/queue'
     | '/_authenticated/admin/access-reviews'
     | '/_authenticated/admin/breaches'
@@ -1247,6 +1259,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ActivateRoute: typeof ActivateRoute
   AuthRoute: typeof AuthRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   DisplayQueueRoute: typeof DisplayQueueRoute
   VerifyTypeIdRoute: typeof VerifyTypeIdRoute
   VerifyRxRxIdRoute: typeof VerifyRxRxIdRoute
@@ -1289,6 +1302,13 @@ declare module '@tanstack/react-router' {
       path: '/display/queue'
       fullPath: '/display/queue'
       preLoaderRoute: typeof DisplayQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/ward-rounds': {
@@ -2149,6 +2169,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ActivateRoute: ActivateRoute,
   AuthRoute: AuthRoute,
+  ApiHealthRoute: ApiHealthRoute,
   DisplayQueueRoute: DisplayQueueRoute,
   VerifyTypeIdRoute: VerifyTypeIdRoute,
   VerifyRxRxIdRoute: VerifyRxRxIdRoute,
