@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Stethoscope, ChevronRight } from "lucide-react";
+import { Stethoscope, ChevronRight, Pill } from "lucide-react";
+import { PrescribePanel } from "@/components/prescribe-panel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { WorkflowChip } from "@/components/workflow-chip";
@@ -336,6 +337,11 @@ export function DoctorStation() {
           />
         </div>
       )}
+
+      <section className="rounded-lg border bg-card p-4">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><Pill className="h-5 w-5 text-primary" /> Prescribe</h2>
+        <PrescribePanel compact />
+      </section>
     </div>
   );
 }
