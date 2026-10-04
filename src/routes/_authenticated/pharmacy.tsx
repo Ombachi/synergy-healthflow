@@ -18,6 +18,7 @@ import { WorkflowChip } from "@/components/workflow-chip";
 import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
 import { EncounterTabs } from "@/components/encounter-tabs";
 import { RefillQueue } from "@/components/chronic/refill-queue";
+import { isSearching, startOfTodayISO, TODAY_EMPTY_MESSAGE } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
@@ -35,12 +36,38 @@ function PharmacyPortal() {
   const [search, setSearch] = useState("");
   const encMap = useEncounterMap();
 
-  const rx = useQuery({ queryKey: ["pharm-rx"], queryFn: async () => {
-    const { data, error } = await supabase.from("prescriptions" as never).select("*").order("created_at", { ascending: false }).limit(200);
+  const term = search.trim();
+  const searching = isSearching(term);
+  // Default: only today's prescriptions. Older ones are reachable via search
+  // (patient name / MRN / medication) — history is never bulk-loaded.
+  const rx = useQuery({ queryKey: ["pharm-rx", searching ? term.toLowerCase() : "today"], queryFn: async () => {
+    if (searching) {
+      const like = `%${term}%`;
+      const { data: pts } = await supabase.from("patients" as never).select("id")
+        .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(50);
+      const pids = ((pts as unknown as { id: string }[]) ?? []).map((p) => p.id);
+      let vids: string[] = [];
+      if (pids.length) {
+        const { data: vs } = await supabase.from("visits" as never).select("id").in("patient_id", pids as never).limit(500);
+        vids = ((vs as unknown as { id: string }[]) ?? []).map((v) => v.id);
+      }
+      const byMed = await supabase.from("prescriptions" as never).select("*").ilike("medication", like).order("created_at", { ascending: false }).limit(100);
+      if (byMed.error) throw byMed.error;
+      let byPatient: Rx[] = [];
+      if (vids.length) {
+        const r = await supabase.from("prescriptions" as never).select("*").in("visit_id", vids as never).order("created_at", { ascending: false }).limit(200);
+        if (r.error) throw r.error;
+        byPatient = (r.data as unknown as Rx[]) ?? [];
+      }
+      const map = new Map<string, Rx>();
+      [...byPatient, ...((byMed.data as unknown as Rx[]) ?? [])].forEach((r) => map.set(r.id, r));
+      return Array.from(map.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    }
+    const { data, error } = await supabase.from("prescriptions" as never).select("*").gte("created_at", startOfTodayISO()).order("created_at", { ascending: false }).limit(300);
     if (error) throw error; return (data as unknown as Rx[]) ?? [];
   }});
   const dispenses = useQuery({ queryKey: ["pharm-disp"], queryFn: async () => {
-    const { data, error } = await supabase.from("pharmacy_dispenses" as never).select("*").order("dispensed_at", { ascending: false });
+    const { data, error } = await supabase.from("pharmacy_dispenses" as never).select("*").order("dispensed_at", { ascending: false }).limit(1000);
     if (error) throw error; return (data as unknown as Dispense[]) ?? [];
   }});
   const inv = useQuery({ queryKey: ["pharm-inv"], queryFn: async () => {
@@ -53,10 +80,19 @@ function PharmacyPortal() {
     queryKey: ["pharm-visit-patients", visitIds.join(",")], enabled: visitIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase.from("visits" as never).select("id, patient_id").in("id", visitIds as never);
-      return (data as unknown as { id: string; patient_id: string }[]) ?? [];
+      const vs = (data as unknown as { id: string; patient_id: string }[]) ?? [];
+      const pids = Array.from(new Set(vs.map((v) => v.patient_id).filter(Boolean)));
+      const names: Record<string, { name: string; mrn: string | null }> = {};
+      if (pids.length) {
+        const { data: ps } = await supabase.from("patients" as never).select("id, full_name, medical_record_number").in("id", pids as never);
+        ((ps as unknown as { id: string; full_name: string; medical_record_number: string | null }[]) ?? [])
+          .forEach((p) => { names[p.id] = { name: p.full_name, mrn: p.medical_record_number }; });
+      }
+      return vs.map((v) => ({ ...v, patient: names[v.patient_id] ?? null }));
     },
   });
   const patientFor = (visitId: string) => visitPatients.data?.find((v) => v.id === visitId)?.patient_id;
+  const patientInfo = (visitId: string) => visitPatients.data?.find((v) => v.id === visitId)?.patient ?? null;
 
   const [dispOpen, setDispOpen] = useState<Rx | null>(null);
   const [form, setForm] = useState({ inventory_item_id: "", quantity: 0, instructions: "" });
@@ -144,7 +180,6 @@ function PharmacyPortal() {
         if (encFilter === "inpatient" && !isInp) return false;
         if (encFilter === "outpatient" && isInp) return false;
       }
-      if (search && !r.medication.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
   }, [rx.data, dispenses.data, filter, encFilter, search, encMap.data?.inpatientVisitIds]); // eslint-disable-line
@@ -172,6 +207,10 @@ function PharmacyPortal() {
             <div className="mt-2">
               <EncounterTabs value={encFilter} onChange={setEncFilter} counts={encCounts} />
             </div>
+            <div className="relative mt-2">
+              <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search patient, MRN or drug (older records)" className="h-8 pl-7 text-xs" />
+            </div>
             <div className="mt-2 flex gap-1 text-xs">
               {(["pending","dispensed","all"] as const).map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
@@ -180,7 +219,7 @@ function PharmacyPortal() {
             </div>
           </div>
           <div className="flex-1 overflow-auto">
-{pager.total === 0 && <div className="p-4 text-xs text-muted-foreground">No prescriptions.</div>}
+{pager.total === 0 && <div className="p-4 text-xs text-muted-foreground">{searching ? "No matching prescriptions." : TODAY_EMPTY_MESSAGE}</div>}
             {pager.slice.map((r) => {
               const active = r.id === selected?.id;
               const s = statusOf(r);
@@ -193,6 +232,7 @@ function PharmacyPortal() {
                     <span className="font-medium text-sm">{r.medication}</span>
                     <WorkflowChip status={s} />
                   </div>
+                  <span className="font-medium text-foreground">{patientInfo(r.visit_id)?.name ?? "Unknown patient"}{patientInfo(r.visit_id)?.mrn ? ` · ${patientInfo(r.visit_id)?.mrn}` : ""}</span>
                   <span className="text-muted-foreground">{[r.dose, r.frequency, r.duration].filter(Boolean).join(" · ") || "—"}</span>
                 </button>
               );
