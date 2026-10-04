@@ -15,6 +15,7 @@ import { RoleGate } from "@/components/role-gate";
 import { WorkflowChip } from "@/components/workflow-chip";
 import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
 import { EncounterTabs } from "@/components/encounter-tabs";
+import { isSearching, startOfTodayISO } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/lab")({ component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
 
@@ -35,16 +36,32 @@ function LabPortal() {
   const [search, setSearch] = useState("");
   const encMap = useEncounterMap();
 
-  const orders = useQuery({ queryKey: ["lab-orders"], queryFn: async () => {
-    const { data, error } = await supabase.from("lab_orders" as never).select("*").order("created_at", { ascending: false });
+  const term = search.trim();
+  const searching = isSearching(term);
+  // Default: today's orders only; history reachable through patient search.
+  const orders = useQuery({ queryKey: ["lab-orders", searching ? term.toLowerCase() : "today"], queryFn: async () => {
+    if (searching) {
+      const like = `%${term}%`;
+      const { data: pts } = await supabase.from("patients" as never).select("id")
+        .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(50);
+      const pids = ((pts as unknown as { id: string }[]) ?? []).map((p) => p.id);
+      const { data: tst } = await supabase.from("lab_tests_catalog" as never).select("id").ilike("name", like).limit(50);
+      const tids = ((tst as unknown as { id: string }[]) ?? []).map((t) => t.id);
+      const ors = [pids.length ? `patient_id.in.(${pids.join(",")})` : "", tids.length ? `test_id.in.(${tids.join(",")})` : ""].filter(Boolean);
+      if (!ors.length) return [];
+      const { data, error } = await supabase.from("lab_orders" as never).select("*").or(ors.join(",")).order("created_at", { ascending: false }).limit(200);
+      if (error) throw error; return (data as unknown as Order[]) ?? [];
+    }
+    const { data, error } = await supabase.from("lab_orders" as never).select("*").gte("created_at", startOfTodayISO()).order("created_at", { ascending: false });
     if (error) throw error; return (data as unknown as Order[]) ?? [];
   }});
   const tests = useQuery({ queryKey: ["lab-tests"], queryFn: async () => {
     const { data, error } = await supabase.from("lab_tests_catalog" as never).select("*").order("name");
     if (error) throw error; return (data as unknown as Test[]) ?? [];
   }});
-  const patients = useQuery({ queryKey: ["lab-patients"], queryFn: async () => {
-    const { data, error } = await supabase.from("patients" as never).select("id, full_name").order("full_name");
+  const orderPids = Array.from(new Set((orders.data ?? []).map((o) => o.patient_id).filter(Boolean)));
+  const patients = useQuery({ queryKey: ["lab-patients", orderPids.join(",")], enabled: orderPids.length > 0, queryFn: async () => {
+    const { data, error } = await supabase.from("patients" as never).select("id, full_name").in("id", orderPids as never);
     if (error) throw error; return (data as unknown as Patient[]) ?? [];
   }});
   const samples = useQuery({ queryKey: ["lab-samples-all"], queryFn: async () => {
@@ -77,11 +94,6 @@ function LabPortal() {
         const isInp = !!(o.visit_id && inp?.has(o.visit_id));
         if (encFilter === "inpatient" && !isInp) return false;
         if (encFilter === "outpatient" && isInp) return false;
-      }
-      if (search) {
-        const t = testName(o.test_id).toLowerCase();
-        const p = patientName(o.patient_id).toLowerCase();
-        if (!t.includes(search.toLowerCase()) && !p.includes(search.toLowerCase())) return false;
       }
       return true;
     });
