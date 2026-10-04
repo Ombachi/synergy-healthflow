@@ -1,3 +1,4 @@
+import { SyncCenter } from "@/components/offline/sync-center";
 import { createFileRoute, Outlet, redirect, useNavigate, Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -545,7 +546,7 @@ function AuthedLayout() {
         <div className="flex flex-1 flex-col">
           <header className="flex h-12 items-center justify-between border-b px-2">
             <SidebarTrigger />
-            <NotificationBell />
+            <div className="flex items-center gap-1"><SyncCenter /><NotificationBell /></div>
           </header>
 
           <main className="flex-1 p-6">

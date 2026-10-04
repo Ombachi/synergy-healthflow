@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { supabase } from "@/integrations/supabase/client";
 import { DuplicatePatientCheck } from "@/components/duplicate-patient-check";
 import { useAuth } from "@/hooks/use-auth";
+import { useOfflineMutation } from "@/lib/offline/use-offline";
+import type { Op } from "@/lib/offline/outbox";
 
 export const Route = createFileRoute("/_authenticated/reception")({ component: ReceptionPage });
 
@@ -110,47 +112,35 @@ function ReceptionPage() {
     });
   }
 
-  const checkIn = useMutation({
-    mutationFn: async () => {
-      if (!checkInForm) return;
-      const patientId = checkInForm.appointment?.patient_id ?? checkInForm.patient?.id;
-      if (!patientId) throw new Error("No patient");
-
-      // Update patient phone/address if provided
-      const patchPatient: Record<string, unknown> = {};
-      if (checkInForm.phone) patchPatient.phone = checkInForm.phone;
-      if (checkInForm.payment_location) patchPatient.address = checkInForm.payment_location;
-      if (Object.keys(patchPatient).length > 0) {
-        await supabase.from("patients" as never).update(patchPatient as never).eq("id", patientId);
-      }
-
-      // Open a new visit (consultation is auto-billed by trigger)
-      let visitId = checkInForm.appointment?.visit_id ?? null;
-      if (!visitId) {
-        const { data: v, error: ve } = await supabase.from("visits" as never).insert({
-          patient_id: patientId,
-          opened_by: user!.id,
-          reason: checkInForm.reason || (checkInForm.appointment ? checkInForm.appointment.reason : "Walk-in"),
-          status: "open",
-          current_stage: "checked_in",
-          payment_method: checkInForm.payment_method,
-          payment_location: checkInForm.payment_location || null,
-        } as never).select("id").single();
-        if (ve) throw ve;
-        visitId = (v as { id: string }).id;
-      }
-      if (checkInForm.appointment) {
-        await supabase.from("appointments" as never)
-          .update({ status: "checked_in", visit_id: visitId } as never)
-          .eq("id", checkInForm.appointment.id);
-      }
-      await supabase.from("visit_queue" as never).insert({ visit_id: visitId, queue_type: "triage", priority: 3 } as never);
-    },
-    onSuccess: () => {
+  const checkIn = useOfflineMutation<void>("Check-in", () => {
+    if (!checkInForm) throw new Error("Nothing to check in");
+    const patientId = checkInForm.appointment?.patient_id ?? checkInForm.patient?.id;
+    if (!patientId) throw new Error("No patient");
+    const ops: Op[] = [];
+    const patchPatient: Record<string, unknown> = {};
+    if (checkInForm.phone) patchPatient.phone = checkInForm.phone;
+    if (checkInForm.payment_location) patchPatient.address = checkInForm.payment_location;
+    if (Object.keys(patchPatient).length > 0) ops.push({ kind: "update", table: "patients", values: patchPatient, match: { id: patientId } });
+    // Client-generated ids keep replays idempotent and let later steps reference the visit offline.
+    let visitId = checkInForm.appointment?.visit_id ?? null;
+    if (!visitId) {
+      visitId = crypto.randomUUID();
+      ops.push({ kind: "insert", table: "visits", values: {
+        id: visitId, patient_id: patientId, opened_by: user!.id,
+        reason: checkInForm.reason || (checkInForm.appointment ? checkInForm.appointment.reason : "Walk-in"),
+        status: "open", current_stage: "checked_in",
+        payment_method: checkInForm.payment_method, payment_location: checkInForm.payment_location || null,
+      } });
+    }
+    if (checkInForm.appointment) ops.push({ kind: "update", table: "appointments", values: { status: "checked_in", visit_id: visitId }, match: { id: checkInForm.appointment.id } });
+    ops.push({ kind: "insert", table: "visit_queue", values: { id: crypto.randomUUID(), visit_id: visitId, queue_type: "triage", priority: 3 } });
+    return ops;
+  }, {
+    onSuccess: (r) => {
       setCheckInForm(null);
       qc.invalidateQueries({ queryKey: ["recep-appts"] });
       qc.invalidateQueries({ queryKey: ["recep-visits"] });
-      toast.success("Checked in & queued for triage");
+      if (!r.queued) toast.success("Checked in & queued for triage");
     },
     onError: (e: Error) => toast.error(e.message),
   });
