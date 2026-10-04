@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useOfflineMutation } from "@/lib/offline/use-offline";
 import { CatalogSearch, type CatalogItem } from "@/components/catalog-search";
 import { runMedicationPrescribe, ageFromDob, type CdsCard } from "@/lib/cds/cds-hooks-runner";
 import { CdsCards, CdsHardStopDialog, type OverrideResult } from "@/components/cds/cds-cards";
@@ -133,28 +134,27 @@ export function PrescribePanel({ compact = false }: { compact?: boolean }) {
     return formFilter === "all" ? rows : rows.filter((r) => r.form === formFilter);
   }, [drugs.data, formFilter]);
 
-  const addRx = useMutation({
-    mutationFn: async (ov?: OverrideResult) => {
-      if (!selectedVisit) throw new Error("Choose a visit first");
-      if (!selected) throw new Error("Pick a medication");
-      if (blocking && !ov) throw new Error("Critical alert — a signed override is required");
-      const safetyNote = cards.length
-        ? `\n[CDS alerts acknowledged: ${cards.map((c) => c.summary).join("; ")}]` +
-          (ov ? `\n[Signed override by ${authUser?.email ?? "prescriber"} at ${new Date().toISOString()} · ${ov.rationaleCode}: ${ov.rationaleText}]` : "")
-        : "";
-      const { error } = await supabase.from("prescriptions" as never).insert({
-        visit_id: selectedVisit.id,
-        medication: selected.drug_name,
-        dose: form.dose || selected.default_dose,
-        frequency: form.frequency || selected.default_frequency,
-        duration: form.duration || selected.default_duration,
-        instructions: (form.instructions || selected.instructions || "") + safetyNote,
-        created_by: user?.id ?? null,
-      } as never);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success(`Added ${selected?.drug_name} to med order`);
+  const addRx = useOfflineMutation<OverrideResult | undefined>("Prescription", (ov) => {
+    if (!selectedVisit) throw new Error("Choose a visit first");
+    if (!selected) throw new Error("Pick a medication");
+    if (blocking && !ov) throw new Error("Critical alert — a signed override is required");
+    const safetyNote = cards.length
+      ? `\n[CDS alerts acknowledged: ${cards.map((c) => c.summary).join("; ")}]` +
+        (ov ? `\n[Signed override by ${authUser?.email ?? "prescriber"} at ${new Date().toISOString()} · ${ov.rationaleCode}: ${ov.rationaleText}]` : "")
+      : "";
+    return [{ kind: "insert", table: "prescriptions", values: {
+      id: crypto.randomUUID(),
+      visit_id: selectedVisit.id,
+      medication: selected.drug_name,
+      dose: form.dose || selected.default_dose,
+      frequency: form.frequency || selected.default_frequency,
+      duration: form.duration || selected.default_duration,
+      instructions: (form.instructions || selected.instructions || "") + safetyNote,
+      created_by: user?.id ?? null,
+    } }];
+  }, {
+    onSuccess: (r) => {
+      if (!r.queued) toast.success(`Added ${selected?.drug_name} to med order`);
       setSelected(null);
       setForm({ dose: "", frequency: "", duration: "", instructions: "" });
       qc.invalidateQueries({ queryKey: ["pharm-rx"] });
