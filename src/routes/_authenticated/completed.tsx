@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import type { AppRole } from "@/hooks/use-auth";
 import { LabDocumentBrowser } from "@/components/lab-document-viewer";
+import { isSearching, startOfTodayISO, TODAY_EMPTY_MESSAGE } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/completed")({
   head: () => ({
@@ -77,6 +78,9 @@ function CompletedReports() {
 
   const [tab, setTab] = useState<TabKey>(visibleTabs[0] ?? "lab");
   const [q, setQ] = useState("");
+  // Default: today only. A 2+ char search widens the window to history.
+  const scope = isSearching(q) ? "history" : "today";
+  const since = scope === "history" ? "1970-01-01T00:00:00Z" : startOfTodayISO();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) => {
@@ -88,13 +92,13 @@ function CompletedReports() {
   };
 
   const labs = useQuery({
-    queryKey: ["completed-labs"],
+    queryKey: ["completed-labs", scope],
     enabled: visibleTabs.includes("lab"),
     queryFn: async (): Promise<Row[]> => {
       const { data } = await supabase.from("lab_results" as never)
         .select("id, order_id, result_value, units, abnormal_flag, performed_at, comments, reference_range")
         .not("performed_at", "is", null)
-        .order("performed_at", { ascending: false }).limit(500);
+        .gte("performed_at", since).order("performed_at", { ascending: false }).limit(500);
       const arr = (data as unknown as Array<{ id: string; order_id: string | null; result_value: string | null; units: string | null; abnormal_flag: string | null; performed_at: string; comments: string | null; reference_range: string | null }>) ?? [];
       const orderIds = arr.map((r) => r.order_id).filter(Boolean) as string[];
       const { data: orders } = orderIds.length
@@ -134,12 +138,12 @@ function CompletedReports() {
   });
 
   const rx = useQuery({
-    queryKey: ["completed-pharmacy"],
+    queryKey: ["completed-pharmacy", scope],
     enabled: visibleTabs.includes("pharmacy"),
     queryFn: async (): Promise<Row[]> => {
       const { data } = await supabase.from("pharmacy_dispenses" as never)
         .select("id, prescription_id, quantity, dispensed_at, status, instructions")
-        .eq("status", "dispensed").order("dispensed_at", { ascending: false }).limit(500);
+        .eq("status", "dispensed").gte("dispensed_at", since).order("dispensed_at", { ascending: false }).limit(500);
       const arr = (data as unknown as Array<{ id: string; prescription_id: string; quantity: number; dispensed_at: string; instructions: string | null }>) ?? [];
       const rxIds = arr.map((r) => r.prescription_id).filter(Boolean);
       const { data: rxs } = rxIds.length
@@ -177,13 +181,13 @@ function CompletedReports() {
   });
 
   const imaging = useQuery({
-    queryKey: ["completed-radiology"],
+    queryKey: ["completed-radiology", scope],
     enabled: visibleTabs.includes("radiology"),
     queryFn: async (): Promise<Row[]> => {
       const { data } = await supabase.from("imaging_orders" as never)
         .select("id, patient_id, modality, body_part, status, updated_at, clinical_question, findings, report, priority")
         .in("status", ["completed", "reported"] as never)
-        .order("updated_at", { ascending: false }).limit(500);
+        .gte("updated_at", since).order("updated_at", { ascending: false }).limit(500);
       const arr = (data as unknown as Array<{ id: string; patient_id: string; modality: string | null; body_part: string | null; updated_at: string; clinical_question: string | null; findings: string | null; report: string | null; priority: string | null }>) ?? [];
       const pm = await fetchPatientMap(arr.map((r) => r.patient_id));
       return arr.map((r) => ({
@@ -205,13 +209,13 @@ function CompletedReports() {
   });
 
   const nursing = useQuery({
-    queryKey: ["completed-nursing"],
+    queryKey: ["completed-nursing", scope],
     enabled: visibleTabs.includes("nursing"),
     queryFn: async (): Promise<Row[]> => {
       const { data } = await supabase.from("clinical_tasks" as never)
         .select("id, patient_id, title, status, completed_at, category, description, priority")
         .eq("status", "completed").not("completed_at", "is", null)
-        .order("completed_at", { ascending: false }).limit(500);
+        .gte("completed_at", since).order("completed_at", { ascending: false }).limit(500);
       const arr = (data as unknown as Array<{ id: string; patient_id: string; title: string; category: string | null; completed_at: string; description: string | null; priority: string | null }>) ?? [];
       const pm = await fetchPatientMap(arr.map((r) => r.patient_id));
       return arr.map((r) => ({
@@ -231,13 +235,13 @@ function CompletedReports() {
   });
 
   const billing = useQuery({
-    queryKey: ["completed-billing"],
+    queryKey: ["completed-billing", scope],
     enabled: visibleTabs.includes("billing"),
     queryFn: async (): Promise<Row[]> => {
       const { data } = await supabase.from("invoices" as never)
         .select("id, patient_id, total_cents, paid_cents, status, updated_at")
         .in("status", ["paid", "settled"] as never)
-        .order("updated_at", { ascending: false }).limit(500);
+        .gte("updated_at", since).order("updated_at", { ascending: false }).limit(500);
       const arr = (data as unknown as Array<{ id: string; patient_id: string; total_cents: number | null; paid_cents: number | null; status: string; updated_at: string }>) ?? [];
       const pm = await fetchPatientMap(arr.map((r) => r.patient_id));
       return arr.map((r) => ({
@@ -304,7 +308,7 @@ function CompletedReports() {
               <>
                 {active?.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
                 {!active?.isLoading && groups.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No completed {TAB_META[k].label.toLowerCase()} records{q ? " matching your search" : ""}.</p>
+                  <p className="text-sm text-muted-foreground">No completed {TAB_META[k].label.toLowerCase()} records{q ? " matching your search" : ""}.{!isSearching(q) && <> {TODAY_EMPTY_MESSAGE}</>}</p>
                 )}
                 {groups.map((g) => (
                   <div key={g.date} className="rounded-lg border bg-card">

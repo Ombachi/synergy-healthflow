@@ -312,7 +312,7 @@ function BillingPage() {
               <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">Loading invoices…</td></tr>
             )}
             {!invoices.isLoading && filtered.length === 0 && (
-              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">No invoices{search ? " match your search" : ""}.</td></tr>
+              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">{searching ? "No invoices match your search." : TODAY_EMPTY_MESSAGE}</td></tr>
             )}
             {pager.slice.map((inv) => {
               const due = inv.total_cents - inv.paid_cents;
