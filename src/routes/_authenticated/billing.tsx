@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { exportInvoicePDF } from "@/lib/invoice-pdf";
 import { initiateMpesaPayment, getMpesaPaymentStatus } from "@/lib/mpesa.functions";
 import { Pager, usePager } from "@/components/pager";
+import { isSearching, startOfTodayISO, TODAY_EMPTY_MESSAGE } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/billing")({ component: BillingPage });
 
@@ -36,34 +37,53 @@ function BillingPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [encounterFilter, setEncounterFilter] = useState<string>("all");
 
+  const term = search.trim();
+  const searching = isSearching(term);
+  // Default: only today's invoices. Older invoices are reachable via search
+  // (patient name / MRN) — history is never bulk-loaded into the browser.
   const invoices = useQuery({
-    queryKey: ["invoices"],
+    queryKey: ["invoices", searching ? term.toLowerCase() : "today"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("invoices" as never).select("*").order("created_at", { ascending: false }).limit(500);
+      if (searching) {
+        const like = `%${term}%`;
+        const { data: pts } = await supabase.from("patients" as never).select("id")
+          .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(50);
+        const pids = ((pts as unknown as { id: string }[]) ?? []).map((p) => p.id);
+        if (!pids.length) return [];
+        const { data, error } = await supabase.from("invoices" as never).select("*").in("patient_id", pids as never).order("created_at", { ascending: false }).limit(200);
+        if (error) throw error;
+        return (data as unknown as Invoice[]) ?? [];
+      }
+      const { data, error } = await supabase.from("invoices" as never).select("*").gte("created_at", startOfTodayISO()).order("created_at", { ascending: false }).limit(500);
       if (error) throw error;
       return (data as unknown as Invoice[]) ?? [];
     },
   });
+  const invoiceIds = (invoices.data ?? []).map((i) => i.id);
+  const invoicePids = Array.from(new Set((invoices.data ?? []).map((i) => i.patient_id).filter(Boolean)));
   const items = useQuery({
-    queryKey: ["invoice-items"],
+    queryKey: ["invoice-items", invoiceIds.join(",")],
+    enabled: invoiceIds.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.from("invoice_items" as never).select("*");
+      const { data, error } = await supabase.from("invoice_items" as never).select("*").in("invoice_id", invoiceIds as never);
       if (error) throw error;
       return (data as unknown as InvoiceItem[]) ?? [];
     },
   });
   const payments = useQuery({
-    queryKey: ["payments"],
+    queryKey: ["payments", invoiceIds.join(",")],
+    enabled: invoiceIds.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.from("payments" as never).select("*").order("received_at", { ascending: false }).limit(1000);
+      const { data, error } = await supabase.from("payments" as never).select("*").in("invoice_id", invoiceIds as never).order("received_at", { ascending: false });
       if (error) throw error;
       return (data as unknown as Payment[]) ?? [];
     },
   });
   const patients = useQuery({
-    queryKey: ["bill-patients"],
+    queryKey: ["bill-patients", invoicePids.join(",")],
+    enabled: invoicePids.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number");
+      const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number").in("id", invoicePids as never);
       if (error) throw error;
       return (data as unknown as Patient[]) ?? [];
     },
@@ -196,13 +216,6 @@ function BillingPage() {
     let list = invoices.data ?? [];
     if (statusFilter !== "all") list = list.filter((i) => i.status === statusFilter);
     if (encounterFilter !== "all") list = list.filter((i) => encounterOf(i) === encounterFilter);
-    const q = search.trim().toLowerCase();
-    if (q) {
-      list = list.filter((i) => {
-        const p = patientById(i.patient_id);
-        return `${p?.full_name ?? ""} ${p?.medical_record_number ?? ""} ${i.id.slice(0,8)} ${i.status}`.toLowerCase().includes(q);
-      });
-    }
     return list;
   }, [invoices.data, patients.data, search, statusFilter, encounterFilter, inpatientVisitIds]);
 
