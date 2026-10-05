@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { StockRequestInbox } from "@/components/stock-request-inbox";
 import { toast } from "sonner";
+import { isSearching, startOfTodayISO } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/store")({
   component: () => <StoreDashboard />,
@@ -58,10 +59,21 @@ function StoreDashboard() {
     enabled: allowed,
   });
 
+  // Default: today's receipts only; older GRNs via search (notes / GRN id prefix).
+  const [grnSearch, setGrnSearch] = useState("");
+  const grnTerm = grnSearch.trim();
+  const grnSearching = isSearching(grnTerm);
   const grns = useQuery({
-    queryKey: ["store-grns"],
+    queryKey: ["store-grns", grnSearching ? grnTerm.toLowerCase() : "today"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("goods_received_notes" as never).select("*").order("received_at", { ascending: false }).limit(10);
+      if (grnSearching) {
+        const { data, error } = await supabase.from("goods_received_notes" as never).select("*")
+          .ilike("notes", `%${grnTerm}%`).order("received_at", { ascending: false }).limit(100);
+        if (error) throw error;
+        return (data as unknown as GRN[]) ?? [];
+      }
+      const { data, error } = await supabase.from("goods_received_notes" as never).select("*")
+        .gte("received_at", startOfTodayISO()).order("received_at", { ascending: false });
       if (error) throw error;
       return (data as unknown as GRN[]) ?? [];
     },
@@ -176,9 +188,12 @@ function StoreDashboard() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Recent GRNs</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+          <CardTitle>{grnSearching ? "Goods received — search results" : "Goods received today"}</CardTitle>
+          <Input value={grnSearch} onChange={(e) => setGrnSearch(e.target.value)} placeholder="Search older receipts by notes…" className="h-8 max-w-xs text-xs" />
+        </CardHeader>
         <CardContent>
-          {grns.data?.length === 0 ? <p className="text-sm text-muted-foreground">No goods received yet.</p> : (
+          {grns.data?.length === 0 ? <p className="text-sm text-muted-foreground">{grnSearching ? "No receipts match your search." : "No goods received today. Use the search to find older receipts."}</p> : (
             <div className="space-y-2">
               {grns.data?.map((g) => (
                 <div key={g.id} className="flex items-center justify-between rounded border p-3 text-sm">
