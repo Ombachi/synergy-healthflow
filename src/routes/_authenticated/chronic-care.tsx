@@ -95,15 +95,7 @@ function ClinicianChronicView() {
     return list.map((m) => ({ med: m, a: assessRefill(m, policy.data) }));
   }, [meds.data, search, policy.data, patients.data]); // eslint-disable-line
 
-  const request = useMutation({
-    mutationFn: async (med: ChronicMedication) => {
-      const draft = buildRefillRequest(med, assessRefill(med, policy.data), openIds);
-      if (!draft) throw new Error("Refill is not due or is blocked by policy");
-      await createRefillRequest({ ...draft, requested_by: user?.id ?? null });
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["refill-requests"] }); toast.success("Refill request sent to pharmacy"); },
-    onError: (e: Error) => toast.error(e.message),
-  });
+  // Staff cannot raise refills: patients request, pharmacy fulfils.
 
   if (meds.data?.schemaMissing) return <SchemaNotice />;
 
@@ -150,11 +142,9 @@ function ClinicianChronicView() {
                   <StatusPill tone={a.decision === "eligible" ? "ok" : a.decision === "not_due" ? "muted" : "warn"}>
                     {a.decision.replace(/_/g, " ")}
                   </StatusPill>
-                  <Button size="sm" variant="outline" disabled={request.isPending || openIds.includes(med.id)}
-                    onClick={() => request.mutate(med)}>
-                    <RefreshCcw className="mr-1 h-3 w-3" />
-                    {openIds.includes(med.id) ? "Requested" : "Request refill"}
-                  </Button>
+                  <span className="max-w-xs text-xs text-muted-foreground">
+                    {openIds.includes(med.id) ? "Refill requested by patient" : a.reason}
+                  </span>
                 </div>
               </div>
             ))}
@@ -188,6 +178,19 @@ function PatientChronicView() {
   });
   const pid = patient.data?.id;
   const { meds, reqs, policy } = useChronicData(pid);
+  const qc = useQueryClient();
+  const openIds = (reqs.data?.rows ?? [])
+    .filter((r) => ["requested", "pharmacy_review", "clinician_review", "approved"].includes(r.status))
+    .map((r) => r.medication_id);
+  const request = useMutation({
+    mutationFn: async (med: ChronicMedication) => {
+      const draft = buildRefillRequest(med, assessRefill(med, policy.data), openIds);
+      if (!draft) throw new Error("This refill is not due yet or is blocked by policy");
+      await createRefillRequest({ ...draft, requested_by: user?.id ?? null });
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["refill-requests"] }); toast.success("Refill request sent to pharmacy"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   if (meds.data?.schemaMissing) return <SchemaNotice />;
 
@@ -229,9 +232,20 @@ function PatientChronicView() {
                   {a.expected_completion && ` · supply ends ${a.expected_completion}`}
                 </div>
               </div>
-              <StatusPill tone={a.overdue ? "bad" : a.nearing_completion ? "warn" : "ok"}>
-                {a.days_remaining == null ? "—" : a.overdue ? "refill overdue" : `${a.days_remaining} days left`}
-              </StatusPill>
+              <div className="flex items-center gap-2">
+                <StatusPill tone={a.overdue ? "bad" : a.nearing_completion ? "warn" : "ok"}>
+                  {a.days_remaining == null ? "—" : a.overdue ? "refill overdue" : `${a.days_remaining} days left`}
+                </StatusPill>
+                {m.status === "active" && (
+                  <Button size="sm" variant="outline"
+                    disabled={request.isPending || openIds.includes(m.id) || a.decision === "not_due" || a.decision === "policy_blocked"}
+                    title={a.reason}
+                    onClick={() => request.mutate(m)}>
+                    <RefreshCcw className="mr-1 h-3 w-3" />
+                    {openIds.includes(m.id) ? "Requested" : "Request refill"}
+                  </Button>
+                )}
+              </div>
             </div>
           );
         })}
