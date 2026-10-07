@@ -2,9 +2,19 @@ import type jsPDF from "jspdf";
 import QRCode from "qrcode";
 import logoUrl from "@/assets/litu-vault-logo.png";
 
-export const ORG_NAME = "Litu Diagnostics";
-export const ORG_TAGLINE = "thrive with good health";
-export const ORG_ADDRESS = "Kenya  ·  +254 781 872670  ·  litudiagnostics.com  ·  info@litudiagnostics.co.ke";
+export let ORG_NAME = "Litu Diagnostics";
+export let ORG_TAGLINE = "thrive with good health";
+export let ORG_ADDRESS = "Kenya  ·  +254 781 872670  ·  litudiagnostics.com  ·  info@litudiagnostics.co.ke";
+
+/** Active facility letterhead, set by the facility switcher. */
+export function setPdfFacility(f: {
+  name: string; tagline?: string; address: string; phone: string; email: string; website?: string; tax_pin?: string;
+}) {
+  ORG_NAME = f.name;
+  ORG_TAGLINE = f.tagline ?? "thrive with good health";
+  ORG_ADDRESS = [f.address, f.phone, f.website, f.email, f.tax_pin ? `PIN ${f.tax_pin}` : ""]
+    .filter(Boolean).join("  ·  ");
+}
 
 let _logoCache: string | null = null;
 async function loadLogoDataUrl(): Promise<string | null> {
