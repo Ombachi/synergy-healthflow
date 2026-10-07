@@ -41,6 +41,12 @@ export interface ChronicMedication {
   /** Last date a clinician reviewed this chronic order. */
   last_review_date?: string | null;
   is_controlled?: boolean;
+  /** Therapy needs periodic lab monitoring (e.g. metformin → eGFR, warfarin → INR). */
+  requires_lab_monitoring?: boolean;
+  /** Date of the most recent qualifying monitoring lab result. */
+  last_lab_date?: string | null;
+  /** Monitoring interval in days for this order (falls back to policy). */
+  lab_interval_days?: number | null;
 }
 
 export interface RefillPolicy {
@@ -54,6 +60,8 @@ export interface RefillPolicy {
   controlled_requires_review: boolean;
   /** Earliest refill as a fraction of the supply consumed (0.8 = 80%). */
   earliest_refill_fraction: number;
+  /** Default lab-monitoring interval for monitored therapies. */
+  lab_monitoring_interval_days: number;
 }
 
 export const DEFAULT_REFILL_POLICY: RefillPolicy = {
@@ -62,7 +70,15 @@ export const DEFAULT_REFILL_POLICY: RefillPolicy = {
   review_interval_days: 180,
   controlled_requires_review: true,
   earliest_refill_fraction: 0.8,
+  lab_monitoring_interval_days: 90,
 };
+
+/** Medicines that need monitoring labs before refills are authorised. */
+const LAB_MONITORED = /(metformin|warfarin|lithium|methotrexate|amiodarone|digoxin|spironolactone|carbamazepine|valproate|phenytoin|tenofovir|allopurinol|levothyroxine|lisinopril|enalapril|losartan|insulin)/i;
+
+export function needsLabMonitoring(med: Pick<ChronicMedication, "medication" | "requires_lab_monitoring">): boolean {
+  return med.requires_lab_monitoring ?? LAB_MONITORED.test(med.medication);
+}
 
 const DAY_MS = 86_400_000;
 
@@ -184,6 +200,15 @@ export function assessRefill(
       "requires_clinical_review",
       `Last clinical review was ${Math.round(reviewAge)} days ago (policy: ${policy.review_interval_days})`,
     );
+
+  if (needsLabMonitoring(med)) {
+    const interval = med.lab_interval_days ?? policy.lab_monitoring_interval_days;
+    if (!med.last_lab_date)
+      return deny("requires_clinical_review", "Monitoring lab result required before refill — none on record");
+    const labAge = (now.getTime() - new Date(med.last_lab_date).getTime()) / DAY_MS;
+    if (labAge > interval)
+      return deny("requires_clinical_review", `Monitoring lab is ${Math.round(labAge)} days old (required every ${interval} days)`);
+  }
 
   if (days == null || remaining == null)
     return deny("requires_clinical_review", "Supply duration could not be calculated from quantity and frequency");
