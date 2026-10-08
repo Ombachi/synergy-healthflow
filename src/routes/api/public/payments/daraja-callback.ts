@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { settleMpesaTransaction } from "@/lib/mpesa.functions";
+import { callbackToken } from "@/lib/mpesa.server";
 
 interface StkCallbackItem {
   Name: string;
@@ -7,8 +8,8 @@ interface StkCallbackItem {
 }
 
 /**
- * Safaricom Daraja STK callback. Public endpoint — the payload itself is the
- * proof (CheckoutRequestID must match a pending transaction we created).
+ * Safaricom Daraja STK callback. Public endpoint, authenticated by a per-invoice
+ * HMAC token embedded in the callback URL we gave Daraja.
  */
 export const Route = createFileRoute("/api/public/payments/daraja-callback")({
   server: {
@@ -39,6 +40,16 @@ export const Route = createFileRoute("/api/public/payments/daraja-callback")({
           posted_payment_id: string | null; status: string;
         } | null;
         if (!tx) {
+          return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
+        }
+        // Verify the per-invoice token we embedded in the callback URL; only
+        // Safaricom (which received that URL) can present it.
+        const expected = await callbackToken(tx.invoice_id);
+        const given = new URL(request.url).searchParams.get("t") ?? "";
+        if (!expected || given.length !== expected.length || given !== expected) {
+          return Response.json({ ResultCode: 1, ResultDesc: "Unauthorized" }, { status: 401 });
+        }
+        if (tx.status !== "pending" || tx.posted_payment_id) {
           return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
         }
 

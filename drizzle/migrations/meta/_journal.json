@@ -8,6 +8,13 @@
       "when": 1789205398668,
       "tag": "0000_chronic_care_and_fhir_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791473954501,
+      "tag": "0001_clinical_tasks_insert_scope",
+      "breakpoints": true
     }
   ]
 }

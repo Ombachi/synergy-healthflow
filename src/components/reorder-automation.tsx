@@ -90,7 +90,7 @@ export function ReorderAutomation() {
   function exportCsv() {
     const header = ["Item", "SKU", "Category", "On hand", "Reorder at", "Suggested qty", "Supplier", "Unit price"];
     const lines = rows.map((r) => [r.name, r.sku ?? "", r.category ?? "", r.quantity, r.reorder_threshold, r.suggested_qty, r.supplier ?? "", ((r.unit_price_cents ?? 0) / 100).toFixed(2)]);
-    const csv = [header, ...lines].map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [header, ...lines].map((l) => l.map((c) => { const v = String(c); const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v; return `"${safe.replace(/"/g, '""')}"`; }).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url; a.download = `reorder-list-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
