@@ -143,7 +143,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/credit-notes": ["cashier", "billing_officer"],
 
   // Completed reports archive (searchable, all clinical + finance roles)
-  "/completed": ["doctor", "nurse", "pharmacist", "lab_tech", "radiologist", "physio", "nutritionist", "cashier", "billing_officer", "admissions_officer"],
+  "/completed": ["pharmacist", "lab_tech", "radiologist"],
 
   // Compliance & audit (admin-only)
   "/admin/soft-deleted": [],
@@ -219,8 +219,8 @@ export function canAccess(path: string, roles: AppRole[]): boolean {
 export const ROLE_HOME: Partial<Record<AppRole, string>> = {
   patient: "/me",
   receptionist: "/reception",
-  nurse: "/queue",
-  doctor: "/queue",
+  nurse: "/dashboard",
+  doctor: "/dashboard",
   lab_tech: "/lab",
   pharmacist: "/pharmacy",
   radiologist: "/radiology",

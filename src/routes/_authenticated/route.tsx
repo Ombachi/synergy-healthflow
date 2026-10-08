@@ -152,7 +152,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
   athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
-  receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/queue", "/patients"],
+  receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/patients"],
   insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
   fleet_manager:     ["/dashboard", "/messages", "/mobility/dispatch", "/mobility/fleet", "/mobility/trips", "/mobility/request"],
   driver:            ["/dashboard", "/messages", "/mobility/driver", "/mobility/trips"],
@@ -213,7 +213,6 @@ const GROUPS: Group[] = [
       { title: "Appointments", url: "/appointments", icon: CalendarClock, dept: "appointments" },
       { title: "Reception", url: "/reception", icon: ClipboardCheck, dept: "reception" },
       { title: "Patient directory", url: "/patients", icon: User, dept: "reception" },
-      { title: "Queue board", url: "/queue", icon: ListOrdered },
       { title: "Nursing triage", url: stub("nursing-triage"), icon: HeartPulse },
       { title: "Immunization", url: "/immunization", icon: Syringe },
       { title: "Consultation", url: "/visits", icon: ClipboardList, hideForAdmin: true },
@@ -375,7 +374,6 @@ const GROUPS: Group[] = [
 const STANDALONE: Item[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Messages", url: "/messages", icon: MessageSquare },
-  { title: "Completed reports", url: "/completed", icon: Archive },
 ];
 
 
