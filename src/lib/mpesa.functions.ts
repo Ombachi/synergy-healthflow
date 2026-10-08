@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getMpesaConfig, normalizeKenyanPhone, stkPush } from "./mpesa.server";
+import { callbackToken, getMpesaConfig, normalizeKenyanPhone, stkPush } from "./mpesa.server";
 
 const FINANCE_ROLES = ["cashier", "billing_officer", "admin"] as const;
 
@@ -130,11 +130,13 @@ export const initiateMpesaPayment = createServerFn({ method: "POST" })
     const origin = new URL(getRequest().url).origin;
     const accountRef = `INV-${inv.id.slice(0, 8).toUpperCase()}`;
 
+    const cbToken = await callbackToken(inv.id);
+    if (!cbToken) throw new Error("M-Pesa is not configured");
     const stk = await stkPush(cfg, {
       phone,
       amountKes: dueCents / 100,
       accountRef,
-      callbackUrl: `${origin}/api/public/payments/daraja-callback`,
+      callbackUrl: `${origin}/api/public/payments/daraja-callback?t=${cbToken}`,
     });
 
     const { error: txErr } = await supabase.from("mpesa_transactions").insert({
