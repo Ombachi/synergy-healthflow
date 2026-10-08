@@ -156,7 +156,7 @@ function DischargePage() {
         patient_id: sel.patient_id,
         procedure_name: `Inpatient discharge clearance — ${sel.primary_diagnosis ?? "admission"}`,
         clinical_justification: `Inpatient admission from ${new Date(sel.admitted_at).toLocaleDateString("en-GB")}. Awaiting insurer sign-off for discharge.`,
-        status: "submitted",
+        status: "pending",
         requested_by: user?.id,
       } as never).select("id").single();
       if (error) throw error;
