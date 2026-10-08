@@ -4,8 +4,18 @@ import { Activity, ClipboardCheck, ClipboardList, FlaskConical, Package, Pill, R
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { ROLE_HOME } from "@/lib/role-permissions";
+import { QueueRouter } from "./queue";
+import { DepartmentMetrics } from "@/components/department-metrics";
 
-export const Route = createFileRoute("/_authenticated/dashboard")({ component: Dashboard });
+export const Route = createFileRoute("/_authenticated/dashboard")({
+  head: () => ({ meta: [
+    { title: "Workstation — Litu Vault" },
+    { name: "description", content: "Live department metrics and patient queue for your role." },
+    { property: "og:title", content: "Workstation — Litu Vault" },
+    { property: "og:description", content: "Live department metrics and patient queue for your role." },
+  ] }),
+  component: Dashboard,
+});
 
 function Dashboard() {
   const { roles, profile, loading } = useAuth();
@@ -14,6 +24,16 @@ function Dashboard() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  // Clinical front line → unified workstation (metrics on top, live queue below)
+  if (!roles.includes("admin") && roles.some((r) => r === "doctor" || r === "nurse" || r === "receptionist")) {
+    return (
+      <div className="space-y-6">
+        <DepartmentMetrics />
+        <QueueRouter />
       </div>
     );
   }

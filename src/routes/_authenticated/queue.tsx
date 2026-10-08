@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,9 +10,9 @@ import { WorkflowChip, workflowLabel } from "@/components/workflow-chip";
 import { NurseStation } from "@/components/workstations/nurse-station";
 import { DoctorStation } from "@/components/workstations/doctor-station";
 
-export const Route = createFileRoute("/_authenticated/queue")({ component: QueueRouter });
+export const Route = createFileRoute("/_authenticated/queue")({ component: () => <Navigate to="/dashboard" replace /> });
 
-function QueueRouter() {
+export function QueueRouter() {
   const { roles, loading } = useAuth();
   if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   // Specialized workstations

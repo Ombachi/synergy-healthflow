@@ -2479,6 +2479,77 @@ export type Database = {
         }
         Relationships: []
       }
+      facilities: {
+        Row: {
+          address: string | null
+          code: string
+          created_at: string
+          email: string | null
+          facility_type: string
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          settings: Json
+          tier: string
+        }
+        Insert: {
+          address?: string | null
+          code: string
+          created_at?: string
+          email?: string | null
+          facility_type?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+          settings?: Json
+          tier?: string
+        }
+        Update: {
+          address?: string | null
+          code?: string
+          created_at?: string
+          email?: string | null
+          facility_type?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          settings?: Json
+          tier?: string
+        }
+        Relationships: []
+      }
+      facility_modules: {
+        Row: {
+          enabled: boolean
+          facility_id: string
+          module: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          facility_id: string
+          module: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          facility_id?: string
+          module?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_modules_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fhir_access_log: {
         Row: {
           created_at: string
@@ -5485,9 +5556,49 @@ export type Database = {
           },
         ]
       }
+      mobility_trip_points: {
+        Row: {
+          accuracy_m: number | null
+          id: number
+          lat: number
+          lng: number
+          recorded_at: string
+          speed_mps: number | null
+          trip_id: string
+        }
+        Insert: {
+          accuracy_m?: number | null
+          id?: number
+          lat: number
+          lng: number
+          recorded_at?: string
+          speed_mps?: number | null
+          trip_id: string
+        }
+        Update: {
+          accuracy_m?: number | null
+          id?: number
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          speed_mps?: number | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_trip_points_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mobility_trips: {
         Row: {
           accepted_at: string | null
+          actual_distance_km: number | null
+          actual_duration_minutes: number | null
           arrived_destination_at: string | null
           arrived_pickup_at: string | null
           assigned_at: string | null
@@ -5499,6 +5610,9 @@ export type Database = {
           distance_km: number
           driver_id: string | null
           en_route_at: string | null
+          estimated_distance_km: number | null
+          estimated_duration_minutes: number | null
+          estimated_fare_cents: number | null
           eta_minutes: number | null
           fare_cents: number
           handover_at: string | null
@@ -5508,6 +5622,7 @@ export type Database = {
           invoice_id: string | null
           payment_method: string | null
           request_id: string
+          route_polyline: string | null
           status: string
           updated_at: string
           vehicle_id: string | null
@@ -5515,6 +5630,8 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          actual_distance_km?: number | null
+          actual_duration_minutes?: number | null
           arrived_destination_at?: string | null
           arrived_pickup_at?: string | null
           assigned_at?: string | null
@@ -5526,6 +5643,9 @@ export type Database = {
           distance_km?: number
           driver_id?: string | null
           en_route_at?: string | null
+          estimated_distance_km?: number | null
+          estimated_duration_minutes?: number | null
+          estimated_fare_cents?: number | null
           eta_minutes?: number | null
           fare_cents?: number
           handover_at?: string | null
@@ -5535,6 +5655,7 @@ export type Database = {
           invoice_id?: string | null
           payment_method?: string | null
           request_id: string
+          route_polyline?: string | null
           status?: string
           updated_at?: string
           vehicle_id?: string | null
@@ -5542,6 +5663,8 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          actual_distance_km?: number | null
+          actual_duration_minutes?: number | null
           arrived_destination_at?: string | null
           arrived_pickup_at?: string | null
           assigned_at?: string | null
@@ -5553,6 +5676,9 @@ export type Database = {
           distance_km?: number
           driver_id?: string | null
           en_route_at?: string | null
+          estimated_distance_km?: number | null
+          estimated_duration_minutes?: number | null
+          estimated_fare_cents?: number | null
           eta_minutes?: number | null
           fare_cents?: number
           handover_at?: string | null
@@ -5562,6 +5688,7 @@ export type Database = {
           invoice_id?: string | null
           payment_method?: string | null
           request_id?: string
+          route_polyline?: string | null
           status?: string
           updated_at?: string
           vehicle_id?: string | null
@@ -5963,6 +6090,33 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_access_log: {
+        Row: {
+          accessed_at: string
+          context: string | null
+          facility_id: string | null
+          id: string
+          patient_id: string
+          user_id: string
+        }
+        Insert: {
+          accessed_at?: string
+          context?: string | null
+          facility_id?: string | null
+          id?: string
+          patient_id: string
+          user_id?: string
+        }
+        Update: {
+          accessed_at?: string
+          context?: string | null
+          facility_id?: string | null
+          id?: string
+          patient_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       patient_portal_invitations: {
         Row: {
           channel: string
@@ -6038,6 +6192,7 @@ export type Database = {
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          facility_id: string | null
           full_name: string
           gender: string | null
           id: string
@@ -6066,6 +6221,7 @@ export type Database = {
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          facility_id?: string | null
           full_name: string
           gender?: string | null
           id?: string
@@ -6094,6 +6250,7 @@ export type Database = {
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          facility_id?: string | null
           full_name?: string
           gender?: string | null
           id?: string
@@ -6107,7 +6264,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "patients_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -8315,6 +8480,41 @@ export type Database = {
           },
         ]
       }
+      user_facilities: {
+        Row: {
+          created_at: string
+          facility_id: string
+          id: string
+          is_primary: boolean
+          role: Database["public"]["Enums"]["app_role"] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          facility_id: string
+          id?: string
+          is_primary?: boolean
+          role?: Database["public"]["Enums"]["app_role"] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          facility_id?: string
+          id?: string
+          is_primary?: boolean
+          role?: Database["public"]["Enums"]["app_role"] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_facilities_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -8618,6 +8818,7 @@ export type Database = {
           deletion_reason: string | null
           doctor_id: string | null
           examination: Json | null
+          facility_id: string | null
           id: string
           notes: string | null
           opened_at: string
@@ -8644,6 +8845,7 @@ export type Database = {
           deletion_reason?: string | null
           doctor_id?: string | null
           examination?: Json | null
+          facility_id?: string | null
           id?: string
           notes?: string | null
           opened_at?: string
@@ -8670,6 +8872,7 @@ export type Database = {
           deletion_reason?: string | null
           doctor_id?: string | null
           examination?: Json | null
+          facility_id?: string | null
           id?: string
           notes?: string | null
           opened_at?: string
@@ -8684,6 +8887,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "visits_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "visits_patient_id_fkey"
             columns: ["patient_id"]
@@ -9224,6 +9434,7 @@ export type Database = {
           ticket: string
         }[]
       }
+      has_facility_access: { Args: { _facility: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -9307,6 +9518,7 @@ export type Database = {
         }
         Returns: string
       }
+      main_facility_id: { Args: never; Returns: string }
       mobility_bill_trip: { Args: { _trip: string }; Returns: string }
       notify_role: {
         Args: {
