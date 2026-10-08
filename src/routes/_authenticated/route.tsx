@@ -306,6 +306,13 @@ const GROUPS: Group[] = [
   },
 
 
+  {
+    key: "dept-mgmt", label: "Department management", icon: Archive,
+    items: [
+      { title: "Records audit", url: "/completed", icon: Archive },
+    ],
+  },
+
   // Non-clinical utility groups (only shown if user has ≥1 accessible item).
   {
     key: "sports", label: "Sports & Wellness", icon: Activity,
