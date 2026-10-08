@@ -9234,6 +9234,7 @@ export type Database = {
       is_clinical_requester: { Args: never; Returns: boolean }
       is_fleet_staff: { Args: never; Returns: boolean }
       is_hr_staff: { Args: never; Returns: boolean }
+      is_staff_member: { Args: never; Returns: boolean }
       is_supervisor_of: { Args: { _emp: string }; Returns: boolean }
       is_thread_participant: {
         Args: { _thread: string; _user: string }

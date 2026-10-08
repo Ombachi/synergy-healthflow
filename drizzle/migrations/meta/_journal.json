@@ -15,6 +15,13 @@
       "when": 1791473954501,
       "tag": "0001_clinical_tasks_insert_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791474268439,
+      "tag": "0002_restrict_shared_reads_to_staff",
+      "breakpoints": true
     }
   ]
 }
