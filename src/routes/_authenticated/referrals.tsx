@@ -191,7 +191,10 @@ function ReferralsPage() {
       referringClinician: profile?.full_name ?? "Attending clinician",
       date: new Date(r.created_at),
     });
-    doc.save(`referral-${(p?.full_name ?? "patient").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    doc.autoPrint();
+    const url = doc.output("bloburl");
+    const w = window.open(url, "_blank");
+    if (!w) doc.save(`referral-${(p?.full_name ?? "patient").replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
 
   const [replyDraft, setReplyDraft] = useState<Record<string, string>>({});
