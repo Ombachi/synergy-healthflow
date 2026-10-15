@@ -138,7 +138,7 @@ function ReferralsPage() {
     mutationFn: async () => {
       if (!form.patient_id) throw new Error("Select a patient");
       if (!form.reason.trim()) throw new Error("A reason for referral is required");
-      const { error } = await supabase.from("referrals" as never).insert({
+      const { data, error } = await supabase.from("referrals" as never).insert({
         patient_id: form.patient_id,
         specialty: form.specialty,
         referred_to: form.referred_to || null,
@@ -149,11 +149,13 @@ function ReferralsPage() {
         investigations: form.investigations || null,
         current_medications: form.current_medications || null,
         referred_by: user!.id,
-      } as never);
+      } as never).select("*").single();
       if (error) throw error;
+      return data as unknown as Referral;
     },
-    onSuccess: () => {
-      toast.success("Referral sent");
+    onSuccess: (r) => {
+      toast.success("Referral sent — referral letter ready to print");
+      if (r) void printLetter(r);
       setForm({ ...form, patient_id: "", reason: "", clinical_summary: "", investigations: "", current_medications: "" });
       qc.invalidateQueries({ queryKey: ["referrals"] });
     },
