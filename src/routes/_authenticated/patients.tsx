@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { RoleGate } from "@/components/role-gate";
 import { Pager, usePager } from "@/components/pager";
+import { useAuth } from "@/hooks/use-auth";
+import { useFacility } from "@/components/facility-context";
 import { isSearching, fetchTodayPatientIds } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/patients")({
@@ -20,6 +22,9 @@ export const Route = createFileRoute("/_authenticated/patients")({
     </RoleGate>
   ),
 });
+
+// Search results show demographics only; clinical and contact data stay hidden.
+const MASKED_COLS = "id, full_name, medical_record_number, date_of_birth, gender, created_at";
 
 interface PatientRow {
   id: string;
@@ -43,6 +48,8 @@ interface PatientRow {
 
 function PatientsPage() {
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const { activeFacility } = useFacility();
   const [search, setSearch] = useState("");
   
   const [editing, setEditing] = useState<PatientRow | null>(null);
@@ -61,7 +68,7 @@ function PatientsPage() {
         const like = `%${term}%`;
         const { data, error } = await supabase
           .from("patients" as never)
-          .select("*")
+          .select(MASKED_COLS)
           .is("deleted_at", null)
           .or(
             `full_name.ilike.${like},medical_record_number.ilike.${like},phone.ilike.${like},id_number.ilike.${like},email.ilike.${like}`,
@@ -75,7 +82,7 @@ function PatientsPage() {
       if (ids.length === 0) return [];
       const { data, error } = await supabase
         .from("patients" as never)
-        .select("*")
+        .select(MASKED_COLS)
         .is("deleted_at", null)
         .in("id", ids as never)
         .order("created_at", { ascending: false });
@@ -120,9 +127,21 @@ function PatientsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const openEdit = (p: PatientRow) => {
-    setEditing(p);
-    setForm({ ...p });
+  // Full details load only when a record is opened, and every open is logged.
+  const openEdit = async (p: PatientRow) => {
+    const { data, error } = await supabase.from("patients" as never).select("*").eq("id", p.id).single();
+    if (error || !data) { toast.error(error?.message ?? "Could not open record"); return; }
+    void supabase.from("audit_logs").insert({
+      action: "patient_record_opened",
+      entity_type: "patient",
+      entity_id: p.id,
+      patient_id: p.id,
+      actor_id: user?.id ?? null,
+      changes: { context: "patient_directory", facility_id: activeFacility.id, facility_name: activeFacility.name },
+    }).then(() => undefined, () => undefined);
+    const full = data as unknown as PatientRow;
+    setEditing(full);
+    setForm({ ...full });
   };
 
   return (
@@ -160,33 +179,29 @@ function PatientsPage() {
             <tr>
               <th className="px-3 py-2">Patient</th>
               <th className="px-3 py-2">MRN</th>
-              <th className="px-3 py-2">DOB</th>
+              <th className="px-3 py-2">Year of birth</th>
               <th className="px-3 py-2">Gender</th>
-              <th className="px-3 py-2">Phone</th>
-              <th className="px-3 py-2">ID number</th>
               <th className="px-3 py-2">Registered</th>
               <th className="px-3 py-2" />
             </tr>
           </thead>
           <tbody>
             {patients.isLoading && (
-              <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Loading patients…</td></tr>
+              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Loading patients…</td></tr>
             )}
             {!patients.isLoading && pager.slice.length === 0 && (
-              <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">No patients{search ? " match your search" : ""}.</td></tr>
+              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">{search ? "No patients match your search." : "No patients served today. Use the search bar to locate records."}</td></tr>
             )}
             {pager.slice.map((p) => (
               <tr key={p.id} className="border-t hover:bg-accent/40">
                 <td className="px-3 py-2 font-medium">
-                  <Link to="/reception" className="hover:underline">{p.full_name}</Link>
+                  <button type="button" onClick={() => openEdit(p)} className="hover:underline">{p.full_name}</button>
                 </td>
                 <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{p.medical_record_number ?? "—"}</td>
                 <td className="px-3 py-2 text-muted-foreground">
-                  {p.date_of_birth ? new Date(p.date_of_birth).toLocaleDateString("en-GB") : "—"}
+                  {p.date_of_birth ? p.date_of_birth.slice(0, 4) : "—"}
                 </td>
                 <td className="px-3 py-2 capitalize text-muted-foreground">{p.gender ?? "—"}</td>
-                <td className="px-3 py-2 text-muted-foreground">{p.phone ?? "—"}</td>
-                <td className="px-3 py-2 text-muted-foreground">{p.id_number ?? "—"}</td>
                 <td className="px-3 py-2 text-muted-foreground">{new Date(p.created_at).toLocaleDateString("en-GB")}</td>
                 <td className="px-3 py-2 text-right">
                   <Button variant="ghost" size="icon" onClick={() => openEdit(p)} aria-label={`Edit ${p.full_name}`}>
