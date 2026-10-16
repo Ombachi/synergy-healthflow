@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { addPoint, clearPoints, computeFinalFare, loadPoints, routeDistanceKm } from "@/modules/mobility/tracking/trip-tracker";
 import {
   Ambulance, CheckCircle2, MapPin, Navigation, Phone, XCircle,
 } from "lucide-react";
@@ -14,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 import {
-  useAdvanceTrip, useMyDriver, useRequests, useTrips, useUpdateRow, useVehicles,
+  useAdvanceTrip, useMyDriver, usePricingRules, useRequests, useTrips, useUpdateRow, useVehicles,
 } from "@/modules/mobility/api";
 import {
   PRIORITY_CLASS, PRIORITY_LABEL, REQUIREMENT_LABEL, SERVICE_LABEL,
@@ -70,6 +71,7 @@ function DriverPortal() {
   const { data: requests = [] } = useRequests();
   const { data: vehicles = [] } = useVehicles();
   const advance = useAdvanceTrip();
+  const { data: rules = [] } = usePricingRules();
   const updateDriver = useUpdateRow("mobility_drivers");
   const [handover, setHandover] = useState("");
 
@@ -84,6 +86,26 @@ function DriverPortal() {
   );
   const requestFor = (t: Trip) => requests.find((r) => r.id === t.request_id) ?? null;
   const vehicle = vehicles.find((v) => v.id === (active?.vehicle_id ?? incoming[0]?.vehicle_id));
+  const [routeKm, setRouteKm] = useState(0);
+
+  // Record the GPS trail once the patient is on board until the trip ends.
+  const trackingTripId = active && ["PATIENT_BOARDING", "IN_TRANSIT", "ARRIVED_DESTINATION", "HANDOVER"].includes(active.status)
+    ? active.id : null;
+  useEffect(() => {
+    if (!trackingTripId || typeof navigator === "undefined" || !navigator.geolocation) return;
+    setRouteKm(routeDistanceKm(loadPoints(trackingTripId)));
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        const stored = addPoint(trackingTripId, {
+          lat: pos.coords.latitude, lng: pos.coords.longitude, t: pos.timestamp, acc: pos.coords.accuracy,
+        });
+        if (stored) setRouteKm(routeDistanceKm(loadPoints(trackingTripId)));
+      },
+      () => toast.error("Location is off — the final fare will use the booking estimate."),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, [trackingTripId]);
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading your driver profile…</p>;
 
@@ -112,9 +134,21 @@ function DriverPortal() {
 
   async function move(trip: Trip, to: TripStatus, extra?: Record<string, unknown>) {
     try {
-      await advance.mutateAsync({ trip, to, extra });
-      toast.success(STATUS_LABEL[to]);
-      if (to === "COMPLETED") setHandover("");
+      let patch = extra;
+      let fareMsg = "";
+      if (to === "COMPLETED") {
+        const f = computeFinalFare(trip, requestFor(trip), rules);
+        patch = {
+          ...(extra ?? {}),
+          distance_km: Math.round(f.distanceKm * 10) / 10,
+          waiting_minutes: f.waitingMinutes,
+          fare_cents: f.totalCents,
+        };
+        fareMsg = ` · ${formatKes(f.totalCents)} for ${f.distanceKm.toFixed(1)} km, ${f.durationMinutes} min${f.source === "estimate" ? " (booking estimate — no GPS route)" : ""}`;
+      }
+      await advance.mutateAsync({ trip, to, extra: patch });
+      toast.success(STATUS_LABEL[to] + fareMsg);
+      if (to === "COMPLETED") { setHandover(""); clearPoints(trip.id); }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not update the trip");
     }
@@ -146,6 +180,12 @@ function DriverPortal() {
           value={formatKes(completedToday.reduce((s, t) => s + (t.fare_cents ?? 0), 0))}
         />
       </div>
+
+      {trackingTripId && (
+        <p className="rounded-md border bg-card px-3 py-2 text-sm text-muted-foreground">
+          Recording route · <span className="font-medium text-foreground">{routeKm.toFixed(1)} km driven</span>. The final fare is worked out from this distance and the trip time.
+        </p>
+      )}
 
       {!online && !active && (
         <Card>
