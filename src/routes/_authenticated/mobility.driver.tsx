@@ -181,6 +181,12 @@ function DriverPortal() {
         />
       </div>
 
+      {trackingTripId && (
+        <p className="rounded-md border bg-card px-3 py-2 text-sm text-muted-foreground">
+          Recording route · <span className="font-medium text-foreground">{routeKm.toFixed(1)} km driven</span>. The final fare is worked out from this distance and the trip time.
+        </p>
+      )}
+
       {!online && !active && (
         <Card>
           <CardContent className="py-8 text-center text-sm text-muted-foreground">
