@@ -1,3 +1,4 @@
+import { operationalScope } from "@/lib/facility-scope";
 // Data access for the chronic care module.
 // Every read degrades gracefully: until the chronic-care migration has been
 // applied the tables do not exist, so we surface an empty list plus a
@@ -55,8 +56,8 @@ export async function fetchChronicMedications(patientId?: string): Promise<Chron
   return handle<ChronicMedication>(data, error);
 }
 
-export async function fetchRefillRequests(patientId?: string): Promise<ChronicResult<RefillRequestRow>> {
-  let q = supabase.from("refill_requests" as never).select("*").order("requested_on", { ascending: false });
+export async function fetchRefillRequests(patientId?: string, facilityId?: string): Promise<ChronicResult<RefillRequestRow>> {
+  let q = (facilityId ? operationalScope("refill_requests", facilityId) : supabase.from("refill_requests" as never).select("*")).order("requested_on", { ascending: false });
   if (patientId) q = q.eq("patient_id", patientId);
   const { data, error } = await q;
   return handle<RefillRequestRow>(data, error);

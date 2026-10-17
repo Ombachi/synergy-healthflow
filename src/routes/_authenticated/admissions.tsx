@@ -1,3 +1,5 @@
+import { useFacility } from "@/components/facility-context";
+import { operationalScope } from "@/lib/facility-scope";
 import { createFileRoute } from "@tanstack/react-router";
 import { Pager, usePager } from "@/components/pager";
 import { useState } from "react";
@@ -17,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/admissions")({
+  head: () => ({ meta: [{ title: "Admissions | Litu Vault" }, { name: "description", content: "Admissions workspace for the selected healthcare facility." }, { property: "og:title", content: "Admissions | Litu Vault" }, { property: "og:description", content: "Admissions workspace for the selected healthcare facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), 
   component: () => <RoleGate path="/admissions"><AdmissionsPage /></RoleGate>,
 });
 
@@ -27,6 +30,8 @@ interface Req {
 }
 
 function AdmissionsPage() {
+  const { activeFacility } = useFacility();
+  const facilityId = activeFacility.id;
   const qc = useQueryClient();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -37,50 +42,45 @@ function AdmissionsPage() {
   });
 
   const requests = useQuery({
-    queryKey: ["adm-req"],
+    queryKey: ["adm-req", facilityId],
     queryFn: async () => {
-      const { data } = await supabase.from("admission_requests" as never).select("*").order("created_at", { ascending: false });
-      const pendingPager = usePager(pending, 10);
+      const { data } = await operationalScope("admission_requests", facilityId).order("created_at", { ascending: false });
 
   return (data as unknown as Req[]) ?? [];
     },
   });
   const wards = useQuery({
-    queryKey: ["wards"],
+    queryKey: ["wards", facilityId],
     queryFn: async () => {
-      const { data } = await supabase.from("wards" as never).select("id, name").order("name");
-      const pendingPager = usePager(pending, 10);
+      const { data } = await operationalScope("wards", facilityId, "id, name").order("name");
 
   return (data as unknown as { id: string; name: string }[]) ?? [];
     },
   });
   const beds = useQuery({
-    queryKey: ["beds-free"],
+    queryKey: ["beds-free", facilityId],
     queryFn: async () => {
-      const { data } = await supabase.from("beds" as never).select("id, code, ward_id, status, bed_type").eq("status", "free");
-      const pendingPager = usePager(pending, 10);
+      const { data } = await operationalScope("beds", facilityId, "id, code, ward_id, status, bed_type").eq("status", "free");
 
   return (data as unknown as { id: string; code: string; ward_id: string; status: string; bed_type: string }[]) ?? [];
     },
   });
   const patientSearch = useQuery({
-    queryKey: ["patient-search", search],
+    queryKey: ["patient-search", facilityId, search],
     enabled: search.trim().length >= 2,
     queryFn: async () => {
-      const { data } = await supabase.from("patients" as never).select("id, full_name, medical_record_number")
+      const { data } = await supabase.from("patients" as never).select("id, full_name, medical_record_number").eq("facility_id", facilityId)
         .or(`full_name.ilike.%${search}%,medical_record_number.ilike.%${search}%`).limit(10);
-      const pendingPager = usePager(pending, 10);
 
   return (data as unknown as { id: string; full_name: string; medical_record_number: string | null }[]) ?? [];
     },
   });
   const pIds = Array.from(new Set((requests.data ?? []).map((r) => r.patient_id)));
   const patients = useQuery({
-    queryKey: ["adm-req-patients", pIds.join(",")],
+    queryKey: ["adm-req-patients", facilityId, pIds.join(",")],
     enabled: pIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase.from("patients" as never).select("id, full_name").in("id", pIds as never);
-      const pendingPager = usePager(pending, 10);
 
   return (data as unknown as { id: string; full_name: string }[]) ?? [];
     },

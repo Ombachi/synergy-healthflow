@@ -21,6 +21,9 @@ import { NotificationBell } from "@/components/notification-bell";
 import { useWorkCounts } from "@/hooks/use-notifications";
 import { canAccess } from "@/lib/role-permissions";
 import type { AppRole } from "@/hooks/use-auth";
+import { FacilitySwitcher } from "@/components/facility-switcher";
+import { useFacility } from "@/components/facility-context";
+import { isModuleEnabled } from "@/lib/facilities";
 
 // ============================================================================
 // Per-role sidebar visibility rules.
@@ -363,6 +366,7 @@ const GROUPS: Group[] = [
     key: "admin", label: "Administration", icon: ShieldCheck,
     items: [
       { title: "User management", url: "/users", icon: ShieldCheck },
+      { title: "Facilities", url: "/admin/facilities", icon: ShieldCheck },
       { title: "Rostering", url: "/roster", icon: CalendarDays },
       { title: "Audit log", url: "/audit", icon: Shield },
       { title: "Soft-deleted", url: "/admin/soft-deleted", icon: Archive },
@@ -390,6 +394,8 @@ function AuthedLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, roles, loading: authLoading } = useAuth();
+  const { activeFacility, enabledModules, loading: facilityLoading, error: facilityError, roles: facilityRoles } = useFacility();
+  const accessRoles = isAdminRole(roles) ? roles : facilityRoles;
   const work = useWorkCounts();
   const isAdmin = roles.includes("admin");
 
@@ -430,7 +436,7 @@ function AuthedLayout() {
   // Single bootstrap gate: never render role-dependent chrome (or the page
   // beneath it) until roles are resolved. This is what stops the sidebar and
   // dashboards from flashing the previous/incorrect role view.
-  if (authLoading) {
+  if (authLoading || facilityLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -454,7 +460,7 @@ function AuthedLayout() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {STANDALONE
-                    .filter((it) => canAccess(it.url, roles))
+                    .filter((it) => canAccess(it.url, accessRoles, enabledModules))
                     .filter((it) => isItemVisibleForRoles(it.url, null, roles))
                     .map((it) => (
                     <SidebarMenuItem key={it.url}>
@@ -472,7 +478,7 @@ function AuthedLayout() {
 
             {GROUPS.map((group) => {
               const visibleItems = group.items
-                .filter((it) => canAccess(it.url, roles) || it.url.startsWith("/coming-soon/"))
+                .filter((it) => canAccess(it.url, accessRoles, enabledModules))
                 .filter((it) => !(isAdmin && it.hideForAdmin))
                 .filter((it) => isItemVisibleForRoles(it.url, group.key, roles));
               if (visibleItems.length === 0 && !group.alwaysShow) return null;
@@ -548,14 +554,16 @@ function AuthedLayout() {
           </SidebarFooter>
         </Sidebar>
 
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex h-12 items-center justify-between border-b px-2">
             <SidebarTrigger />
-            <div className="flex items-center gap-1"><SyncCenter /><NotificationBell /></div>
+            <div className="flex min-w-0 items-center gap-1"><FacilitySwitcher /><SyncCenter /><NotificationBell /></div>
           </header>
 
           <main className="flex-1 p-6">
-            <Outlet />
+            {facilityError ? <p role="alert" className="text-sm text-destructive">{facilityError}</p> :
+              canAccess(pathname, accessRoles, enabledModules) ? <Outlet key={activeFacility.id} /> :
+              <div className="space-y-3"><h1 className="text-xl font-semibold">Module unavailable</h1><p className="text-sm text-muted-foreground">This page is not enabled for your role or the selected facility.</p><Button asChild variant="outline"><Link to="/dashboard">Back to dashboard</Link></Button></div>}
           </main>
         </div>
       </div>
@@ -566,3 +574,5 @@ function AuthedLayout() {
 function resolveUrl(it: Item, isAdmin: boolean): string {
   return isAdmin && it.dept ? `/department/${it.dept}` : it.url;
 }
+
+function isAdminRole(roles: AppRole[]) { return roles.includes("admin"); }

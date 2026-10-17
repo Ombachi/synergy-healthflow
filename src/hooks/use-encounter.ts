@@ -1,3 +1,5 @@
+import { useFacility } from "@/components/facility-context";
+import { operationalScope } from "@/lib/facility-scope";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,13 +14,12 @@ import { supabase } from "@/integrations/supabase/client";
 export type EncounterType = "outpatient" | "inpatient";
 
 export function useEncounterMap() {
+  const { activeFacility } = useFacility();
   return useQuery({
-    queryKey: ["encounter-map"],
+    queryKey: ["encounter-map", activeFacility.id],
     staleTime: 30_000,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("admissions" as never)
-        .select("visit_id, discharged_at")
+      const { data, error } = await operationalScope("admissions", activeFacility.id, "visit_id, discharged_at")
         .is("discharged_at", null);
       if (error) throw error;
       const inpatient = new Set<string>();

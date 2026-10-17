@@ -1,3 +1,5 @@
+import { useFacility } from "@/components/facility-context";
+import { operationalScope } from "@/lib/facility-scope";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,7 +19,7 @@ import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/
 import { EncounterTabs } from "@/components/encounter-tabs";
 import { isSearching, startOfTodayISO } from "@/lib/today-scope";
 
-export const Route = createFileRoute("/_authenticated/lab")({ component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
+export const Route = createFileRoute("/_authenticated/lab")({ head: () => ({ meta: [{ title: "Lab | Litu Vault" }, { name: "description", content: "Lab workspace for the selected healthcare facility." }, { property: "og:title", content: "Lab | Litu Vault" }, { property: "og:description", content: "Lab workspace for the selected healthcare facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
 
 interface Test { id: string; code: string; name: string; specimen: string | null; container: string | null; units: string | null; reference_range: string | null }
 interface Order { id: string; visit_id: string | null; patient_id: string; test_id: string; status: string; priority: string; clinical_notes: string | null; created_at: string }
@@ -27,6 +29,8 @@ interface Tmpl { id: string; test_id: string; parameter_name: string; units: str
 interface ValueRow { id: string; order_id: string; template_id: string | null; parameter_name: string; value_text: string | null; value_numeric: number | null; units: string | null; reference_range: string | null; abnormal_flag: string | null }
 
 function LabPortal() {
+  const { activeFacility } = useFacility();
+  const facilityId = activeFacility.id;
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
   const canWork = hasAnyRole(["lab_tech", "admin"]);
@@ -39,37 +43,38 @@ function LabPortal() {
   const term = search.trim();
   const searching = isSearching(term);
   // Default: today's orders only; history reachable through patient search.
-  const orders = useQuery({ queryKey: ["lab-orders", searching ? term.toLowerCase() : "today"], queryFn: async () => {
+  const orders = useQuery({ queryKey: ["lab-orders", facilityId, searching ? term.toLowerCase() : "today"], queryFn: async () => {
     if (searching) {
       const like = `%${term}%`;
-      const { data: pts } = await supabase.from("patients" as never).select("id")
+      const { data: pts } = await supabase.from("patients" as never).select("id").eq("facility_id", facilityId)
         .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(50);
       const pids = ((pts as unknown as { id: string }[]) ?? []).map((p) => p.id);
       const { data: tst } = await supabase.from("lab_tests_catalog" as never).select("id").ilike("name", like).limit(50);
       const tids = ((tst as unknown as { id: string }[]) ?? []).map((t) => t.id);
       const ors = [pids.length ? `patient_id.in.(${pids.join(",")})` : "", tids.length ? `test_id.in.(${tids.join(",")})` : ""].filter(Boolean);
       if (!ors.length) return [];
-      const { data, error } = await supabase.from("lab_orders" as never).select("*").or(ors.join(",")).order("created_at", { ascending: false }).limit(200);
+      const { data, error } = await operationalScope("lab_orders", facilityId).or(ors.join(",")).order("created_at", { ascending: false }).limit(200);
       if (error) throw error; return (data as unknown as Order[]) ?? [];
     }
-    const { data, error } = await supabase.from("lab_orders" as never).select("*").gte("created_at", startOfTodayISO()).order("created_at", { ascending: false });
+    const { data, error } = await operationalScope("lab_orders", facilityId).gte("created_at", startOfTodayISO()).order("created_at", { ascending: false });
     if (error) throw error; return (data as unknown as Order[]) ?? [];
   }});
-  const tests = useQuery({ queryKey: ["lab-tests"], queryFn: async () => {
+  const tests = useQuery({ queryKey: ["lab-tests", facilityId], queryFn: async () => {
     const { data, error } = await supabase.from("lab_tests_catalog" as never).select("*").order("name");
     if (error) throw error; return (data as unknown as Test[]) ?? [];
   }});
   const orderPids = Array.from(new Set((orders.data ?? []).map((o) => o.patient_id).filter(Boolean)));
-  const patients = useQuery({ queryKey: ["lab-patients", orderPids.join(",")], enabled: orderPids.length > 0, queryFn: async () => {
+  const patients = useQuery({ queryKey: ["lab-patients", facilityId, orderPids.join(",")], enabled: orderPids.length > 0, queryFn: async () => {
     const { data, error } = await supabase.from("patients" as never).select("id, full_name").in("id", orderPids as never);
     if (error) throw error; return (data as unknown as Patient[]) ?? [];
   }});
-  const samples = useQuery({ queryKey: ["lab-samples-all"], queryFn: async () => {
-    const { data, error } = await supabase.from("lab_samples" as never).select("*");
+  const orderIds = (orders.data ?? []).map((o) => o.id);
+  const samples = useQuery({ queryKey: ["lab-samples-all", facilityId, orderIds.join(",")], enabled: orderIds.length > 0, queryFn: async () => {
+    const { data, error } = await supabase.from("lab_samples" as never).select("*").in("order_id", orderIds as never);
     if (error) throw error; return (data as unknown as Sample[]) ?? [];
   }});
-  const allValues = useQuery({ queryKey: ["lab-values-all"], queryFn: async () => {
-    const { data, error } = await supabase.from("lab_result_values" as never).select("*");
+  const allValues = useQuery({ queryKey: ["lab-values-all", facilityId, orderIds.join(",")], enabled: orderIds.length > 0, queryFn: async () => {
+    const { data, error } = await supabase.from("lab_result_values" as never).select("*").in("order_id", orderIds as never);
     if (error) throw error; return (data as unknown as ValueRow[]) ?? [];
   }});
 
@@ -106,7 +111,7 @@ function LabPortal() {
 
   // Per-test template
   const template = useQuery({
-    queryKey: ["lab-tpl", selected?.test_id],
+    queryKey: ["lab-tpl", facilityId, selected?.test_id],
     enabled: !!selected?.test_id,
     queryFn: async () => {
       const { data, error } = await supabase.from("lab_result_templates" as never)
@@ -117,7 +122,7 @@ function LabPortal() {
 
   // Patient of selected order (for gender/age-dependent reference ranges)
   const selPatient = useQuery({
-    queryKey: ["lab-patient-full", selected?.patient_id],
+    queryKey: ["lab-patient-full", facilityId, selected?.patient_id],
     enabled: !!selected?.patient_id,
     queryFn: async () => {
       const { data } = await supabase.from("patients" as never)

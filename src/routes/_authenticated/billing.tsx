@@ -1,3 +1,5 @@
+import { useFacility } from "@/components/facility-context";
+import { operationalScope } from "@/lib/facility-scope";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +18,7 @@ import { initiateMpesaPayment, getMpesaPaymentStatus } from "@/lib/mpesa.functio
 import { Pager, usePager } from "@/components/pager";
 import { isSearching, startOfTodayISO, TODAY_EMPTY_MESSAGE } from "@/lib/today-scope";
 
-export const Route = createFileRoute("/_authenticated/billing")({ component: BillingPage });
+export const Route = createFileRoute("/_authenticated/billing")({ head: () => ({ meta: [{ title: "Billing | Litu Vault" }, { name: "description", content: "Billing workspace for the selected healthcare facility." }, { property: "og:title", content: "Billing | Litu Vault" }, { property: "og:description", content: "Billing workspace for the selected healthcare facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: BillingPage });
 
 interface Invoice { id: string; visit_id: string | null; patient_id: string; total_cents: number; paid_cents: number; status: string; created_at: string }
 interface InvoiceItem { id: string; invoice_id: string; description: string; kind: string; qty: number; unit_price_cents: number; amount_cents: number }
@@ -28,6 +30,8 @@ interface Profile { id: string; full_name: string | null }
 const money = (c: number) => (c/100).toLocaleString("en-GB", { style: "currency", currency: "KES" });
 
 function BillingPage() {
+  const { activeFacility } = useFacility();
+  const facilityId = activeFacility.id;
   const qc = useQueryClient();
   const { user } = useAuth();
   const [payOpen, setPayOpen] = useState<Invoice | null>(null);
@@ -42,19 +46,19 @@ function BillingPage() {
   // Default: only today's invoices. Older invoices are reachable via search
   // (patient name / MRN) — history is never bulk-loaded into the browser.
   const invoices = useQuery({
-    queryKey: ["invoices", searching ? term.toLowerCase() : "today"],
+    queryKey: ["invoices", facilityId, searching ? term.toLowerCase() : "today"],
     queryFn: async () => {
       if (searching) {
         const like = `%${term}%`;
-        const { data: pts } = await supabase.from("patients" as never).select("id")
+        const { data: pts } = await supabase.from("patients" as never).select("id").eq("facility_id", facilityId)
           .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(50);
         const pids = ((pts as unknown as { id: string }[]) ?? []).map((p) => p.id);
         if (!pids.length) return [];
-        const { data, error } = await supabase.from("invoices" as never).select("*").in("patient_id", pids as never).order("created_at", { ascending: false }).limit(200);
+        const { data, error } = await operationalScope("invoices", facilityId).in("patient_id", pids as never).order("created_at", { ascending: false }).limit(200);
         if (error) throw error;
         return (data as unknown as Invoice[]) ?? [];
       }
-      const { data, error } = await supabase.from("invoices" as never).select("*").gte("created_at", startOfTodayISO()).order("created_at", { ascending: false }).limit(500);
+      const { data, error } = await operationalScope("invoices", facilityId).gte("created_at", startOfTodayISO()).order("created_at", { ascending: false }).limit(500);
       if (error) throw error;
       return (data as unknown as Invoice[]) ?? [];
     },
@@ -62,7 +66,7 @@ function BillingPage() {
   const invoiceIds = (invoices.data ?? []).map((i) => i.id);
   const invoicePids = Array.from(new Set((invoices.data ?? []).map((i) => i.patient_id).filter(Boolean)));
   const items = useQuery({
-    queryKey: ["invoice-items", invoiceIds.join(",")],
+    queryKey: ["invoice-items", facilityId, invoiceIds.join(",")],
     enabled: invoiceIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase.from("invoice_items" as never).select("*").in("invoice_id", invoiceIds as never);
@@ -71,7 +75,7 @@ function BillingPage() {
     },
   });
   const payments = useQuery({
-    queryKey: ["payments", invoiceIds.join(",")],
+    queryKey: ["payments", facilityId, invoiceIds.join(",")],
     enabled: invoiceIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase.from("payments" as never).select("*").in("invoice_id", invoiceIds as never).order("received_at", { ascending: false });
@@ -80,7 +84,7 @@ function BillingPage() {
     },
   });
   const patients = useQuery({
-    queryKey: ["bill-patients", invoicePids.join(",")],
+    queryKey: ["bill-patients", facilityId, invoicePids.join(",")],
     enabled: invoicePids.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number").in("id", invoicePids as never);
@@ -89,15 +93,15 @@ function BillingPage() {
     },
   });
   const visits = useQuery({
-    queryKey: ["bill-visits"],
+    queryKey: ["bill-visits", facilityId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("visits" as never).select("id, assigned_doctor_id, current_stage");
+      const { data, error } = await supabase.from("visits" as never).select("id, assigned_doctor_id, current_stage").eq("facility_id", facilityId);
       if (error) throw error;
       return (data as unknown as Visit[]) ?? [];
     },
   });
   const profiles = useQuery({
-    queryKey: ["bill-profiles"],
+    queryKey: ["bill-profiles", facilityId],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles" as never).select("id, full_name");
       if (error) throw error;
@@ -106,9 +110,9 @@ function BillingPage() {
   });
   // Inpatient encounters — used to label and separate inpatient vs outpatient bills.
   const admissions = useQuery({
-    queryKey: ["bill-admissions"],
+    queryKey: ["bill-admissions", facilityId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("admissions" as never).select("visit_id");
+      const { data, error } = await operationalScope("admissions", facilityId, "visit_id");
       if (error) throw error;
       return (data as unknown as { visit_id: string | null }[]) ?? [];
     },
