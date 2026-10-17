@@ -2,11 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { ShieldAlert } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { canAccess } from "@/lib/role-permissions";
+import { useFacility } from "@/components/facility-context";
 
 export function RoleGate({ path, children }: { path: string; children: React.ReactNode }) {
   const { roles, loading } = useAuth();
+  const { enabledModules } = useFacility();
   if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!canAccess(path, roles)) {
+  if (!canAccess(path, roles, enabledModules)) {
     return (
       <div className="mx-auto max-w-md rounded-lg border bg-card p-6 text-center">
         <ShieldAlert className="mx-auto h-10 w-10 text-amber-500" />

@@ -1,4 +1,5 @@
 import type { AppRole } from "@/hooks/use-auth";
+import { isModuleEnabled, type ModuleKey } from "@/lib/facilities";
 
 /**
  * Canonical set of clinical roles — anyone directly involved in delivering
@@ -152,6 +153,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/admin/access-reviews": [],
   "/admin/errors": [],
   "/admin/portal-invitations": [],
+  "/admin/facilities": [],
 };
 
 
@@ -198,7 +200,8 @@ export const ALWAYS_VISIBLE = new Set<string>([
 ]);
 
 
-export function canAccess(path: string, roles: AppRole[]): boolean {
+export function canAccess(path: string, roles: AppRole[], modules?: Partial<Record<ModuleKey, boolean>>): boolean {
+  if (!isModuleEnabled(path, modules)) return false;
   if (ALWAYS_VISIBLE.has(path)) return true;
   if (roles.includes("admin")) return true;
   const allowed = ROUTE_ROLES[path];
