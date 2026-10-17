@@ -1,3 +1,5 @@
+import { useFacility } from "@/components/facility-context";
+import { operationalScope } from "@/lib/facility-scope";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -20,17 +22,18 @@ const OPEN_STATUSES = ["requested", "pharmacy_review", "clinician_review", "appr
  * inventory movement, then the source order's refill counter is advanced.
  */
 export function RefillQueue() {
+  const { activeFacility } = useFacility();
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
   const canAct = hasAnyRole(["pharmacist", "admin"]);
   const [dispensing, setDispensing] = useState<RefillRequestRow | null>(null);
   const [form, setForm] = useState({ inventory_item_id: "", quantity: 0 });
 
-  const requests = useQuery({ queryKey: ["refill-requests"], queryFn: () => fetchRefillRequests() });
+  const requests = useQuery({ queryKey: ["refill-requests", activeFacility.id], queryFn: () => fetchRefillRequests(undefined, activeFacility.id) });
   const inv = useQuery({
-    queryKey: ["refill-inv"],
+    queryKey: ["refill-inv", activeFacility.id],
     queryFn: async () => {
-      const { data } = await supabase.from("inventory_items" as never).select("id, name, quantity").order("name");
+      const { data } = await operationalScope("inventory_items", activeFacility.id, "id, name, quantity").order("name");
       return (data as unknown as InvItem[]) ?? [];
     },
   });

@@ -1,3 +1,5 @@
+import { useFacility } from "@/components/facility-context";
+import { operationalScope } from "@/lib/facility-scope";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,13 +19,15 @@ import { EncounterTabs } from "@/components/encounter-tabs";
 import { Pager, usePager } from "@/components/pager";
 import { isSearching, startOfTodayISO, TODAY_EMPTY_MESSAGE } from "@/lib/today-scope";
 
-export const Route = createFileRoute("/_authenticated/radiology")({ component: () => <RoleGate path="/radiology"><RadPortal /></RoleGate> });
+export const Route = createFileRoute("/_authenticated/radiology")({ head: () => ({ meta: [{ title: "Radiology | Litu Vault" }, { name: "description", content: "Radiology workspace for the selected healthcare facility." }, { property: "og:title", content: "Radiology | Litu Vault" }, { property: "og:description", content: "Radiology workspace for the selected healthcare facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <RoleGate path="/radiology"><RadPortal /></RoleGate> });
 
 interface ImgOrder { id: string; visit_id: string | null; patient_id: string; modality: string; body_part: string | null; clinical_question: string | null; status: string; priority: string; scheduled_at: string | null; performed_at: string | null; findings: string | null; report: string | null; image_path: string | null; created_at: string }
 interface Patient { id: string; full_name: string }
 interface RadTemplate { id: string; modality: string; name: string; technique: string | null; findings_template: string; impression_template: string | null }
 
 function RadPortal() {
+  const { activeFacility } = useFacility();
+  const facilityId = activeFacility.id;
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
   const canWork = hasAnyRole(["radiologist", "admin"]);
@@ -35,27 +39,27 @@ function RadPortal() {
   const searching = isSearching(term);
   // Default: today's imaging orders; history reachable through search.
   const orders = useQuery({
-    queryKey: ["img-orders", searching ? term.toLowerCase() : "today"],
+    queryKey: ["img-orders", facilityId, searching ? term.toLowerCase() : "today"],
     queryFn: async () => {
       if (searching) {
         const like = `%${term}%`;
-        const { data: pts } = await supabase.from("patients" as never).select("id")
+        const { data: pts } = await supabase.from("patients" as never).select("id").eq("facility_id", facilityId)
           .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(50);
         const pids = ((pts as unknown as { id: string }[]) ?? []).map((p) => p.id);
         const ors = [`modality.ilike.${like}`, `body_part.ilike.${like}`];
         if (pids.length) ors.push(`patient_id.in.(${pids.join(",")})`);
-        const { data, error } = await supabase.from("imaging_orders" as never).select("*").or(ors.join(",")).order("created_at", { ascending: false }).limit(200);
+        const { data, error } = await operationalScope("imaging_orders", facilityId).or(ors.join(",")).order("created_at", { ascending: false }).limit(200);
         if (error) throw error;
         return (data as unknown as ImgOrder[]) ?? [];
       }
-      const { data, error } = await supabase.from("imaging_orders" as never).select("*").gte("created_at", startOfTodayISO()).order("created_at", { ascending: false });
+      const { data, error } = await operationalScope("imaging_orders", facilityId).gte("created_at", startOfTodayISO()).order("created_at", { ascending: false });
       if (error) throw error;
       return (data as unknown as ImgOrder[]) ?? [];
     },
   });
   const orderPids = Array.from(new Set((orders.data ?? []).map((o) => o.patient_id).filter(Boolean)));
   const patients = useQuery({
-    queryKey: ["rad-patients", orderPids.join(",")],
+    queryKey: ["rad-patients", facilityId, orderPids.join(",")],
     enabled: orderPids.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase.from("patients" as never).select("id, full_name").in("id", orderPids as never);
@@ -94,7 +98,7 @@ function RadPortal() {
   // a report dialog pop up every time the dashboard was visited.
 
   const templates = useQuery({
-    queryKey: ["rad-templates"],
+    queryKey: ["rad-templates", facilityId],
     staleTime: 300_000,
     queryFn: async () => {
       const { data, error } = await supabase

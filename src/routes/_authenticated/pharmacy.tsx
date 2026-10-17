@@ -1,3 +1,5 @@
+import { useFacility } from "@/components/facility-context";
+import { operationalScope } from "@/lib/facility-scope";
 import { createFileRoute } from "@tanstack/react-router";
 import { Pager, usePager } from "@/components/pager";
 import { useState, useMemo } from "react";
@@ -20,13 +22,15 @@ import { EncounterTabs } from "@/components/encounter-tabs";
 import { RefillQueue } from "@/components/chronic/refill-queue";
 import { isSearching, startOfTodayISO, TODAY_EMPTY_MESSAGE } from "@/lib/today-scope";
 
-export const Route = createFileRoute("/_authenticated/pharmacy")({ component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
+export const Route = createFileRoute("/_authenticated/pharmacy")({ head: () => ({ meta: [{ title: "Pharmacy | Litu Vault" }, { name: "description", content: "Pharmacy workspace for the selected healthcare facility." }, { property: "og:title", content: "Pharmacy | Litu Vault" }, { property: "og:description", content: "Pharmacy workspace for the selected healthcare facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <RoleGate path="/pharmacy"><PharmacyPortal /></RoleGate> });
 
 interface Rx { id: string; visit_id: string; medication: string; dose: string | null; frequency: string | null; duration: string | null; instructions: string | null; created_at: string }
 interface Dispense { id: string; prescription_id: string; quantity: number; status: string; dispensed_at: string; inventory_item_id: string | null }
 interface InvItem { id: string; name: string; sku: string | null; quantity: number; reorder_threshold: number; category: string | null }
 
 function PharmacyPortal() {
+  const { activeFacility } = useFacility();
+  const facilityId = activeFacility.id;
   const qc = useQueryClient();
   const { user, hasAnyRole } = useAuth();
   const canDispense = hasAnyRole(["pharmacist", "admin"]);
@@ -40,22 +44,22 @@ function PharmacyPortal() {
   const searching = isSearching(term);
   // Default: only today's prescriptions. Older ones are reachable via search
   // (patient name / MRN / medication) — history is never bulk-loaded.
-  const rx = useQuery({ queryKey: ["pharm-rx", searching ? term.toLowerCase() : "today"], queryFn: async () => {
+  const rx = useQuery({ queryKey: ["pharm-rx", facilityId, searching ? term.toLowerCase() : "today"], queryFn: async () => {
     if (searching) {
       const like = `%${term}%`;
-      const { data: pts } = await supabase.from("patients" as never).select("id")
+      const { data: pts } = await supabase.from("patients" as never).select("id").eq("facility_id", facilityId)
         .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(50);
       const pids = ((pts as unknown as { id: string }[]) ?? []).map((p) => p.id);
       let vids: string[] = [];
       if (pids.length) {
-        const { data: vs } = await supabase.from("visits" as never).select("id").in("patient_id", pids as never).limit(500);
+        const { data: vs } = await supabase.from("visits" as never).select("id").eq("facility_id", facilityId).in("patient_id", pids as never).limit(500);
         vids = ((vs as unknown as { id: string }[]) ?? []).map((v) => v.id);
       }
-      const byMed = await supabase.from("prescriptions" as never).select("*").ilike("medication", like).order("created_at", { ascending: false }).limit(100);
+      const byMed = await operationalScope("prescriptions", facilityId).ilike("medication", like).order("created_at", { ascending: false }).limit(100);
       if (byMed.error) throw byMed.error;
       let byPatient: Rx[] = [];
       if (vids.length) {
-        const r = await supabase.from("prescriptions" as never).select("*").in("visit_id", vids as never).order("created_at", { ascending: false }).limit(200);
+        const r = await operationalScope("prescriptions", facilityId).in("visit_id", vids as never).order("created_at", { ascending: false }).limit(200);
         if (r.error) throw r.error;
         byPatient = (r.data as unknown as Rx[]) ?? [];
       }
@@ -63,21 +67,22 @@ function PharmacyPortal() {
       [...byPatient, ...((byMed.data as unknown as Rx[]) ?? [])].forEach((r) => map.set(r.id, r));
       return Array.from(map.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
     }
-    const { data, error } = await supabase.from("prescriptions" as never).select("*").gte("created_at", startOfTodayISO()).order("created_at", { ascending: false }).limit(300);
+    const { data, error } = await operationalScope("prescriptions", facilityId).gte("created_at", startOfTodayISO()).order("created_at", { ascending: false }).limit(300);
     if (error) throw error; return (data as unknown as Rx[]) ?? [];
   }});
-  const dispenses = useQuery({ queryKey: ["pharm-disp"], queryFn: async () => {
-    const { data, error } = await supabase.from("pharmacy_dispenses" as never).select("*").order("dispensed_at", { ascending: false }).limit(1000);
+  const rxIds = (rx.data ?? []).map((r) => r.id);
+  const dispenses = useQuery({ queryKey: ["pharm-disp", facilityId, rxIds.join(",")], enabled: rxIds.length > 0, queryFn: async () => {
+    const { data, error } = await supabase.from("pharmacy_dispenses" as never).select("*").in("prescription_id", rxIds as never).order("dispensed_at", { ascending: false }).limit(1000);
     if (error) throw error; return (data as unknown as Dispense[]) ?? [];
   }});
-  const inv = useQuery({ queryKey: ["pharm-inv"], queryFn: async () => {
-    const { data, error } = await supabase.from("inventory_items" as never).select("*").order("name");
+  const inv = useQuery({ queryKey: ["pharm-inv", facilityId], queryFn: async () => {
+    const { data, error } = await operationalScope("inventory_items", facilityId).order("name");
     if (error) throw error; return (data as unknown as InvItem[]) ?? [];
   }});
 
   const visitIds = Array.from(new Set((rx.data ?? []).map((r) => r.visit_id).filter(Boolean)));
   const visitPatients = useQuery({
-    queryKey: ["pharm-visit-patients", visitIds.join(",")], enabled: visitIds.length > 0,
+    queryKey: ["pharm-visit-patients", facilityId, visitIds.join(",")], enabled: visitIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase.from("visits" as never).select("id, patient_id").in("id", visitIds as never);
       const vs = (data as unknown as { id: string; patient_id: string }[]) ?? [];
