@@ -6,6 +6,7 @@ import {
 } from "@/lib/facilities";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "@/hooks/use-auth";
+import { ALL_ROLES } from "@/hooks/use-auth";
 import { setPdfFacility } from "@/lib/pdf-brand";
 import { useAuthContext } from "@/components/auth-provider";
 
@@ -52,21 +53,23 @@ export function FacilityProvider({ children }: { children: ReactNode }) {
 
   // Prefer the branches saved in the database once signed in.
   useEffect(() => {
-    if (!auth?.user) { setLoading(false); return; }
+    if (auth?.loading) { setLoading(true); return; }
+    const userId = auth?.user?.id;
+    if (!userId) { setAll([]); setMemberships([]); setError(null); setLoading(false); return; }
     setLoading(true); setError(null);
     let cancelled = false;
     (async () => {
       const [facResult, modResult, memberResult] = await Promise.all([
         supabase.from("facilities").select("*").order("created_at"),
         supabase.from("facility_modules").select("facility_id, module, enabled"),
-        supabase.from("user_facilities").select("facility_id, role, is_primary").eq("user_id", auth.user.id),
+        supabase.from("user_facilities").select("facility_id, role, is_primary").eq("user_id", userId),
       ]);
       if (cancelled) return;
       if (facResult.error || modResult.error || memberResult.error) throw new Error("Unable to load your facilities. Please try again when the database is available.");
       const facs = facResult.data ?? [];
       const mods = modResult.data ?? [];
       const memberRows = memberResult.data ?? [];
-      setMemberships(memberRows);
+      setMemberships(memberRows.map((m) => ({ ...m, role: ALL_ROLES.find((r) => r === m.role) ?? null })));
       if (!facs.length) throw new Error("No facilities are assigned to your account.");
       const local = loadFacilities();
       const mapped: Facility[] = facs.map((f) => {
@@ -100,10 +103,9 @@ export function FacilityProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     })().catch(() => { if (!cancelled) { setAll([]); setError("Unable to load an authorized facility. Check the database connection and staff assignments, then refresh."); setLoading(false); } });
     return () => { cancelled = true; };
-  }, [auth?.user?.id, isAdmin, revision]);
+  }, [auth?.user?.id, auth?.loading, isAdmin, revision]);
 
-  // Admins can see every branch; staff only active ones. Until the
-  // user_facilities table exists, staff get all active branches.
+  // Only database-authorized branches can be selected.
   const available = useMemo(() => (isAdmin ? all : all.filter((f) => f.is_active && memberships.some((m) => m.facility_id === f.id))), [all, isAdmin, memberships]);
   const activeFacility = available.find((f) => f.id === activeId) ?? available[0] ?? FALLBACK_FACILITIES[0];
 
@@ -119,7 +121,7 @@ export function FacilityProvider({ children }: { children: ReactNode }) {
 
   const value: FacilityState = {
     loading, error, refresh,
-    roles: isAdmin ? (auth?.roles ?? []) : memberships.find((m) => m.facility_id === activeFacility.id)?.role ? [memberships.find((m) => m.facility_id === activeFacility.id)?.role as AppRole] : (auth?.roles ?? []),
+    roles: isAdmin ? (auth?.roles ?? []) : memberships.find((m) => m.facility_id === activeFacility.id)?.role ? memberships.filter((m) => m.facility_id === activeFacility.id).flatMap((m) => m.role ? [m.role] : []) : (auth?.roles ?? []),
     activeFacility,
     availableFacilities: available,
     allFacilities: all,

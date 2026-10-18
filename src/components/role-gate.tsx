@@ -5,9 +5,9 @@ import { canAccess } from "@/lib/role-permissions";
 import { useFacility } from "@/components/facility-context";
 
 export function RoleGate({ path, children }: { path: string; children: React.ReactNode }) {
-  const { roles, loading } = useAuth();
-  const { enabledModules } = useFacility();
-  if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  const { loading } = useAuth();
+  const { enabledModules, roles, loading: facilityLoading } = useFacility();
+  if (loading || facilityLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (!canAccess(path, roles, enabledModules)) {
     return (
       <div className="mx-auto max-w-md rounded-lg border bg-card p-6 text-center">
