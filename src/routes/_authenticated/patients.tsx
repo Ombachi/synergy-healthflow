@@ -16,6 +16,13 @@ import { useFacility } from "@/components/facility-context";
 import { isSearching, fetchTodayPatientIds } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/patients")({
+  head: () => ({ meta: [
+    { title: "Patient directory | Litu Vault" },
+    { name: "description", content: "Patient demographics and today's facility encounters in Litu Vault." },
+    { property: "og:title", content: "Patient directory | Litu Vault" },
+    { property: "og:description", content: "Facility-scoped patient directory in Litu Vault." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: () => (
     <RoleGate path="/patients">
       <PatientsPage />
@@ -62,13 +69,14 @@ function PatientsPage() {
   // historical dataset is never sent to the browser — it is reachable only
   // through an explicit server-side search.
   const patients = useQuery({
-    queryKey: ["patient-directory", searching ? term.toLowerCase() : "today"],
+    queryKey: ["patient-directory", activeFacility.id, searching ? term.toLowerCase() : "today"],
     queryFn: async () => {
       if (searching) {
         const like = `%${term}%`;
         const { data, error } = await supabase
           .from("patients" as never)
           .select(MASKED_COLS)
+          .eq("facility_id", activeFacility.id)
           .is("deleted_at", null)
           .or(
             `full_name.ilike.${like},medical_record_number.ilike.${like},phone.ilike.${like},id_number.ilike.${like},email.ilike.${like}`,
@@ -78,7 +86,7 @@ function PatientsPage() {
         if (error) throw error;
         return (data as unknown as PatientRow[]) ?? [];
       }
-      const ids = await fetchTodayPatientIds();
+      const ids = await fetchTodayPatientIds(activeFacility.id);
       if (ids.length === 0) return [];
       const { data, error } = await supabase
         .from("patients" as never)

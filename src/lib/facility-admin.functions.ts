@@ -21,6 +21,14 @@ export const saveFacility = createServerFn({ method: "POST" })
     const query = id ? context.supabase.from("facilities").update(values).eq("id", id) : context.supabase.from("facilities").insert(values);
     const result = await query.select("id").single();
     if (result.error) throw new Error(result.error.code === "23505" ? "Branch code already exists." : "Unable to save this facility.");
+    const modules = data.settings.modules;
+    if (modules && typeof modules === "object") {
+      const moduleResult = await context.supabase.from("facility_modules").upsert(
+        Object.entries(modules).map(([module, enabled]) => ({ facility_id: result.data.id, module, enabled, updated_at: new Date().toISOString() })),
+        { onConflict: "facility_id,module" },
+      );
+      if (moduleResult.error) throw new Error("Facility details saved, but module settings could not be saved. Reopen the facility and try again.");
+    }
     return result.data;
   });
 

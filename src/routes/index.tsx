@@ -19,6 +19,7 @@ export const Route = createFileRoute("/")({
           "Encrypted, audited, and role-gated health records for clinicians, athletes, and administrators.",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Landing,
