@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  FACILITIES_EVENT, FALLBACK_FACILITIES, loadActiveFacilityId, loadFacilities, saveActiveFacilityId,
+  FALLBACK_FACILITIES, loadActiveFacilityId, loadFacilities, saveActiveFacilityId,
   modulesForTier, type Facility, type ModuleKey, type Tier,
 } from "@/lib/facilities";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,16 +39,8 @@ export function FacilityProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(() => setRevision((n) => n + 1), []);
 
   useEffect(() => {
-    const sync = () => setAll(loadFacilities());
-    sync();
     const stored = loadActiveFacilityId();
     if (stored) setActiveId(stored);
-    window.addEventListener(FACILITIES_EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(FACILITIES_EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
   }, []);
 
   // Prefer the branches saved in the database once signed in.
@@ -56,6 +48,9 @@ export function FacilityProvider({ children }: { children: ReactNode }) {
     if (auth?.loading) { setLoading(true); return; }
     const userId = auth?.user?.id;
     if (!userId) { setAll([]); setMemberships([]); setError(null); setLoading(false); return; }
+    if (auth.roles.length > 0 && auth.roles.every((r) => r === "patient" || r === "athlete")) {
+      setAll([]); setMemberships([]); setError(null); setLoading(false); return;
+    }
     setLoading(true); setError(null);
     let cancelled = false;
     (async () => {
@@ -103,7 +98,7 @@ export function FacilityProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     })().catch(() => { if (!cancelled) { setAll([]); setError("Unable to load an authorized facility. Check the database connection and staff assignments, then refresh."); setLoading(false); } });
     return () => { cancelled = true; };
-  }, [auth?.user?.id, auth?.loading, isAdmin, revision]);
+  }, [auth?.user?.id, auth?.loading, auth?.roles, isAdmin, revision]);
 
   // Only database-authorized branches can be selected.
   const available = useMemo(() => (isAdmin ? all : all.filter((f) => f.is_active && memberships.some((m) => m.facility_id === f.id))), [all, isAdmin, memberships]);
