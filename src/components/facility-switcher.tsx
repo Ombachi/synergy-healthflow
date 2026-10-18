@@ -11,15 +11,17 @@ import { useFacility } from "@/components/facility-context";
 import type { Facility } from "@/lib/facilities";
 
 export function FacilitySwitcher() {
-  const { activeFacility, availableFacilities, setActiveFacility, isMultiFacilityAdmin } = useFacility();
+  const { activeFacility, availableFacilities, setActiveFacility, isMultiFacilityAdmin, error } = useFacility();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<Facility | null>(null);
 
+  if (error || availableFacilities.length === 0) return null;
+
   if (!isMultiFacilityAdmin) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border bg-muted px-2.5 py-1 text-xs font-medium">
-        <Building2 className="h-3.5 w-3.5 text-primary" />
-        {activeFacility.name}
+      <span className="inline-flex min-w-0 max-w-48 items-center gap-1.5 border bg-muted px-2.5 py-1 text-xs font-medium" title={activeFacility.name}>
+        <Building2 className="h-3.5 w-3.5 shrink-0 text-primary" />
+        <span className="truncate">{activeFacility.name}</span>
       </span>
     );
   }

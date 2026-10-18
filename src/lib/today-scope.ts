@@ -38,20 +38,22 @@ export interface TodayVisit {
 }
 
 /** Visits (encounters) opened today, active or completed. */
-export async function fetchTodayVisits(): Promise<TodayVisit[]> {
-  const { data, error } = await supabase
+export async function fetchTodayVisits(facilityId?: string): Promise<TodayVisit[]> {
+  let query = supabase
     .from("visits" as never)
     .select("id, patient_id, status, current_stage, opened_at")
     .gte("opened_at", startOfTodayISO())
     .order("opened_at", { ascending: false });
+  if (facilityId) query = query.eq("facility_id", facilityId);
+  const { data, error } = await query;
   if (error) throw error;
   return ((data as unknown as TodayVisit[]) ?? []).filter(
     (v) => !v.status || ["active", "open", "completed", "closed"].includes(v.status),
   );
 }
 
-export async function fetchTodayPatientIds(): Promise<string[]> {
-  const visits = await fetchTodayVisits();
+export async function fetchTodayPatientIds(facilityId?: string): Promise<string[]> {
+  const visits = await fetchTodayVisits(facilityId);
   return Array.from(new Set(visits.map((v) => v.patient_id).filter(Boolean)));
 }
 

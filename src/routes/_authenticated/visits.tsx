@@ -25,8 +25,15 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Pager, usePager } from "@/components/pager";
+import { useFacility } from "@/components/facility-context";
+import { startOfTodayISO, isSearching } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/visits")({
+  head: () => ({ meta: [
+    { title: "Visits | Litu Vault" }, { name: "description", content: "Clinical encounters for the selected Litu Vault facility." },
+    { property: "og:title", content: "Visits | Litu Vault" }, { property: "og:description", content: "Facility encounter workspace in Litu Vault." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: VisitsRouteShell,
 });
 
@@ -54,6 +61,7 @@ function VisitsRouteShell() {
 }
 
 function Visits() {
+  const { activeFacility } = useFacility();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { user, hasAnyRole } = useAuth();
@@ -64,23 +72,34 @@ function Visits() {
 
 
   const visits = useQuery({
-    queryKey: ["visits"],
+    queryKey: ["visits", activeFacility.id, isSearching(search) ? search.trim() : "today"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("visits" as never)
         .select("id, patient_id, status, reason, chief_complaint, triage_level, opened_at, closed_at")
+        .eq("facility_id", activeFacility.id)
         .order("opened_at", { ascending: false });
+      if (isSearching(search)) {
+        const like = `%${search.trim()}%`;
+        const matches = await supabase.from("patients").select("id")
+          .or(`full_name.ilike.${like},medical_record_number.ilike.${like}`).limit(100);
+        if (matches.error) throw matches.error;
+        const patientIds = (matches.data ?? []).map((p) => p.id);
+        query = query.or(`reason.ilike.${like},chief_complaint.ilike.${like}${patientIds.length ? `,patient_id.in.(${patientIds.join(",")})` : ""}`);
+      } else query = query.gte("opened_at", startOfTodayISO());
+      const { data, error } = await query.limit(300);
       if (error) throw error;
       return (data as unknown as Visit[]) ?? [];
     },
   });
 
   const patients = useQuery({
-    queryKey: ["patients-opt"],
+    queryKey: ["patients-opt", activeFacility.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("patients" as never)
         .select("id, full_name, medical_record_number")
+        .eq("facility_id", activeFacility.id)
         .order("full_name");
       if (error) throw error;
       return (data as unknown as PatientOpt[]) ?? [];
@@ -108,9 +127,11 @@ function Visits() {
   const create = useMutation({
     mutationFn: async () => {
       if (!form.patient_id) throw new Error("Pick a patient");
+      if (!user) throw new Error("Sign in before starting a visit");
       const { data, error } = await supabase.from("visits" as never).insert({
         patient_id: form.patient_id,
-        opened_by: user!.id,
+        opened_by: user.id,
+        facility_id: activeFacility.id,
         reason: form.reason || null,
         chief_complaint: form.chief_complaint || null,
         triage_level: form.triage_level || "routine",
