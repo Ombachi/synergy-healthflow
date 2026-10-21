@@ -1,4 +1,8 @@
-# Facility integration
+# Billing extension and facility integration
+- [ ] Add authenticated payment ledger, sponsor/LPO allocation and reconciliation with database enforcement.
+- [ ] Extend invoice payment controls and add finance views and downloadable LPO packs.
+- [ ] Validate payment rules and verify signed-in payment-to-reconciliation flows; live checks require an available backend.
+- [ ] Enable authorized LPO email delivery; requires a configured sender domain.
 - [x] Mount branch selector and load authorized memberships; resolve preview errors.
 - [x] Enforce module flags in navigation and page access; test role-plus-module rules.
 - [x] Add administrator branch editor, tiers, module persistence and staff assignment controls.
