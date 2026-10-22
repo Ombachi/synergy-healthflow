@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/attendance")({ component: AttendancePage });
+export const Route = createFileRoute("/_authenticated/attendance")({  head: () => ({ meta: [{ title: "Attendance — Litu Vault" }, { name: "description", content: "Attendance workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Attendance — Litu Vault" }, { property: "og:description", content: "Attendance workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: AttendancePage });
 
 interface Att { id: string; user_id: string; clock_in: string | null; clock_out: string | null; department: string | null; notes: string | null }
 

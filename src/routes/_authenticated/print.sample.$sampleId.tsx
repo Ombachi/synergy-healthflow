@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { renderBarcode } from "@/lib/print-codes";
 
 export const Route = createFileRoute("/_authenticated/print/sample/$sampleId")({
+  head: () => ({ meta: [{ title: "Print Sample — Litu Vault" }, { name: "description", content: "Print Sample workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Print Sample — Litu Vault" }, { property: "og:description", content: "Print Sample workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SamplePrint,
 });
 

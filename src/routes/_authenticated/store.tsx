@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { isSearching, startOfTodayISO } from "@/lib/today-scope";
 
 export const Route = createFileRoute("/_authenticated/store")({
+  head: () => ({ meta: [{ title: "Store — Litu Vault" }, { name: "description", content: "Store workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Store — Litu Vault" }, { property: "og:description", content: "Store workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <StoreDashboard />,
 });
 

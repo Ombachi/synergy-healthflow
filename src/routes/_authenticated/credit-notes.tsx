@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/_authenticated/credit-notes")({ component: CreditNotesPage });
+export const Route = createFileRoute("/_authenticated/credit-notes")({  head: () => ({ meta: [{ title: "Credit Notes — Litu Vault" }, { name: "description", content: "Credit Notes workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Credit Notes — Litu Vault" }, { property: "og:description", content: "Credit Notes workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: CreditNotesPage });
 
 interface CreditNote {
   id: string;

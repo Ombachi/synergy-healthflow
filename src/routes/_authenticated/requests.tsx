@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/requests")({ component: RequestsPage });
+export const Route = createFileRoute("/_authenticated/requests")({  head: () => ({ meta: [{ title: "Requests — Litu Vault" }, { name: "description", content: "Requests workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Requests — Litu Vault" }, { property: "og:description", content: "Requests workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: RequestsPage });
 
 const CATEGORIES = ["equipment", "it_support", "hr", "procurement", "maintenance"] as const;
 type Cat = (typeof CATEGORIES)[number];

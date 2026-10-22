@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/leave-inbox")({ component: LeaveInbox });
+export const Route = createFileRoute("/_authenticated/leave-inbox")({  head: () => ({ meta: [{ title: "Leave Inbox — Litu Vault" }, { name: "description", content: "Leave Inbox workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Leave Inbox — Litu Vault" }, { property: "og:description", content: "Leave Inbox workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: LeaveInbox });
 
 interface LR { id: string; employee_id: string; status: string; start_date: string; end_date: string; days: number; reason: string | null; approver_comment: string | null }
 

@@ -5,7 +5,8 @@ import { ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/admin/errors")({ component: ErrorsPage });
+export const Route = createFileRoute("/_authenticated/admin/errors")({  head: () => ({ meta: [{ title: "Admin Errors — Litu Vault" }, { name: "description", content: "Admin Errors workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Admin Errors — Litu Vault" }, { property: "og:description", content: "Admin Errors workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: ErrorsPage });
 
 type Row = {
   id: string;

@@ -3,6 +3,7 @@ import { Construction } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/coming-soon/$name")({
+  head: () => ({ meta: [{ title: "Coming Soon — Litu Vault" }, { name: "description", content: "Coming Soon workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Coming Soon — Litu Vault" }, { property: "og:description", content: "Coming Soon workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ComingSoonPage,
 });
 

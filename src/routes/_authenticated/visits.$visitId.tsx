@@ -23,7 +23,8 @@ import { DrugPickerInline } from "@/components/drug-picker";
 import { SystemsExamination } from "@/components/systems-examination";
 
 
-export const Route = createFileRoute("/_authenticated/visits/$visitId")({ component: VisitDetail });
+export const Route = createFileRoute("/_authenticated/visits/$visitId")({  head: () => ({ meta: [{ title: "Visits — Litu Vault" }, { name: "description", content: "Visits workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Visits — Litu Vault" }, { property: "og:description", content: "Visits workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: VisitDetail });
 
 interface Visit { id: string; patient_id: string; status: string; reason: string | null; chief_complaint: string | null; triage_level: string | null; notes: string | null; opened_at: string; closed_at: string | null; assigned_doctor_id: string | null; assigned_nurse_id: string | null; current_stage: string | null; examination: unknown | null }
 interface Patient { id: string; full_name: string; medical_record_number: string | null; date_of_birth: string | null; gender: string | null; blood_type: string | null; allergies: string | null; chronic_conditions: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null }

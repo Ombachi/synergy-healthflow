@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { renderBarcode } from "@/lib/print-codes";
 
 export const Route = createFileRoute("/_authenticated/print/wristband/$patientId")({
+  head: () => ({ meta: [{ title: "Print Wristband — Litu Vault" }, { name: "description", content: "Print Wristband workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Print Wristband — Litu Vault" }, { property: "og:description", content: "Print Wristband workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: WristbandPrint,
 });
 

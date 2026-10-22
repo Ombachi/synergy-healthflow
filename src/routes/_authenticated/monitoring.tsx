@@ -17,6 +17,7 @@ import { AdmissionPicker } from "@/components/admission-picker";
 import { calcNews2, calcMews, calcGcs, calcBraden, calcMorse, type Risk } from "@/lib/warning-scores";
 
 export const Route = createFileRoute("/_authenticated/monitoring")({
+  head: () => ({ meta: [{ title: "Monitoring — Litu Vault" }, { name: "description", content: "Monitoring workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Monitoring — Litu Vault" }, { property: "og:description", content: "Monitoring workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/monitoring"><MonitoringPage /></RoleGate>,
 });
 

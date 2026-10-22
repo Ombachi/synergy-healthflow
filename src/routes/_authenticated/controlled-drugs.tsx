@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/controlled-drugs")({
+  head: () => ({ meta: [{ title: "Controlled Drugs — Litu Vault" }, { name: "description", content: "Controlled Drugs workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Controlled Drugs — Litu Vault" }, { property: "og:description", content: "Controlled Drugs workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ControlledDrugs,
 });
 

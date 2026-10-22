@@ -16,6 +16,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/admin/consent")({
+  head: () => ({ meta: [{ title: "Admin Consent — Litu Vault" }, { name: "description", content: "Admin Consent workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Admin Consent — Litu Vault" }, { property: "og:description", content: "Admin Consent workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ConsentAdmin,
 });
 

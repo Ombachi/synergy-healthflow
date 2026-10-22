@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/ward-analytics")({
+  head: () => ({ meta: [{ title: "Ward Analytics — Litu Vault" }, { name: "description", content: "Ward Analytics workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Ward Analytics — Litu Vault" }, { property: "og:description", content: "Ward Analytics workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/ward-analytics"><WardAnalytics /></RoleGate>,
 });
 

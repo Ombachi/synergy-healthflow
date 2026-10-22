@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/audit-inventory")({
+  head: () => ({ meta: [{ title: "Audit Inventory — Litu Vault" }, { name: "description", content: "Audit Inventory workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Audit Inventory — Litu Vault" }, { property: "og:description", content: "Audit Inventory workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuditInventory,
 });
 

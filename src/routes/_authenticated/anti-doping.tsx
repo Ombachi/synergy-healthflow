@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { exportWadaReportPDF, type WadaTrend } from "@/lib/wada-report-pdf";
 
 export const Route = createFileRoute("/_authenticated/anti-doping")({
+  head: () => ({ meta: [{ title: "Anti Doping — Litu Vault" }, { name: "description", content: "Anti Doping workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Anti Doping — Litu Vault" }, { property: "og:description", content: "Anti Doping workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AntiDopingPage,
 });
 

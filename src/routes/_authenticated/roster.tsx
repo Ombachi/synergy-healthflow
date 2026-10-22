@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/roster")({
+  head: () => ({ meta: [{ title: "Roster — Litu Vault" }, { name: "description", content: "Roster workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Roster — Litu Vault" }, { property: "og:description", content: "Roster workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/roster"><RosterPage /></RoleGate>,
 });
 

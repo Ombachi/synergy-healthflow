@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/lab-templates")({
+  head: () => ({ meta: [{ title: "Lab Templates — Litu Vault" }, { name: "description", content: "Lab Templates workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Lab Templates — Litu Vault" }, { property: "og:description", content: "Lab Templates workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: LabTemplatesPage,
 });
 

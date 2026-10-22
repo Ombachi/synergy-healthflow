@@ -15,6 +15,7 @@ import { RoleGate } from "@/components/role-gate";
 import { useActiveAdmissions } from "@/components/admission-picker";
 
 export const Route = createFileRoute("/_authenticated/discharge-planning")({
+  head: () => ({ meta: [{ title: "Discharge Planning — Litu Vault" }, { name: "description", content: "Discharge Planning workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Discharge Planning — Litu Vault" }, { property: "og:description", content: "Discharge Planning workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/discharge-planning"><DischargePage /></RoleGate>,
 });
 

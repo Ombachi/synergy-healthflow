@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/admin/soft-deleted")({
+  head: () => ({ meta: [{ title: "Admin Soft Deleted — Litu Vault" }, { name: "description", content: "Admin Soft Deleted workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Admin Soft Deleted — Litu Vault" }, { property: "og:description", content: "Admin Soft Deleted workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SoftDeletedPage,
 });
 

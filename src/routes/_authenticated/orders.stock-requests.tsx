@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { StockRequestForm } from "@/components/stock-request-form";
 
 export const Route = createFileRoute("/_authenticated/orders/stock-requests")({
+  head: () => ({ meta: [{ title: "Orders Stock Requests — Litu Vault" }, { name: "description", content: "Orders Stock Requests workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Orders Stock Requests — Litu Vault" }, { property: "og:description", content: "Orders Stock Requests workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: StockRequestsPage,
 });
 

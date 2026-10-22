@@ -14,6 +14,7 @@ import {
 import { Copy, MailCheck, RefreshCw, Send, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/portal-invitations")({
+  head: () => ({ meta: [{ title: "Admin Portal Invitations — Litu Vault" }, { name: "description", content: "Admin Portal Invitations workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Admin Portal Invitations — Litu Vault" }, { property: "og:description", content: "Admin Portal Invitations workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: PortalInvitationsPage,
 });
 

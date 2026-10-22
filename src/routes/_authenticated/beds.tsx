@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/beds")({
+  head: () => ({ meta: [{ title: "Beds — Litu Vault" }, { name: "description", content: "Beds workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Beds — Litu Vault" }, { property: "og:description", content: "Beds workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/beds"><BedsPage /></RoleGate>,
 });
 

@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/audit")({
+  head: () => ({ meta: [{ title: "Audit — Litu Vault" }, { name: "description", content: "Audit workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Audit — Litu Vault" }, { property: "og:description", content: "Audit workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuditLogs,
 });
 

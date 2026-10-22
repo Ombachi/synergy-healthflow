@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ReorderAutomation } from "@/components/reorder-automation";
 
 export const Route = createFileRoute("/_authenticated/inventory")({
+  head: () => ({ meta: [{ title: "Inventory — Litu Vault" }, { name: "description", content: "Inventory workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Inventory — Litu Vault" }, { property: "og:description", content: "Inventory workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Inventory,
 });
 

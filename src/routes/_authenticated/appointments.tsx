@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/appointments")({
+  head: () => ({ meta: [{ title: "Appointments — Litu Vault" }, { name: "description", content: "Appointments workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Appointments — Litu Vault" }, { property: "og:description", content: "Appointments workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/appointments"><AppointmentsPage /></RoleGate>,
 });
 

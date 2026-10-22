@@ -12,6 +12,7 @@ import { RoleGate } from "@/components/role-gate";
 import { CatalogSearch, type CatalogItem } from "@/components/catalog-search";
 
 export const Route = createFileRoute("/_authenticated/lab-order")({
+  head: () => ({ meta: [{ title: "Lab Order — Litu Vault" }, { name: "description", content: "Lab Order workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Lab Order — Litu Vault" }, { property: "og:description", content: "Lab Order workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/lab-order"><LabOrderPage /></RoleGate>,
 });
 

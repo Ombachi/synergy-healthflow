@@ -15,6 +15,7 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/sports-medicine")({
+  head: () => ({ meta: [{ title: "Sports Medicine — Litu Vault" }, { name: "description", content: "Sports Medicine workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Sports Medicine — Litu Vault" }, { property: "og:description", content: "Sports Medicine workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SportsMedicinePage,
 });
 

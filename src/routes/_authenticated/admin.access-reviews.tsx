@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/admin/access-reviews")({
+  head: () => ({ meta: [{ title: "Admin Access Reviews — Litu Vault" }, { name: "description", content: "Admin Access Reviews workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Admin Access Reviews — Litu Vault" }, { property: "og:description", content: "Admin Access Reviews workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AccessReviewsPage,
 });
 
