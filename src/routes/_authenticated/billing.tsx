@@ -36,6 +36,8 @@ function BillingPage() {
   const { user } = useAuth();
   const [payOpen, setPayOpen] = useState<Invoice | null>(null);
   const [payForm, setPayForm] = useState({ amount: "", method: "cash", reference: "" });
+  const [cashReceived, setCashReceived] = useState("");
+  const [cardTerminal, setCardTerminal] = useState("");
   const [openInvoice, setOpenInvoice] = useState<Invoice | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -136,11 +138,23 @@ function BillingPage() {
   const takePayment = useMutation({
     mutationFn: async () => {
       if (!payOpen) return;
-      const amt = Math.round(parseFloat(payForm.amount) * 100);
-      if (!amt || amt <= 0) throw new Error("Enter valid amount");
+      const amt = centsFromInput(payForm.amount);
+      const due = (payOpen as { total_cents: number; paid_cents: number }).total_cents - (payOpen as { paid_cents: number }).paid_cents;
+      let reference = payForm.reference.trim() || null;
+      if (payForm.method === "cash" || payForm.method === "card") {
+        const { changeCents } = validateCollection({
+          method: payForm.method, amountCents: amt, dueCents: due,
+          receivedCents: payForm.method === "cash" ? centsFromInput(cashReceived || payForm.amount) : undefined,
+          terminal: cardTerminal, reference: payForm.reference,
+        });
+        if (payForm.method === "card") reference = `${cardTerminal.trim()} · ${payForm.reference.trim()}`;
+        if (payForm.method === "cash" && changeCents > 0) toast.info(`Give change: ${money(changeCents)}`);
+      } else if (amt <= 0 || amt > due) {
+        throw new Error("Payment must be greater than zero and cannot exceed the outstanding balance.");
+      }
       const { error } = await supabase.from("payments" as never).insert({
         invoice_id: payOpen.id, amount_cents: amt, method: payForm.method,
-        reference: payForm.reference || null, received_by: user!.id,
+        reference, received_by: user!.id,
       } as never);
       if (error) throw error;
     },
@@ -426,7 +440,16 @@ function BillingPage() {
                 )}
               </div>
             ) : (
-              <div><Label>Reference</Label><Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} /></div>
+              <>
+                {payForm.method === "cash" && (
+                  <div><Label>Cash received</Label><Input type="number" step="0.01" placeholder={payForm.amount} value={cashReceived} onChange={(e) => setCashReceived(e.target.value)} /></div>
+                )}
+                {payForm.method === "card" && (
+                  <div><Label>Card provider / terminal</Label><Input value={cardTerminal} onChange={(e) => setCardTerminal(e.target.value)} /></div>
+                )}
+                <div><Label>{payForm.method === "card" ? "Authorization reference" : payForm.method === "cash" ? "Receipt number" : "Reference"}</Label><Input value={payForm.reference} onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })} /></div>
+              </>
+
             )}
           </div>
           <DialogFooter>
