@@ -14,6 +14,7 @@ import { RoleGate } from "@/components/role-gate";
 import { AdmissionPicker } from "@/components/admission-picker";
 
 export const Route = createFileRoute("/_authenticated/ward-rounds")({
+  head: () => ({ meta: [{ title: "Ward Rounds — Litu Vault" }, { name: "description", content: "Ward Rounds workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Ward Rounds — Litu Vault" }, { property: "og:description", content: "Ward Rounds workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/ward-rounds"><WardRoundsPage /></RoleGate>,
 });
 

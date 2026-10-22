@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/nutrition")({
+  head: () => ({ meta: [{ title: "Nutrition — Litu Vault" }, { name: "description", content: "Nutrition workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Nutrition — Litu Vault" }, { property: "og:description", content: "Nutrition workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/nutrition"><NutritionStation /></RoleGate>,
 });
 

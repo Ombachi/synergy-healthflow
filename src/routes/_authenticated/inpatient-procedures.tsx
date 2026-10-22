@@ -16,6 +16,7 @@ import { RoleGate } from "@/components/role-gate";
 import { AdmissionPicker } from "@/components/admission-picker";
 
 export const Route = createFileRoute("/_authenticated/inpatient-procedures")({
+  head: () => ({ meta: [{ title: "Inpatient Procedures — Litu Vault" }, { name: "description", content: "Inpatient Procedures workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Inpatient Procedures — Litu Vault" }, { property: "og:description", content: "Inpatient Procedures workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/inpatient-procedures"><InpatientProceduresPage /></RoleGate>,
 });
 

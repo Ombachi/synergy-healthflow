@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/hr/leave")({
+  head: () => ({ meta: [{ title: "Hr Leave — Litu Vault" }, { name: "description", content: "Hr Leave workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Hr Leave — Litu Vault" }, { property: "og:description", content: "Hr Leave workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => (
     <RoleGate path="/hr/leave">
       <HrLeavePage />

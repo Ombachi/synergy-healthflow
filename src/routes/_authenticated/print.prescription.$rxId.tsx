@@ -8,6 +8,7 @@ import { renderQR } from "@/lib/print-codes";
 import { SignRecord } from "@/components/sign-record";
 
 export const Route = createFileRoute("/_authenticated/print/prescription/$rxId")({
+  head: () => ({ meta: [{ title: "Print Prescription — Litu Vault" }, { name: "description", content: "Print Prescription workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Print Prescription — Litu Vault" }, { property: "og:description", content: "Print Prescription workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: RxPrint,
 });
 

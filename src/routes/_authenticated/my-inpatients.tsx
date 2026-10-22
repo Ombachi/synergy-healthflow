@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/my-inpatients")({
+  head: () => ({ meta: [{ title: "My Inpatients — Litu Vault" }, { name: "description", content: "My Inpatients workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "My Inpatients — Litu Vault" }, { property: "og:description", content: "My Inpatients workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => (
     <RoleGate path="/my-inpatients">
       <MyInpatientsPage />

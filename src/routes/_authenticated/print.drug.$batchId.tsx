@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { renderBarcode } from "@/lib/print-codes";
 
 export const Route = createFileRoute("/_authenticated/print/drug/$batchId")({
+  head: () => ({ meta: [{ title: "Print Drug — Litu Vault" }, { name: "description", content: "Print Drug workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Print Drug — Litu Vault" }, { property: "og:description", content: "Print Drug workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DrugPackPrint,
 });
 

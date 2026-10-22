@@ -16,6 +16,7 @@ import { RoleGate } from "@/components/role-gate";
 import { useActiveAdmissions } from "@/components/admission-picker";
 
 export const Route = createFileRoute("/_authenticated/infection-control")({
+  head: () => ({ meta: [{ title: "Infection Control — Litu Vault" }, { name: "description", content: "Infection Control workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Infection Control — Litu Vault" }, { property: "og:description", content: "Infection Control workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/infection-control"><IpcPage /></RoleGate>,
 });
 

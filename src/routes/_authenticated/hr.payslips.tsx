@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { exportPayslipPDF } from "@/lib/payslip-pdf";
 
 export const Route = createFileRoute("/_authenticated/hr/payslips")({
+  head: () => ({ meta: [{ title: "Hr Payslips — Litu Vault" }, { name: "description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Hr Payslips — Litu Vault" }, { property: "og:description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => (
     <RoleGate path="/hr/payslips">
       <PayslipsPage />

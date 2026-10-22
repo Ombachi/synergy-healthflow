@@ -7,6 +7,7 @@ import { RoleGate } from "@/components/role-gate";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/admin-kpi")({
+  head: () => ({ meta: [{ title: "Admin Kpi — Litu Vault" }, { name: "description", content: "Admin Kpi workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Admin Kpi — Litu Vault" }, { property: "og:description", content: "Admin Kpi workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/admin-kpi"><AdminKPI /></RoleGate>,
 });
 

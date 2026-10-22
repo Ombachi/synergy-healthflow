@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/assessments")({
+  head: () => ({ meta: [{ title: "Assessments — Litu Vault" }, { name: "description", content: "Assessments workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Assessments — Litu Vault" }, { property: "og:description", content: "Assessments workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AssessmentsPage,
 });
 

@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/service-catalog")({
+  head: () => ({ meta: [{ title: "Service Catalog — Litu Vault" }, { name: "description", content: "Service Catalog workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Service Catalog — Litu Vault" }, { property: "og:description", content: "Service Catalog workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/service-catalog"><ServiceCatalogPage /></RoleGate>,
 });
 

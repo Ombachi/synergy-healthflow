@@ -17,6 +17,7 @@ import { RoleGate } from "@/components/role-gate";
 import { AdmissionPicker } from "@/components/admission-picker";
 
 export const Route = createFileRoute("/_authenticated/emar")({
+  head: () => ({ meta: [{ title: "Emar — Litu Vault" }, { name: "description", content: "Emar workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Emar — Litu Vault" }, { property: "og:description", content: "Emar workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/emar"><EmarPage /></RoleGate>,
 });
 

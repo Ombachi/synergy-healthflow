@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/preauth")({
+  head: () => ({ meta: [{ title: "Preauth — Litu Vault" }, { name: "description", content: "Preauth workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Preauth — Litu Vault" }, { property: "og:description", content: "Preauth workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/preauth"><PreauthPage /></RoleGate>,
 });
 

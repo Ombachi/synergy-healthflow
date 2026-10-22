@@ -12,6 +12,7 @@ import { CrudPage } from "@/components/crud-page";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/sports")({
+  head: () => ({ meta: [{ title: "Sports — Litu Vault" }, { name: "description", content: "Sports workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Sports — Litu Vault" }, { property: "og:description", content: "Sports workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Sports,
 });
 

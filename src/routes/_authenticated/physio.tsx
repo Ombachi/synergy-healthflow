@@ -17,6 +17,7 @@ import { DoctorStation } from "@/components/workstations/doctor-station";
 import { MyActivePatients } from "@/components/my-active-patients";
 
 export const Route = createFileRoute("/_authenticated/physio")({
+  head: () => ({ meta: [{ title: "Physio — Litu Vault" }, { name: "description", content: "Physio workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Physio — Litu Vault" }, { property: "og:description", content: "Physio workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: PhysioDashboard,
 });
 

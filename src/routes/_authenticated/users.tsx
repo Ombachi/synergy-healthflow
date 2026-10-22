@@ -18,6 +18,7 @@ import { Ban, CheckCircle2, ShieldCheck, Sparkles, Trash2, UserCog } from "lucid
 import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/users")({
+  head: () => ({ meta: [{ title: "Users — Litu Vault" }, { name: "description", content: "Users workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Users — Litu Vault" }, { property: "og:description", content: "Users workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: UsersPage,
 });
 

@@ -16,6 +16,7 @@ import { RoleGate } from "@/components/role-gate";
 import { AdmissionPicker } from "@/components/admission-picker";
 
 export const Route = createFileRoute("/_authenticated/care-plans")({
+  head: () => ({ meta: [{ title: "Care Plans — Litu Vault" }, { name: "description", content: "Care Plans workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Care Plans — Litu Vault" }, { property: "og:description", content: "Care Plans workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => <RoleGate path="/care-plans"><CarePlansPage /></RoleGate>,
 });
 

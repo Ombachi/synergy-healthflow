@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/hr/documents")({
+  head: () => ({ meta: [{ title: "Hr Documents — Litu Vault" }, { name: "description", content: "Hr Documents workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Hr Documents — Litu Vault" }, { property: "og:description", content: "Hr Documents workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => (
     <RoleGate path="/hr/documents">
       <DocsPage />

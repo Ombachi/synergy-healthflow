@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/procurement")({
+  head: () => ({ meta: [{ title: "Procurement — Litu Vault" }, { name: "description", content: "Procurement workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Procurement — Litu Vault" }, { property: "og:description", content: "Procurement workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ProcurementDashboard,
 });
 

@@ -6,6 +6,7 @@ import { CrudPage } from "@/components/crud-page";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/medical")({
+  head: () => ({ meta: [{ title: "Medical — Litu Vault" }, { name: "description", content: "Medical workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Medical — Litu Vault" }, { property: "og:description", content: "Medical workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Medical,
 });
 

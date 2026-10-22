@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/admin/breaches")({
+  head: () => ({ meta: [{ title: "Admin Breaches — Litu Vault" }, { name: "description", content: "Admin Breaches workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Admin Breaches — Litu Vault" }, { property: "og:description", content: "Admin Breaches workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: BreachRegister,
 });
 
