@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/tenders")({ component: TendersPage });
+export const Route = createFileRoute("/_authenticated/tenders")({  head: () => ({ meta: [{ title: "Tenders — Litu Vault" }, { name: "description", content: "Tenders workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Tenders — Litu Vault" }, { property: "og:description", content: "Tenders workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: TendersPage });
 
 interface Tender { id: string; reference: string; title: string; description: string | null; status: string; budget_cents: number | null; closes_at: string; created_by: string }
 interface Bid { id: string; tender_id: string; bidder_id: string; bidder_name: string; amount_cents: number; delivery_days: number | null; proposal: string | null; status: string; review_notes: string | null; created_at: string }

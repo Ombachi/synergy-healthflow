@@ -10,7 +10,8 @@ import { WorkflowChip, workflowLabel } from "@/components/workflow-chip";
 import { NurseStation } from "@/components/workstations/nurse-station";
 import { DoctorStation } from "@/components/workstations/doctor-station";
 
-export const Route = createFileRoute("/_authenticated/queue")({ component: () => <Navigate to="/dashboard" replace /> });
+export const Route = createFileRoute("/_authenticated/queue")({  head: () => ({ meta: [{ title: "Queue — Litu Vault" }, { name: "description", content: "Queue workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Queue — Litu Vault" }, { property: "og:description", content: "Queue workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: () => <Navigate to="/dashboard" replace /> });
 
 export function QueueRouter() {
   const { roles, loading } = useAuth();

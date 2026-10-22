@@ -14,7 +14,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useOfflineMutation } from "@/lib/offline/use-offline";
 import type { Op } from "@/lib/offline/outbox";
 
-export const Route = createFileRoute("/_authenticated/reception")({ component: ReceptionPage });
+export const Route = createFileRoute("/_authenticated/reception")({  head: () => ({ meta: [{ title: "Reception — Litu Vault" }, { name: "description", content: "Reception workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Reception — Litu Vault" }, { property: "og:description", content: "Reception workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: ReceptionPage });
 
 
 interface Patient { id: string; full_name: string; phone: string | null; medical_record_number: string | null; address: string | null }

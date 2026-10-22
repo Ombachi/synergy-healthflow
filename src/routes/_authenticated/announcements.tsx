@@ -14,7 +14,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNotifications } from "@/hooks/use-notifications";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/announcements")({ component: AnnouncementsPage });
+export const Route = createFileRoute("/_authenticated/announcements")({  head: () => ({ meta: [{ title: "Announcements — Litu Vault" }, { name: "description", content: "Announcements workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Announcements — Litu Vault" }, { property: "og:description", content: "Announcements workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: AnnouncementsPage });
 
 interface Ann { id: string; title: string; body: string; pinned: boolean; published_at: string; expires_at: string | null }
 interface Pref { user_id: string; email_enabled: boolean; sms_enabled: boolean; email_address: string | null; phone_number: string | null }

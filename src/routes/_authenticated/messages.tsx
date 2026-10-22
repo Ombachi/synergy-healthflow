@@ -13,7 +13,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/_authenticated/messages")({ component: Messages });
+export const Route = createFileRoute("/_authenticated/messages")({  head: () => ({ meta: [{ title: "Messages — Litu Vault" }, { name: "description", content: "Messages workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Messages — Litu Vault" }, { property: "og:description", content: "Messages workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: Messages });
 
 interface Thread { id: string; subject: string; updated_at: string; created_by: string }
 interface Message { id: string; thread_id: string; sender_id: string; body: string; created_at: string }

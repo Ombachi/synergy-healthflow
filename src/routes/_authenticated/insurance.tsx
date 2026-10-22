@@ -17,7 +17,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { exportClaimPDF, exportClaimsBatchCSV } from "@/lib/claim-pdf";
 import { toFhirClaim, downloadFhir } from "@/lib/fhir";
 
-export const Route = createFileRoute("/_authenticated/insurance")({ component: InsurancePage });
+export const Route = createFileRoute("/_authenticated/insurance")({  head: () => ({ meta: [{ title: "Insurance — Litu Vault" }, { name: "description", content: "Insurance workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Insurance — Litu Vault" }, { property: "og:description", content: "Insurance workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: InsurancePage });
 
 interface Payer { id: string; code: string; name: string; category: string | null; active: boolean; claims_portal_url?: string | null }
 interface Policy { id: string; patient_id: string; insurer: string; member_number: string; scheme: string | null; payer_id: string | null; valid_from: string | null; valid_to: string | null; active: boolean }

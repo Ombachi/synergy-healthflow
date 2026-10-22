@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/_authenticated/cash-reconciliation")({ component: CashReconPage });
+export const Route = createFileRoute("/_authenticated/cash-reconciliation")({  head: () => ({ meta: [{ title: "Cash Reconciliation — Litu Vault" }, { name: "description", content: "Cash Reconciliation workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Cash Reconciliation — Litu Vault" }, { property: "og:description", content: "Cash Reconciliation workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: CashReconPage });
 
 interface CashSession {
   id: string;

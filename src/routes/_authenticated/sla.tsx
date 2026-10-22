@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Gauge, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_authenticated/sla")({ component: SlaPage });
+export const Route = createFileRoute("/_authenticated/sla")({  head: () => ({ meta: [{ title: "Sla — Litu Vault" }, { name: "description", content: "Sla workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Sla — Litu Vault" }, { property: "og:description", content: "Sla workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: SlaPage });
 
 type Row = {
   order_id: string;

@@ -21,7 +21,8 @@ import { LabResultsViewer } from "@/components/lab-results-viewer";
 import { MpesaPayPanel } from "@/components/mpesa-pay";
 import { ImagingViewer } from "@/components/imaging-viewer";
 
-export const Route = createFileRoute("/_authenticated/me")({ component: PatientTimeline });
+export const Route = createFileRoute("/_authenticated/me")({  head: () => ({ meta: [{ title: "Me — Litu Vault" }, { name: "description", content: "Me workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Me — Litu Vault" }, { property: "og:description", content: "Me workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+component: PatientTimeline });
 
 
 const money = (cents: number) => `KES ${(cents / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
