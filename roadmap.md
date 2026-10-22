@@ -1,6 +1,7 @@
 # Billing extension and facility integration
 - [ ] Add authenticated payment ledger, sponsor/LPO allocation and reconciliation with database enforcement.
-- [ ] Extend invoice payment controls and add finance views and downloadable LPO packs.
+- [x] Invoice payment controls: cash received/change, card terminal + authorization, balance limits.
+- [ ] Finance views and downloadable LPO packs; need the LPO ledger tables (database unavailable).
 - [ ] Validate payment rules and verify signed-in payment-to-reconciliation flows; live checks require an available backend.
 - [ ] Enable authorized LPO email delivery; requires a configured sender domain.
 - [x] Mount branch selector and load authorized memberships; resolve preview errors.
