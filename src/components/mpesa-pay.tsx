@@ -89,18 +89,19 @@ export function MpesaPayPanel({
         </Button>
       )}
       {tx?.status === "pending" && (
-        <div className="flex items-center gap-2 rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-          <Loader2 className="h-4 w-4 animate-spin" /> Waiting for the M-Pesa PIN to be entered…
+        <div className="flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground" role="status">
+          <Loader2 className="h-4 w-4 animate-spin" /> Waiting for the patient to enter their M-Pesa PIN. The invoice updates only after Safaricom confirms.
         </div>
       )}
       {tx?.status === "success" && (
-        <div className="rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-700">
+        <div className="rounded-md bg-primary/10 px-3 py-2 text-sm text-primary" role="status">
           Payment confirmed and posted to this invoice automatically.
         </div>
       )}
       {tx && tx.status !== "pending" && tx.status !== "success" && (
-        <div className="rounded-md bg-rose-500/10 px-3 py-2 text-sm text-rose-700">
-          {tx.resultDesc ?? "Payment failed or was cancelled."}
+        <div className="space-y-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+          <p>{tx.resultDesc ?? "Payment failed or was cancelled."} No money was posted to this invoice.</p>
+          <Button size="sm" variant="outline" onClick={() => setTx(null)}>Try again</Button>
         </div>
       )}
     </div>
