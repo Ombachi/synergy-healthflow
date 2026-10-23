@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { canAccess, ROLE_HOME, ROUTE_ROLES } from "./role-permissions";
+import type { AppRole } from "@/hooks/use-auth";
+import { canAccess, ROLE_HOME } from "./role-permissions";
 
 describe("role and module access", () => {
   it("blocks a route when the facility switched its module off, even for admins", () => {
