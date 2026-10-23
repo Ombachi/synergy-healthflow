@@ -1,4 +1,6 @@
 # Billing extension and facility integration
+- [ ] Add HR employee onboarding linked to existing facility staff accounts with initial leave quotas.
+- [ ] Make leave approval deduct balances atomically and verify duplicate/insufficient-balance safeguards.
 - [ ] Add authenticated payment ledger, sponsor/LPO allocation and reconciliation with database enforcement.
 - [x] Invoice payment controls: cash received/change, card terminal + authorization, balance limits.
 - [ ] Finance views and downloadable LPO packs; need the LPO ledger tables (database unavailable).
