@@ -36,8 +36,8 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Queue is a clinical/front-desk board only — no pharmacist/lab_tech/cashier/billing.
   "/queue": ["receptionist", "nurse", "doctor"],
 
-  // Patient
-  "/me": ["patient"],
+  // Patient/athlete self-service portal — both land here after sign-in.
+  "/me": ["patient", "athlete"],
 
   // Mobility — healthcare transportation
   "/mobility/request": ["patient", "athlete", "doctor", "nurse", "receptionist", "admissions_officer", "fleet_manager"],
