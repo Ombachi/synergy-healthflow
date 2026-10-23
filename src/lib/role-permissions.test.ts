@@ -67,7 +67,7 @@ describe("role and module access", () => {
   it("gives every routed role a sign-in landing page that it can access", () => {
     for (const [role, home] of Object.entries(ROLE_HOME)) {
       assert.ok(home, `${role} has a landing page`);
-      assert.equal(canAccess(home, [role as keyof typeof ROUTE_ROLES extends never ? never : import("@/hooks/use-auth").AppRole]), true, `${role} can open ${home}`);
+      assert.equal(canAccess(home, [role as AppRole]), true, `${role} can open ${home}`);
     }
   });
 });
