@@ -6,6 +6,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { decideLeave, hrStaffOptions } from "@/lib/hr.functions";
+import { useFacility } from "@/components/facility-context";
 
 export const Route = createFileRoute("/_authenticated/leave-inbox")({  head: () => ({ meta: [{ title: "Leave Inbox — Litu Vault" }, { name: "description", content: "Leave Inbox workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Leave Inbox — Litu Vault" }, { property: "og:description", content: "Leave Inbox workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
 component: LeaveInbox });
@@ -14,34 +18,44 @@ interface LR { id: string; employee_id: string; status: string; start_date: stri
 
 function LeaveInbox() {
   const { user, hasRole } = useAuth();
+  const { activeFacility } = useFacility();
+  const saveDecision = useServerFn(decideLeave);
+  const loadStaff = useServerFn(hrStaffOptions);
+  const [deciding, setDeciding] = useState<string | null>(null);
   const qc = useQueryClient();
-  const allowed = hasRole("admin") || hasRole("hr_officer") || hasRole("hr_manager") || hasRole("dept_manager");
+  const allowed = hasRole("admin") || hasRole("hr_officer") || hasRole("hr_manager");
 
   const q = useQuery({
-    queryKey: ["leave-inbox"],
+    queryKey: ["leave-inbox", activeFacility.id],
     enabled: allowed,
     queryFn: async () => {
+      const ids = (await loadStaff({ data: { facilityId: activeFacility.id } })).map(r => r.id);
       const { data, error } = await supabase.from("leave_requests" as never)
-        .select("*").order("created_at", { ascending: false });
+        .select("*").in("employee_id", ids).order("created_at", { ascending: false });
       if (error) throw error;
       return (data as unknown as LR[]) ?? [];
     },
   });
 
-  async function decide(id: string, status: string) {
-    const comment = window.prompt(`Comment for ${status} (optional)`) ?? "";
-    const { error } = await supabase.from("leave_requests" as never).update({
-      status, approver_comment: comment || null, decided_by: user?.id, decided_at: new Date().toISOString(),
-    } as never).eq("id", id);
-    if (error) return toast.error(error.message);
-    toast.success("Updated");
-    qc.invalidateQueries({ queryKey: ["leave-inbox"] });
+  async function decide(id: string, status: "approved" | "rejected" | "clarification") {
+    if (deciding) return;
+    const comment = window.prompt(`Comment for ${status} (optional)`);
+    if (comment === null) return;
+    setDeciding(id);
+    try {
+      await saveDecision({ data: { id, status, comment, facilityId: activeFacility.id } });
+      toast.success(status === "approved" ? "Leave approved and balance deducted" : "Decision saved");
+      void qc.invalidateQueries({ queryKey: ["leave-inbox", activeFacility.id] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Decision was not saved"); }
+    finally { setDeciding(null); }
   }
 
-  const pending = (q.data ?? []).filter((r) => r.status === "pending" || r.status === "clarification");
-  const decided = (q.data ?? []).filter((r) => !["pending", "clarification"].includes(r.status));
+  const pending = (q.data ?? []).filter((r) => ["submitted", "pending", "clarification"].includes(r.status));
+  const decided = (q.data ?? []).filter((r) => !["submitted", "pending", "clarification"].includes(r.status));
   const pager = usePager(decided, 20);
 
+  if (q.isPending && allowed) return <p role="status">Loading branch leave requests…</p>;
+  if (q.isError) return <div><p role="alert" className="text-destructive">Leave requests could not be loaded.</p><Button onClick={() => q.refetch()}>Retry</Button></div>;
   if (!allowed) return <p className="text-sm text-muted-foreground">Manager/HR access only.</p>;
 
   return (
@@ -62,9 +76,9 @@ function LeaveInbox() {
               </div>
               {r.reason && <p className="text-xs text-muted-foreground">Reason: {r.reason}</p>}
               <div className="flex gap-2 pt-2">
-                <Button size="sm" onClick={() => decide(r.id, "approved")}>Approve</Button>
-                <Button size="sm" variant="outline" onClick={() => decide(r.id, "clarification")}>Request info</Button>
-                <Button size="sm" variant="destructive" onClick={() => decide(r.id, "rejected")}>Reject</Button>
+                <Button disabled={!!deciding || r.employee_id === user?.id} size="sm" onClick={() => decide(r.id, "approved")}>Approve</Button>
+                <Button disabled={!!deciding || r.employee_id === user?.id} size="sm" variant="outline" onClick={() => decide(r.id, "clarification")}>Request info</Button>
+                <Button disabled={!!deciding || r.employee_id === user?.id} size="sm" variant="destructive" onClick={() => decide(r.id, "rejected")}>Reject</Button>
               </div>
             </div>
           ))}
