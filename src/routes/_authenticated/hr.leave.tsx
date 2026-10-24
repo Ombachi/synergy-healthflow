@@ -13,6 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { decideLeave, hrStaffOptions } from "@/lib/hr.functions";
+import { useFacility } from "@/components/facility-context";
 
 export const Route = createFileRoute("/_authenticated/hr/leave")({
   head: () => ({ meta: [{ title: "Hr Leave — Litu Vault" }, { name: "description", content: "Hr Leave workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Hr Leave — Litu Vault" }, { property: "og:description", content: "Hr Leave workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -42,6 +45,10 @@ type LR = {
 
 function HrLeavePage() {
   const { user, hasAnyRole, roles } = useAuth();
+  const { activeFacility } = useFacility();
+  const saveDecision = useServerFn(decideLeave);
+  const loadStaff = useServerFn(hrStaffOptions);
+  const [deciding, setDeciding] = useState<string | null>(null);
   const isHR = hasAnyRole(["admin", "hr_officer", "hr_manager"]);
   const [types, setTypes] = useState<LType[]>([]);
   const [mine, setMine] = useState<LR[]>([]);
@@ -79,16 +86,17 @@ function HrLeavePage() {
         .limit(50);
       setMine((m ?? []) as LR[]);
 
-      // Approval queue: HR sees all submitted; supervisor sees their reports
+      const branchIds = isHR ? (await loadStaff({ data: { facilityId: activeFacility.id } })).map(r => r.id) : [];
+      // Final approval belongs to branch HR.
       let q = supabase.from("leave_requests" as never)
         .select("*, leave_types(name), employees!leave_requests_employee_id_fkey(full_name)")
-        .in("status", ["submitted"])
+        .in("status", ["submitted", "pending", "clarification"]).in("employee_id", branchIds)
         .order("created_at", { ascending: false }).limit(100);
       if (!isHR) q = q.eq("supervisor_id", user.id);
       const { data: pq } = await q;
       setForApproval((pq ?? []) as LR[]);
-    })();
-  }, [user, isHR, refreshTick, roles]);
+    })().catch(() => { setForApproval([]); toast.error("Branch leave requests could not be loaded."); });
+  }, [user, isHR, refreshTick, roles, activeFacility.id, loadStaff]);
 
   async function submit() {
     if (!user || !typeId || !start || !end || days <= 0) { toast.error("Fill all leave fields"); return; }
@@ -108,13 +116,14 @@ function HrLeavePage() {
 
   async function decide(id: string, status: "approved" | "rejected", asHR: boolean) {
     if (!user) return;
-    const patch: Record<string, unknown> = { status };
-    if (asHR) { patch.hr_id = user.id; patch.hr_decision_at = new Date().toISOString(); }
-    else { patch.supervisor_id = user.id; patch.supervisor_decision_at = new Date().toISOString(); }
-    const { error } = await supabase.from("leave_requests" as never).update(patch as never).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    toast.success(`Marked ${status}`);
-    setRefreshTick((x) => x + 1);
+    if (!asHR || deciding) return;
+    setDeciding(id);
+    try {
+      await saveDecision({ data: { id, status, facilityId: activeFacility.id, comment: "" } });
+      toast.success(status === "approved" ? "Leave approved and balance deducted" : "Leave rejected");
+      setRefreshTick(x => x + 1);
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Decision was not saved"); }
+    finally { setDeciding(null); }
   }
 
   async function cancel(id: string) {
@@ -239,8 +248,8 @@ function HrLeavePage() {
                         <td className="p-2">{r.start_date} → {r.end_date}</td>
                         <td className="p-2 text-right">{r.days}</td>
                         <td className="p-2 text-right space-x-2">
-                          <Button size="sm" onClick={() => decide(r.id, "approved", isHR)}>Approve</Button>
-                          <Button size="sm" variant="destructive" onClick={() => decide(r.id, "rejected", isHR)}>Reject</Button>
+                          <Button size="sm" disabled={!isHR || !!deciding || r.employee_id === user?.id} onClick={() => decide(r.id, "approved", isHR)}>Approve</Button>
+                          <Button size="sm" variant="destructive" disabled={!isHR || !!deciding || r.employee_id === user?.id} onClick={() => decide(r.id, "rejected", isHR)}>Reject</Button>
                         </td>
                       </tr>
                     ))}
@@ -250,7 +259,7 @@ function HrLeavePage() {
                 </>
               )}
               <p className="mt-2 text-xs text-muted-foreground">
-                {isHR ? "You are approving as HR — approval decrements the employee's leave balance." : "You are approving as the supervisor; HR will finalise."}
+                {isHR ? "You are approving as HR — approval decrements the employee's leave balance." : "Final approval is handled by branch HR."}
               </p>
             </CardContent>
           </Card>

@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
+import { useServerFn } from "@tanstack/react-start";
+import { useFacility } from "@/components/facility-context";
+import { EmployeeOnboarding } from "@/components/employee-onboarding";
+import { hrStaffOptions } from "@/lib/hr.functions";
 import { RoleGate } from "@/components/role-gate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/hr/admin")({
+  head: () => ({ meta: [{ title: "HR Administration — Litu Vault" }, { name: "description", content: "Staff onboarding, departments and leave balances for your selected branch." }, { property: "og:title", content: "HR Administration — Litu Vault" }, { property: "og:description", content: "Manage staff onboarding and leave balances." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => (
     <RoleGate path="/hr/admin">
       <HrAdminPage />
@@ -27,19 +31,36 @@ type Emp = {
   department_id: string | null; supervisor_id: string | null; employment_status: string;
   contract_type: string | null; job_grade: string | null; date_hired: string | null;
 };
-type Lt = { id: string; name: string; default_days: number };
+type Lt = { id: string; name: string; default_days_per_year: number };
 type Lb = { id: string; employee_id: string; leave_type_id: string; balance_days: number; used_days: number; year: number };
 
+const StaffIds = createContext<string[]>([]);
 function HrAdminPage() {
+  const { activeFacility } = useFacility();
+  const loadStaff = useServerFn(hrStaffOptions);
+  const [ids, setIds] = useState<string[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    let cancelled = false; setLoading(true); setError(""); setIds([]);
+    void loadStaff({ data: { facilityId: activeFacility.id } }).then(rows => { if (!cancelled) setIds(rows.map(r => r.id)); })
+      .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : "Unable to load staff."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [activeFacility.id, revision, loadStaff]);
   const [tab, setTab] = useState("overview");
 
+  if (loading) return <p role="status">Loading branch staff…</p>;
+  if (error) return <div className="space-y-3"><h1 className="text-2xl font-bold">HR administration</h1><p role="alert" className="text-destructive">{error}</p><Button onClick={() => setRevision(r => r + 1)}>Retry</Button></div>;
   return (
-    <div className="space-y-6">
+    <StaffIds.Provider value={ids}><div key={`${activeFacility.id}-${revision}`} className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">HR administration</h1>
         <p className="text-sm text-muted-foreground">Manage staff records, departments, and annual leave balances.</p>
       </div>
 
+      <EmployeeOnboarding onSaved={() => setRevision(r => r + 1)} />
       <KPIBlock />
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -54,25 +75,26 @@ function HrAdminPage() {
         <TabsContent value="departments"><DepartmentsPanel /></TabsContent>
         <TabsContent value="balances"><BalancesPanel /></TabsContent>
       </Tabs>
-    </div>
+    </div></StaffIds.Provider>
   );
 }
 
 function KPIBlock() {
+  const ids = useContext(StaffIds);
   const [stats, setStats] = useState({ total: 0, active: 0, onLeave: 0, pending: 0 });
   useEffect(() => {
     void (async () => {
       const today = new Date().toISOString().slice(0, 10);
       const [a, b, c, d] = await Promise.all([
-        supabase.from("employees" as never).select("*", { count: "exact", head: true }),
-        supabase.from("employees" as never).select("*", { count: "exact", head: true }).eq("employment_status", "active"),
+        supabase.from("employees" as never).select("*", { count: "exact", head: true }).in("id", ids),
+        supabase.from("employees" as never).select("*", { count: "exact", head: true }).in("id", ids).eq("employment_status", "active"),
         supabase.from("leave_requests" as never).select("*", { count: "exact", head: true })
-          .eq("status", "approved").lte("start_date", today).gte("end_date", today),
-        supabase.from("leave_requests" as never).select("*", { count: "exact", head: true }).eq("status", "submitted"),
+          .in("employee_id", ids).eq("status", "approved").lte("start_date", today).gte("end_date", today),
+        supabase.from("leave_requests" as never).select("*", { count: "exact", head: true }).in("employee_id", ids).eq("status", "submitted"),
       ]);
       setStats({ total: a.count ?? 0, active: b.count ?? 0, onLeave: c.count ?? 0, pending: d.count ?? 0 });
     })();
-  }, []);
+  }, [ids]);
   return (
     <div className="grid gap-4 md:grid-cols-4">
       <KPI label="Total employees" value={stats.total} />
@@ -93,15 +115,16 @@ function KPI({ label, value }: { label: string; value: number }) {
 }
 
 function OverviewPanel() {
+  const ids = useContext(StaffIds);
   const [latestHires, setLatestHires] = useState<Emp[]>([]);
   const [perDept, setPerDept] = useState<Array<{ dept: string; count: number }>>([]);
   useEffect(() => {
     void (async () => {
       const { data } = await supabase.from("employees" as never)
-        .select("id,full_name,employee_no,position,date_hired").order("date_hired", { ascending: false, nullsFirst: false }).limit(8);
+        .select("id,full_name,employee_no,position,date_hired").in("id", ids).order("date_hired", { ascending: false, nullsFirst: false }).limit(8);
       setLatestHires((data ?? []) as Emp[]);
       const { data: all } = await supabase.from("employees" as never)
-        .select("department_id, hr_departments(name)");
+        .select("department_id, hr_departments(name)").in("id", ids);
       const map = new Map<string, number>();
       ((all ?? []) as Array<{ hr_departments: { name: string } | null }>).forEach((r) => {
         const k = r.hr_departments?.name ?? "Unassigned";
@@ -109,7 +132,7 @@ function OverviewPanel() {
       });
       setPerDept(Array.from(map.entries()).map(([dept, count]) => ({ dept, count })).sort((a, b) => b.count - a.count));
     })();
-  }, []);
+  }, [ids]);
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
@@ -151,6 +174,7 @@ function OverviewPanel() {
 }
 
 function EmployeesPanel() {
+  const ids = useContext(StaffIds);
   const [emps, setEmps] = useState<Emp[]>([]);
   const [depts, setDepts] = useState<Dept[]>([]);
   const [query, setQuery] = useState("");
@@ -161,12 +185,12 @@ function EmployeesPanel() {
     void (async () => {
       const { data } = await supabase.from("employees" as never)
         .select("id,full_name,employee_no,position,department_id,supervisor_id,employment_status,contract_type,job_grade,date_hired")
-        .order("full_name").limit(500);
+        .in("id", ids).order("full_name").limit(500);
       setEmps((data ?? []) as Emp[]);
-      const { data: d } = await supabase.from("hr_departments" as never).select("id,name,code").order("name");
+      const { data: d } = await supabase.from("hr_departments" as never).select("id,name").order("name");
       setDepts((d ?? []) as Dept[]);
     })();
-  }, [refresh]);
+  }, [refresh, ids]);
 
   const filtered = emps.filter((e) =>
     !query || `${e.full_name} ${e.employee_no ?? ""} ${e.position ?? ""}`.toLowerCase().includes(query.toLowerCase())
@@ -178,7 +202,7 @@ function EmployeesPanel() {
       position: editing.position, department_id: editing.department_id, supervisor_id: editing.supervisor_id,
       employment_status: editing.employment_status, contract_type: editing.contract_type,
       job_grade: editing.job_grade, date_hired: editing.date_hired,
-    } as never).eq("id", editing.id);
+    } as never).eq("id", editing.id).in("id", ids);
     if (error) { toast.error(error.message); return; }
     toast.success("Employee updated");
     setEditing(null); setRefresh((x) => x + 1);
@@ -187,12 +211,12 @@ function EmployeesPanel() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>Employees ({filtered.length})</CardTitle>
           <Input className="w-64" placeholder="Search name, no., position" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-muted-foreground">
             <tr>
@@ -268,13 +292,13 @@ function DepartmentsPanel() {
   const [refresh, setRefresh] = useState(0);
   useEffect(() => {
     void (async () => {
-      const { data } = await supabase.from("hr_departments" as never).select("id,name,code").order("name");
+      const { data } = await supabase.from("hr_departments" as never).select("id,name").order("name");
       setDepts((data ?? []) as Dept[]);
     })();
   }, [refresh]);
   async function add() {
-    if (!name || !code) return;
-    const { error } = await supabase.from("hr_departments" as never).insert({ name, code } as never);
+    if (!name) return;
+    const { error } = await supabase.from("hr_departments" as never).insert({ name } as never);
     if (error) { toast.error(error.message); return; }
     setName(""); setCode(""); setRefresh((x) => x + 1);
   }
@@ -297,6 +321,7 @@ function DepartmentsPanel() {
 }
 
 function BalancesPanel() {
+  const ids = useContext(StaffIds);
   const [types, setTypes] = useState<Lt[]>([]);
   const [emps, setEmps] = useState<Emp[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -306,12 +331,12 @@ function BalancesPanel() {
 
   useEffect(() => {
     void (async () => {
-      const { data: t } = await supabase.from("leave_types" as never).select("id,name,default_days").order("name");
+      const { data: t } = await supabase.from("leave_types" as never).select("id,name,default_days_per_year").order("name");
       setTypes((t ?? []) as Lt[]);
-      const { data: e } = await supabase.from("employees" as never).select("id,full_name,employee_no,position,department_id,supervisor_id,employment_status,contract_type,job_grade,date_hired").order("full_name");
+      const { data: e } = await supabase.from("employees" as never).select("id,full_name,employee_no,position,department_id,supervisor_id,employment_status,contract_type,job_grade,date_hired").in("id", ids).order("full_name");
       setEmps((e ?? []) as Emp[]);
     })();
-  }, []);
+  }, [ids]);
 
   useEffect(() => {
     if (!empId) { setBals([]); return; }
@@ -326,7 +351,7 @@ function BalancesPanel() {
     const rows = types.map((t) => {
       const existing = bals.find((b) => b.leave_type_id === t.id);
       if (existing) return null;
-      return { employee_id: empId, leave_type_id: t.id, year, balance_days: t.default_days, used_days: 0 };
+      return { employee_id: empId, leave_type_id: t.id, year, balance_days: t.default_days_per_year, used_days: 0 };
     }).filter(Boolean);
     if (rows.length === 0) { toast.info("Balances already initialised"); return; }
     const { error } = await supabase.from("leave_balances" as never).insert(rows as never);
@@ -336,7 +361,7 @@ function BalancesPanel() {
   }
 
   async function setBalance(id: string, balance_days: number) {
-    const { error } = await supabase.from("leave_balances" as never).update({ balance_days } as never).eq("id", id);
+    const { error } = await supabase.from("leave_balances" as never).update({ balance_days } as never).eq("id", id).in("employee_id", ids);
     if (error) { toast.error(error.message); return; }
     setRefresh((x) => x + 1);
   }
