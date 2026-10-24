@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/hr/admin")({
   ),
 });
 
-type Dept = { id: string; name: string; code: string };
+type Dept = { id: string; name: string };
 type Emp = {
   id: string; full_name: string; employee_no: string | null; position: string | null;
   department_id: string | null; supervisor_id: string | null; employment_status: string;
@@ -288,7 +288,6 @@ function EmployeesPanel() {
 function DepartmentsPanel() {
   const [depts, setDepts] = useState<Dept[]>([]);
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
   const [refresh, setRefresh] = useState(0);
   useEffect(() => {
     void (async () => {
@@ -300,7 +299,7 @@ function DepartmentsPanel() {
     if (!name) return;
     const { error } = await supabase.from("hr_departments" as never).insert({ name } as never);
     if (error) { toast.error(error.message); return; }
-    setName(""); setCode(""); setRefresh((x) => x + 1);
+    setName(""); setRefresh((x) => x + 1);
   }
   return (
     <Card>
@@ -308,12 +307,11 @@ function DepartmentsPanel() {
       <CardContent className="space-y-3">
         <div className="flex gap-2">
           <Input placeholder="Name (e.g. Radiology)" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input placeholder="Code (e.g. RAD)" value={code} onChange={(e) => setCode(e.target.value)} className="w-32" />
           <Button onClick={add}>Add</Button>
         </div>
         <table className="w-full text-sm">
-          <thead className="text-muted-foreground"><tr><th className="text-left p-2">Name</th><th className="text-left p-2">Code</th></tr></thead>
-          <tbody>{depts.map((d) => <tr key={d.id} className="border-t"><td className="p-2">{d.name}</td><td className="p-2">{d.code}</td></tr>)}</tbody>
+          <thead className="text-muted-foreground"><tr><th className="text-left p-2">Name</th></tr></thead>
+          <tbody>{depts.map((d) => <tr key={d.id} className="border-t"><td className="p-2">{d.name}</td></tr>)}</tbody>
         </table>
       </CardContent>
     </Card>
