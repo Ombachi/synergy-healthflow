@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { approvalBalance, onboardingSchema } from "./hr-rules";
+import { approvalBalance, onboardingSchema, leaveCalendarDays } from "./hr-rules";
 
 describe("HR onboarding and approval", () => {
   const id = "11111111-1111-4111-8111-111111111111";
@@ -14,4 +14,8 @@ describe("HR onboarding and approval", () => {
   it("deducts approved days and records used days", () => assert.deepEqual(approvalBalance(21, 0, 5, false), { balance: 16, used: 5 }));
   it("does not deduct twice", () => assert.deepEqual(approvalBalance(16, 5, 5, true), { balance: 16, used: 5 }));
   it("rejects insufficient balances rather than flooring at zero", () => assert.throws(() => approvalBalance(3, 18, 5, false), /Insufficient/));
+  it("counts five calendar days inclusively", () => assert.equal(leaveCalendarDays("2026-10-25", "2026-10-29"), 5));
+  it("rejects an end before the start", () => assert.equal(leaveCalendarDays("2026-10-29", "2026-10-25"), 0));
+  it("rejects impossible dates rather than normalizing them", () => assert.equal(leaveCalendarDays("2026-02-30", "2026-03-05"), 0));
+  it("counts one day for a same-day request", () => assert.equal(leaveCalendarDays("2026-10-25", "2026-10-25"), 1));
 });

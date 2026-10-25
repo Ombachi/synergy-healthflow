@@ -16,3 +16,15 @@ export function approvalBalance(balance: number, used: number, days: number, alr
   if (!Number.isFinite(balance) || balance < days) throw new Error("Insufficient leave balance");
   return { balance: balance - days, used: used + days };
 }
+
+/** Preserve the existing inclusive calendar-day policy; invalid dates never become one day. */
+export function leaveCalendarDays(start: string, end: string) {
+  const parse = (value: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
+    const timestamp = Date.parse(`${value}T00:00:00Z`);
+    return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value ? timestamp : NaN;
+  };
+  const first = parse(start), last = parse(end);
+  if (!Number.isFinite(first) || !Number.isFinite(last) || last < first) return 0;
+  return (last - first) / 86400000 + 1;
+}

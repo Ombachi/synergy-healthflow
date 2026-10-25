@@ -28,11 +28,13 @@ export function EmployeeOnboarding({ onSaved }: { onSaved: () => void }) {
   const [departmentId, setDepartmentId] = useState("");
   const [year, setYear] = useState(2026);
   const [quotas, setQuotas] = useState<Record<string, string>>({});
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setLoading(true); setError(""); setUserId(""); setStaff([]); setQuotas({});
+    setPosition(""); setDepartmentId(""); setYear(new Date().getFullYear()); setTypes([]); setDepts([]);
     void (async () => {
       const [accounts, d, t] = await Promise.all([
         loadStaff({ data: { facilityId: activeFacility.id } }),
@@ -47,9 +49,10 @@ export function EmployeeOnboarding({ onSaved }: { onSaved: () => void }) {
     })().catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : "Unable to load staff."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [open, activeFacility.id, loadStaff]);
+  }, [open, activeFacility.id, loadStaff, retry]);
 
   async function save() {
+    if (saving || loading || facilityLoading || facilityError) return;
     const parsed = onboardingSchema.safeParse({ facilityId: activeFacility.id, userId, position, departmentId, year,
       quotas: types.map(t => ({ leaveTypeId: t.id, days: quotas[t.id]?.trim() ? Number(quotas[t.id]) : NaN })) });
     if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? "Complete all fields."); return; }
@@ -71,7 +74,7 @@ export function EmployeeOnboarding({ onSaved }: { onSaved: () => void }) {
         <h3 className="font-medium sm:col-span-2">Initial leave quota (days)</h3>
         {types.map(t => <div key={t.id} className="space-y-1"><Label htmlFor={`quota-${t.id}`}>{t.name}</Label><Input id={`quota-${t.id}`} type="number" min={0} max={366} step="0.5" value={quotas[t.id] ?? ""} onChange={e => setQuotas(q => ({ ...q, [t.id]: e.target.value }))} /></div>)}
       </div>}
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {error && <div className="space-y-2"><p role="alert" className="text-sm text-destructive">{error}</p>{!staff.length && <Button variant="outline" disabled={loading} onClick={() => setRetry(n => n + 1)}>Retry loading</Button>}</div>}
       <DialogFooter><Button variant="outline" disabled={saving} onClick={() => setOpen(false)}>Cancel</Button><Button disabled={loading || saving || !staff.length || !types.length} onClick={save}>{saving ? "Saving…" : "Create employee"}</Button></DialogFooter>
     </DialogContent>
   </Dialog>;
