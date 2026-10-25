@@ -1,4 +1,6 @@
 # Billing extension and facility integration
+- [ ] Implement verified Kenyan monthly payroll formulas, integrate payslip calculation and add statutory boundary tests.
+- [ ] Verify calculated payroll saves and PDF readback with a real account; blocked while database is unavailable.
 - [x] Build HR onboarding modal, linked branch account selection, job title, department and initial quota validation.
 - [x] Connect both leave approval screens to one authenticated decision path; add duplicate/insufficient-balance rule tests.
 - [x] Harden leave-date validation, separate unavailable lists from empty lists, clear branch approval state and add onboarding retry.
