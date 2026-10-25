@@ -1,6 +1,7 @@
 # Billing extension and facility integration
 - [x] Build HR onboarding modal, linked branch account selection, job title, department and initial quota validation.
 - [x] Connect both leave approval screens to one authenticated decision path; add duplicate/insufficient-balance rule tests.
+- [x] Harden leave-date validation, separate unavailable lists from empty lists, clear branch approval state and add onboarding retry.
 - [ ] Apply docs/staged-migrations/hr-onboarding-leave.sql and verify onboarding-to-approval with real accounts; blocked by unavailable database (migration attempt failed).
 - [ ] Add authenticated payment ledger, sponsor/LPO allocation and reconciliation with database enforcement.
 - [x] Invoice payment controls: cash received/change, card terminal + authorization, balance limits.
