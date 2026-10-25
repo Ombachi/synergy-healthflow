@@ -11,6 +11,9 @@ Blocked until `docs/staged-migrations/hr-onboarding-leave.sql` is applied throug
 7. Reject/request clarification: no deduction. Already-approved dates, days, type, employee and accounting marker cannot change; cancellation of approved leave needs a separately approved reversal workflow (not included).
 8. Staff cannot approve themselves. Non-HR, wrong-branch HR and HR-disabled branches cannot call either RPC successfully.
 9. A cross-year request must ask for separate requests, not charge all days to one year. Existing calendar-day counting remains unchanged; public-holiday/accrual rules are outside this update.
+   Also try reversed and impossible dates: submission must be blocked. Failed employee lookup must not submit without the reporting relationship.
 10. Check both branches, both approval screens and existing staff self-service after activation. Employee IDs remain system account IDs; employees assigned to multiple branches share one employee record and annual balance.
 
 Known limitation: pre-migration approvals already ran the old trigger; the backfill marks currently approved rows as deducted. Previously cancelled/reapproved history requires reconciliation, not automatic balance correction. Broader HR RLS facility isolation remains an existing separate deployment blocker.
+
+Final decisions are HR-only; a separate supervisor recommendation workflow is not included. Existing annual balances are never overwritten during onboarding: legacy staff with balances require HR review using the existing record. Test branch switching while lists are loading: stale approval rows must not appear. Database failures must show a retry/error state, not “Nothing waiting on you”.
