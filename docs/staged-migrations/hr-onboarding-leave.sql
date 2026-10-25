@@ -38,8 +38,9 @@ BEGIN
  IF NOT public.hr_can_manage(_facility) THEN RAISE EXCEPTION 'HR access to this branch is required'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.user_facilities WHERE user_id=_user AND facility_id=_facility AND (role IS NULL OR role NOT IN ('patient','athlete')))
  OR NOT EXISTS(SELECT 1 FROM public.user_roles WHERE user_id=_user AND role NOT IN ('patient','athlete')) THEN RAISE EXCEPTION 'Select a staff account assigned to this branch'; END IF;
- IF length(trim(_position)) NOT BETWEEN 1 AND 150 OR _year NOT BETWEEN 2000 AND 2100 OR NOT EXISTS(SELECT 1 FROM public.hr_departments WHERE id=_department) THEN RAISE EXCEPTION 'A valid job title, department and quota year are required'; END IF;
- IF jsonb_typeof(_quotas) <> 'array' OR jsonb_array_length(_quotas)=0 THEN RAISE EXCEPTION 'Initial leave quotas are required'; END IF;
+ IF _position IS NULL OR _year IS NULL OR length(trim(_position)) NOT BETWEEN 1 AND 150 OR _year NOT BETWEEN 2000 AND 2100 OR NOT EXISTS(SELECT 1 FROM public.hr_departments WHERE id=_department) THEN RAISE EXCEPTION 'A valid job title, department and quota year are required'; END IF;
+ IF _quotas IS NULL OR jsonb_typeof(_quotas) <> 'array' THEN RAISE EXCEPTION 'Initial leave quotas are required'; END IF;
+ IF jsonb_array_length(_quotas)=0 THEN RAISE EXCEPTION 'Initial leave quotas are required'; END IF;
  IF (SELECT count(*) FROM jsonb_array_elements(_quotas)) <> (SELECT count(DISTINCT x->>'leave_type_id') FROM jsonb_array_elements(_quotas) x) THEN RAISE EXCEPTION 'Duplicate leave type'; END IF;
  SELECT full_name INTO v_name FROM public.profiles WHERE id=_user;
  IF v_name IS NULL OR trim(v_name)='' THEN RAISE EXCEPTION 'Staff account needs a full name before onboarding'; END IF;
@@ -79,7 +80,7 @@ BEGIN
   IF auth.uid()=OLD.employee_id THEN RAISE EXCEPTION 'You cannot approve your own leave'; END IF;
   IF OLD.status NOT IN ('submitted','pending','clarification') THEN RAISE EXCEPTION 'Only submitted leave can be approved'; END IF;
   IF (NEW.employee_id,NEW.leave_type_id,NEW.start_date,NEW.end_date,NEW.days) IS DISTINCT FROM (OLD.employee_id,OLD.leave_type_id,OLD.start_date,OLD.end_date,OLD.days) THEN RAISE EXCEPTION 'Leave details cannot change during approval'; END IF;
-  IF NEW.days<=0 OR NEW.days>366 OR NEW.end_date<NEW.start_date OR NEW.days<>(NEW.end_date-NEW.start_date+1) THEN RAISE EXCEPTION 'Invalid leave dates or days'; END IF;
+  IF NEW.days IS NULL OR NEW.days<=0 OR NEW.days>366 OR NEW.end_date<NEW.start_date OR NEW.days<>(NEW.end_date-NEW.start_date+1) THEN RAISE EXCEPTION 'Invalid leave dates or days'; END IF;
   v_year:=extract(year FROM NEW.start_date)::int;
   IF extract(year FROM NEW.end_date)::int<>v_year THEN RAISE EXCEPTION 'Split leave across calendar years before approval'; END IF;
   SELECT default_days_per_year INTO v_default FROM public.leave_types WHERE id=NEW.leave_type_id;
@@ -92,7 +93,11 @@ BEGIN
  END IF;
  RETURN NEW;
 END $$;
-CREATE TRIGGER trg_hr_guard_leave BEFORE INSERT OR UPDATE ON public.leave_requests FOR EACH ROW EXECUTE FUNCTION public.hr_guard_leave();
+DO $$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgname='trg_hr_guard_leave' AND tgrelid='public.leave_requests'::regclass) THEN
+  CREATE TRIGGER trg_hr_guard_leave BEFORE INSERT OR UPDATE ON public.leave_requests FOR EACH ROW EXECUTE FUNCTION public.hr_guard_leave();
+ END IF;
+END $$;
 -- Keep the legacy trigger attached, but retire its flooring/double-deduction behavior.
 CREATE OR REPLACE FUNCTION public.apply_leave_balance()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN RETURN NEW; END $$;
@@ -102,7 +107,7 @@ RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 DECLARE r public.leave_requests;
 BEGIN
  IF NOT public.hr_can_manage(_facility) THEN RAISE EXCEPTION 'Final leave decisions require branch HR access'; END IF;
- IF _status NOT IN ('approved','rejected','clarification') OR length(COALESCE(_comment,''))>2000 THEN RAISE EXCEPTION 'Invalid leave decision'; END IF;
+ IF _status IS NULL OR _status NOT IN ('approved','rejected','clarification') OR length(COALESCE(_comment,''))>2000 THEN RAISE EXCEPTION 'Invalid leave decision'; END IF;
  SELECT * INTO r FROM public.leave_requests WHERE id=_request FOR UPDATE;
  IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.user_facilities WHERE user_id=r.employee_id AND facility_id=_facility) THEN RAISE EXCEPTION 'Leave request is not available in this branch'; END IF;
  IF r.employee_id=auth.uid() THEN RAISE EXCEPTION 'You cannot decide your own leave'; END IF;
