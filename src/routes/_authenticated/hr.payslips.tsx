@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { exportPayslipPDF } from "@/lib/payslip-pdf";
+import { calculateMonthlyPayroll, healthContributionLabel } from "@/lib/payroll";
 
 export const Route = createFileRoute("/_authenticated/hr/payslips")({
   head: () => ({ meta: [{ title: "Hr Payslips — Litu Vault" }, { name: "description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Hr Payslips — Litu Vault" }, { property: "og:description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -255,14 +256,16 @@ function PayslipsPage() {
               {num("Basic salary", "basic_cents")}
               {num("Allowances", "allowances_cents")}
               {num("Overtime", "overtime_cents")}
-              {num("PAYE", "paye_cents")}
-              {num("NHIF", "nhif_cents")}
-              {num("NSSF", "nssf_cents")}
-              {num("Housing levy", "housing_levy_cents")}
               {num("Other deductions", "other_deductions_cents")}
-              <div className="md:col-span-2 text-sm">
-                <span className="text-muted-foreground">Net pay: </span>
-                <span className="font-semibold">{kes(recalcNet(form))}</span>
+              {shown("PAYE", calc?.payeCents)}
+              {shown(period ? healthContributionLabel(period.period_start) : "SHIF", calc?.shifCents)}
+              {shown("NSSF (employee)", calc?.nssf.employeeCents)}
+              {shown("Housing levy (employee)", calc?.employeeHousingCents)}
+              <div className="md:col-span-2 text-sm space-y-1">
+                {!period && <p className="text-muted-foreground">Select a period to calculate statutory deductions.</p>}
+                {calcError && <p className="text-destructive">{calcError}</p>}
+                {calc && <p className="text-muted-foreground">Taxable pay {kes(calc.taxableCents)} · relief {kes(calc.personalReliefCents)} · employer cost {kes(calc.employerCostCents)}</p>}
+                <p><span className="text-muted-foreground">Net pay: </span><span className="font-semibold">{calc ? kes(calc.netCents) : "—"}</span></p>
               </div>
             </div>
             <DialogFooter><Button onClick={addSlip}>Save as draft</Button></DialogFooter>

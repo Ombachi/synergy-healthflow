@@ -56,7 +56,7 @@ export function exportPayslipPDF(p: PayslipPDFInput) {
   ];
   const deductions: [string, string][] = [
     ["PAYE", kes(p.paye_cents)],
-    ["NHIF", kes(p.nhif_cents)],
+    [p.period_start >= "2024-10-01" ? "SHA / SHIF" : "NHIF", kes(p.nhif_cents)],
     ["NSSF", kes(p.nssf_cents)],
     ["Housing levy", kes(p.housing_levy_cents)],
     ["Other deductions", kes(p.other_deductions_cents)],
