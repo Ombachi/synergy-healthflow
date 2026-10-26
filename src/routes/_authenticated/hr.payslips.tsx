@@ -170,19 +170,41 @@ function PayslipsPage() {
       setLabel(""); setPStart(""); setPEnd(""); setPeriodOpen(false); onChange();
     }
 
+    const period = periods.find((p) => p.id === periodId);
+    const month = period?.period_start?.slice(0, 7) ?? "";
+    let calc: ReturnType<typeof calculateMonthlyPayroll> | null = null;
+    let calcError = "";
+    if (period) {
+      try {
+        calc = calculateMonthlyPayroll({ month, basicCents: form.basic_cents ?? 0, allowancesCents: form.allowances_cents ?? 0,
+          overtimeCents: form.overtime_cents ?? 0, otherDeductionsCents: form.other_deductions_cents ?? 0, resident: true });
+      } catch (e) { calcError = (e as Error).message; }
+    }
+
     async function addSlip() {
       if (!periodId || !empId) { toast.error("Pick period and employee"); return; }
-      const net = recalcNet(form);
+      if (!calc) { toast.error(calcError || "Unable to calculate statutory deductions"); return; }
       const { error } = await supabase.from("payslips" as never).insert({
         employee_id: empId, period_id: periodId,
         basic_cents: form.basic_cents ?? 0, allowances_cents: form.allowances_cents ?? 0, overtime_cents: form.overtime_cents ?? 0,
-        paye_cents: form.paye_cents ?? 0, nhif_cents: form.nhif_cents ?? 0, nssf_cents: form.nssf_cents ?? 0,
-        housing_levy_cents: form.housing_levy_cents ?? 0, other_deductions_cents: form.other_deductions_cents ?? 0,
-        net_cents: net, notes: form.notes ?? null, published: false,
+        paye_cents: calc.payeCents, nhif_cents: calc.shifCents, nssf_cents: calc.nssf.employeeCents,
+        housing_levy_cents: calc.employeeHousingCents, other_deductions_cents: form.other_deductions_cents ?? 0,
+        net_cents: calc.netCents,
+        notes: [form.notes, `Auto-calculated (${calc.ruleVersion}). Employer: NSSF ${kes(calc.nssf.employerCents)}, AHL ${kes(calc.employerHousingCents)}.`].filter(Boolean).join("\n"),
+        published: false,
       } as never);
       if (error) { toast.error(error.message); return; }
       toast.success("Payslip saved");
       setSlipOpen(false); setForm({}); setPeriodId(""); setEmpId(""); onChange();
+    }
+
+    function shown(label: string, cents: number | undefined) {
+      return (
+        <div className="space-y-1">
+          <Label className="text-xs">{label} (auto)</Label>
+          <Input readOnly value={cents === undefined ? "—" : kes(cents)} />
+        </div>
+      );
     }
 
     function num(label: string, key: keyof Slip) {
