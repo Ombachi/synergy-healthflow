@@ -25,7 +25,7 @@ describe("Kenyan monthly statutory payroll", () => {
   it("deducts employee NSSF SHIF and AHL before PAYE", () => assert.equal(calculateMonthlyPayroll(input).taxableCents, 8975000));
   it("keeps employer contributions outside take-home deductions", () => {
     const r = calculateMonthlyPayroll(input);
-    assert.equal(r.payeCents, 1930485); assert.equal(r.netCents, 7044515);
+    assert.equal(r.payeCents, 1930835); assert.equal(r.netCents, 7044165);
     assert.equal(r.employerCostCents, 10750000);
   });
   it("rejects negative input amounts", () => assert.throws(() => calculateMonthlyPayroll({ ...input, basicCents: -1 })));

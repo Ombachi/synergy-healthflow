@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { exportPayslipPDF } from "@/lib/payslip-pdf";
+import { calculateMonthlyPayroll, healthContributionLabel } from "@/lib/payroll";
 
 export const Route = createFileRoute("/_authenticated/hr/payslips")({
   head: () => ({ meta: [{ title: "Hr Payslips — Litu Vault" }, { name: "description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Hr Payslips — Litu Vault" }, { property: "og:description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -170,19 +171,41 @@ function PayslipsPage() {
       setLabel(""); setPStart(""); setPEnd(""); setPeriodOpen(false); onChange();
     }
 
+    const period = periods.find((p) => p.id === periodId);
+    const month = period?.period_start?.slice(0, 7) ?? "";
+    let calc: ReturnType<typeof calculateMonthlyPayroll> | null = null;
+    let calcError = "";
+    if (period) {
+      try {
+        calc = calculateMonthlyPayroll({ month, basicCents: form.basic_cents ?? 0, allowancesCents: form.allowances_cents ?? 0,
+          overtimeCents: form.overtime_cents ?? 0, otherDeductionsCents: form.other_deductions_cents ?? 0, resident: true });
+      } catch (e) { calcError = (e as Error).message; }
+    }
+
     async function addSlip() {
       if (!periodId || !empId) { toast.error("Pick period and employee"); return; }
-      const net = recalcNet(form);
+      if (!calc) { toast.error(calcError || "Unable to calculate statutory deductions"); return; }
       const { error } = await supabase.from("payslips" as never).insert({
         employee_id: empId, period_id: periodId,
         basic_cents: form.basic_cents ?? 0, allowances_cents: form.allowances_cents ?? 0, overtime_cents: form.overtime_cents ?? 0,
-        paye_cents: form.paye_cents ?? 0, nhif_cents: form.nhif_cents ?? 0, nssf_cents: form.nssf_cents ?? 0,
-        housing_levy_cents: form.housing_levy_cents ?? 0, other_deductions_cents: form.other_deductions_cents ?? 0,
-        net_cents: net, notes: form.notes ?? null, published: false,
+        paye_cents: calc.payeCents, nhif_cents: calc.shifCents, nssf_cents: calc.nssf.employeeCents,
+        housing_levy_cents: calc.employeeHousingCents, other_deductions_cents: form.other_deductions_cents ?? 0,
+        net_cents: calc.netCents,
+        notes: [form.notes, `Auto-calculated (${calc.ruleVersion}). Employer: NSSF ${kes(calc.nssf.employerCents)}, AHL ${kes(calc.employerHousingCents)}.`].filter(Boolean).join("\n"),
+        published: false,
       } as never);
       if (error) { toast.error(error.message); return; }
       toast.success("Payslip saved");
       setSlipOpen(false); setForm({}); setPeriodId(""); setEmpId(""); onChange();
+    }
+
+    function shown(label: string, cents: number | undefined) {
+      return (
+        <div className="space-y-1">
+          <Label className="text-xs">{label} (auto)</Label>
+          <Input readOnly value={cents === undefined ? "—" : kes(cents)} />
+        </div>
+      );
     }
 
     function num(label: string, key: keyof Slip) {
@@ -233,14 +256,16 @@ function PayslipsPage() {
               {num("Basic salary", "basic_cents")}
               {num("Allowances", "allowances_cents")}
               {num("Overtime", "overtime_cents")}
-              {num("PAYE", "paye_cents")}
-              {num("NHIF", "nhif_cents")}
-              {num("NSSF", "nssf_cents")}
-              {num("Housing levy", "housing_levy_cents")}
               {num("Other deductions", "other_deductions_cents")}
-              <div className="md:col-span-2 text-sm">
-                <span className="text-muted-foreground">Net pay: </span>
-                <span className="font-semibold">{kes(recalcNet(form))}</span>
+              {shown("PAYE", calc?.payeCents)}
+              {shown(period ? healthContributionLabel(period.period_start) : "SHIF", calc?.shifCents)}
+              {shown("NSSF (employee)", calc?.nssf.employeeCents)}
+              {shown("Housing levy (employee)", calc?.employeeHousingCents)}
+              <div className="md:col-span-2 text-sm space-y-1">
+                {!period && <p className="text-muted-foreground">Select a period to calculate statutory deductions.</p>}
+                {calcError && <p className="text-destructive">{calcError}</p>}
+                {calc && <p className="text-muted-foreground">Taxable pay {kes(calc.taxableCents)} · relief {kes(calc.personalReliefCents)} · employer cost {kes(calc.employerCostCents)}</p>}
+                <p><span className="text-muted-foreground">Net pay: </span><span className="font-semibold">{calc ? kes(calc.netCents) : "—"}</span></p>
               </div>
             </div>
             <DialogFooter><Button onClick={addSlip}>Save as draft</Button></DialogFooter>
