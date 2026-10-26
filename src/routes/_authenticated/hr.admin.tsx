@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { useFacility } from "@/components/facility-context";
 import { EmployeeOnboarding } from "@/components/employee-onboarding";
+import { LicenseRegister } from "@/components/license-register";
 import { hrStaffOptions } from "@/lib/hr.functions";
 import { RoleGate } from "@/components/role-gate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,11 +70,13 @@ function HrAdminPage() {
           <TabsTrigger value="employees">Employees</TabsTrigger>
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="balances">Leave balances</TabsTrigger>
+          <TabsTrigger value="licenses">Licences</TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><OverviewPanel /></TabsContent>
         <TabsContent value="employees"><EmployeesPanel /></TabsContent>
         <TabsContent value="departments"><DepartmentsPanel /></TabsContent>
         <TabsContent value="balances"><BalancesPanel /></TabsContent>
+        <TabsContent value="licenses"><LicenseRegister staffIds={ids} /></TabsContent>
       </Tabs>
     </div></StaffIds.Provider>
   );

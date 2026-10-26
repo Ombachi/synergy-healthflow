@@ -19,3 +19,4 @@
 - [ ] Apply missing ward, bed and inventory facility ownership and operational RLS; blocked by unavailable Lovable Cloud database.
 - [ ] Verify branch creation, staff assignments, module saves and two-branch isolation while signed in; blocked by unavailable database and session minting.
 - [ ] Run the docs/acceptance/ scripts per role in staging before go-live; blocked by unavailable database.
+- [ ] Apply docs/staged-migrations/staff-licenses.sql (blocked: database unreachable)
