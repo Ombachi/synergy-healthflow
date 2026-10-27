@@ -162,6 +162,8 @@ function HrMePage() {
         </CardContent>
       </Card>
 
+      <MyLicenses position={emp.position} lics={lics} />
+
       <Card>
         <CardHeader><CardTitle>Leave balances ({new Date().getFullYear()})</CardTitle></CardHeader>
         <CardContent>
