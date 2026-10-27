@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CalendarDays, Plus, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useFacility } from "@/components/facility-context";
+import { hrStaffOptions } from "@/lib/hr.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,13 +26,15 @@ export const Route = createFileRoute("/_authenticated/roster")({
 interface Shift { id: string; name: string; department: string | null; starts_at: string; ends_at: string }
 interface Assignment { id: string; shift_id: string; user_id: string; role: string | null; status: string }
 interface Leave { id: string; user_id: string; starts_at: string; ends_at: string; kind: string; status: string; reason: string | null }
-interface Staff { id: string; full_name: string; role: string }
+interface Staff { id: string; full_name: string; role?: string }
 
 const fmt = (s: string) => new Date(s).toLocaleString("en-GB");
 
 function RosterPage() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { activeFacility } = useFacility();
+  const loadStaff = useServerFn(hrStaffOptions);
   const [shiftOpen, setShiftOpen] = useState(false);
   const [shiftForm, setShiftForm] = useState({ name:"", department:"", starts_at:"", ends_at:"" });
   const [assignOpen, setAssignOpen] = useState(false);
@@ -38,22 +43,28 @@ function RosterPage() {
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaveForm, setLeaveForm] = useState({ user_id:"", starts_at:"", ends_at:"", kind:"annual", reason:"" });
 
-  const shifts = useQuery({ queryKey:["shifts"], queryFn: async () => {
-    const { data } = await supabase.from("shifts" as never).select("*").gte("ends_at", new Date().toISOString()).order("starts_at");
+  // Branch staff: every roster list below stays inside the active branch.
+  const staff = useQuery({ queryKey:["hr-staff", activeFacility.id], queryFn: async () => {
+    return (await loadStaff({ data: { facilityId: activeFacility.id } })) as Staff[];
+  }});
+  const staffIds = staff.data?.map(s=>s.id) ?? [];
+  const shifts = useQuery({ queryKey:["shifts", activeFacility.id], queryFn: async () => {
+    if (!staffIds.length) return [] as Shift[];
+    // Interim: shifts have no employee link, so scope by creator's branch until
+    // the shifts.facility_id column lands (docs/staged-migrations/hr-facility-scope.sql).
+    const { data } = await supabase.from("shifts" as never).select("*").in("created_by", staffIds).gte("ends_at", new Date().toISOString()).order("starts_at");
     return (data as unknown as Shift[]) ?? [];
-  }});
-  const assigns = useQuery({ queryKey:["assigns"], queryFn: async () => {
-    const { data } = await supabase.from("shift_assignments" as never).select("*");
+  }, enabled: !!staff.data });
+  const assigns = useQuery({ queryKey:["assigns", activeFacility.id], queryFn: async () => {
+    if (!staffIds.length) return [] as Assignment[];
+    const { data } = await supabase.from("shift_assignments" as never).select("*").in("user_id", staffIds);
     return (data as unknown as Assignment[]) ?? [];
-  }});
-  const leaves = useQuery({ queryKey:["leaves"], queryFn: async () => {
-    const { data } = await supabase.from("leave_requests" as never).select("*").order("starts_at",{ ascending: false }).limit(50);
+  }, enabled: !!staff.data });
+  const leaves = useQuery({ queryKey:["leaves", activeFacility.id], queryFn: async () => {
+    if (!staffIds.length) return [] as Leave[];
+    const { data } = await supabase.from("leave_requests" as never).select("*").in("user_id", staffIds).order("starts_at",{ ascending: false }).limit(50);
     return (data as unknown as Leave[]) ?? [];
-  }});
-  const staff = useQuery({ queryKey:["staff-msgable"], queryFn: async () => {
-    const { data } = await supabase.rpc("list_messageable_users" as never);
-    return (data as unknown as Staff[]) ?? [];
-  }});
+  }, enabled: !!staff.data });
   const nameOf = (id: string) => staff.data?.find(s=>s.id===id)?.full_name ?? id.slice(0,8);
 
   const createShift = useMutation({
