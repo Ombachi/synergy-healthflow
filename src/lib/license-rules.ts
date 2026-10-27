@@ -44,3 +44,15 @@ export function requiredLicenseStatus(role: string, licenses: { council: string;
   const latest = licenses.filter((l) => l.council === council).map((l) => l.expiry_date).sort().at(-1);
   return licenseStatus(latest, today);
 }
+
+/** Map a free-text job title (e.g. "Medical Officer", "Staff Nurse") to the council licence it requires. */
+export function requiredCouncilForPosition(position: string | null | undefined): Council | null {
+  const p = (position ?? "").toLowerCase();
+  if (!p) return null;
+  if (/\b(doctor|physician|medical officer|dentist|surgeon|consultant)\b/.test(p)) return "KMPDC";
+  if (/\b(clinical officer)\b/.test(p)) return "COC";
+  if (/\b(nurse|nursing|midwife|midwifery)\b/.test(p)) return "NCK";
+  if (/\b(pharmacist|pharmaceutical technologist)\b/.test(p)) return "PPB";
+  if (/\b(lab|laboratory)\b/.test(p)) return "KMLTTB";
+  return null;
+}

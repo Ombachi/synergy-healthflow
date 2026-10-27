@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { licenseStatus, requiredLicenseStatus, validateLicense } from "./license-rules";
+import { licenseStatus, requiredCouncilForPosition, requiredLicenseStatus, validateLicense } from "./license-rules";
 
 const today = "2026-10-26";
 describe("professional licence rules", () => {
@@ -14,4 +14,13 @@ describe("professional licence rules", () => {
   it("non-clinical roles need no licence", () => assert.equal(requiredLicenseStatus("cashier", [], today), null));
   it("rejects expiry before issue", () => assert.throws(() => validateLicense({ council: "PPB", license_number: "P1", issue_date: "2026-05-01", expiry_date: "2026-04-01" })));
   it("rejects a blank licence number", () => assert.throws(() => validateLicense({ council: "PPB", license_number: " ", expiry_date: "2026-12-31" })));
+  it("maps job titles to their council", () => {
+    assert.equal(requiredCouncilForPosition("Medical Officer"), "KMPDC");
+    assert.equal(requiredCouncilForPosition("Staff Nurse"), "NCK");
+    assert.equal(requiredCouncilForPosition("Pharmacist"), "PPB");
+    assert.equal(requiredCouncilForPosition("Lab Technologist"), "KMLTTB");
+    assert.equal(requiredCouncilForPosition("Clinical Officer"), "COC");
+    assert.equal(requiredCouncilForPosition("Cashier"), null);
+    assert.equal(requiredCouncilForPosition(null), null);
+  });
 });
