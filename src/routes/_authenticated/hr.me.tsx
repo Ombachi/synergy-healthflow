@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { COUNCILS, daysUntil, licenseStatus, requiredCouncilForPosition } from "@/lib/license-rules";
 
 export const Route = createFileRoute("/_authenticated/hr/me")({
   component: () => (
@@ -51,6 +53,7 @@ function HrMePage() {
   const [balances, setBalances] = useState<Array<{ name: string; balance_days: number; used_days: number }>>([]);
   const [pendingLeave, setPendingLeave] = useState(0);
   const [nextPayslip, setNextPayslip] = useState<string | null>(null);
+  const [lics, setLics] = useState<Array<{ id: string; council: string; license_number: string; expiry_date: string }>>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -75,6 +78,11 @@ function HrMePage() {
       const { data: pp } = await supabase
         .from("payroll_periods" as never).select("label, period_end").order("period_end", { ascending: false }).limit(1);
       setNextPayslip(((pp ?? []) as Array<{ label: string; period_end: string }>)[0]?.label ?? null);
+      // The licence register may not exist yet in the database; ignore failures silently.
+      const { data: lic } = await supabase
+        .from("staff_licenses" as never).select("id, council, license_number, expiry_date")
+        .eq("employee_id", user.id).order("expiry_date", { ascending: false });
+      setLics((lic ?? []) as Array<{ id: string; council: string; license_number: string; expiry_date: string }>);
     })();
   }, [user]);
 
@@ -154,6 +162,8 @@ function HrMePage() {
         </CardContent>
       </Card>
 
+      <MyLicenses position={emp.position} lics={lics} />
+
       <Card>
         <CardHeader><CardTitle>Leave balances ({new Date().getFullYear()})</CardTitle></CardHeader>
         <CardContent>
@@ -200,5 +210,52 @@ function F({ label, v, on, type = "text", readOnly = false }: { label: string; v
       <Label className="text-xs">{label}</Label>
       <Input type={type} value={v} readOnly={readOnly} onChange={(e) => on?.(e.target.value)} />
     </div>
+  );
+}
+
+function MyLicenses({ position, lics }: { position: string | null; lics: Array<{ id: string; council: string; license_number: string; expiry_date: string }> }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const required = requiredCouncilForPosition(position);
+  const requiredLic = required ? lics.filter((l) => l.council === required).sort((a, b) => b.expiry_date.localeCompare(a.expiry_date))[0] : undefined;
+  const requiredStatus = required ? licenseStatus(requiredLic?.expiry_date, today) : null;
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>My practising licence</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        {required && (
+          <p className="text-sm">
+            Your role ({position ?? "—"}) requires a current {required} licence — {COUNCILS[required]}.{" "}
+            {requiredStatus === "missing" && <span className="text-destructive font-medium">No {required} licence is on file — please contact HR immediately.</span>}
+            {requiredStatus === "expired" && <span className="text-destructive font-medium">Your {required} licence has expired — you must not practise until it is renewed. Contact HR.</span>}
+            {requiredStatus === "critical" && requiredLic && <span className="text-destructive font-medium">Your {required} licence expires in {daysUntil(requiredLic.expiry_date, today)} days — renew it now.</span>}
+            {requiredStatus === "expiring" && requiredLic && <span className="text-muted-foreground">Your {required} licence expires in {daysUntil(requiredLic.expiry_date, today)} days.</span>}
+            {requiredStatus === "valid" && <span className="text-muted-foreground">Your licence is current.</span>}
+          </p>
+        )}
+        {lics.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No licences recorded yet. HR maintains the licence register.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="text-muted-foreground">
+              <tr><th className="text-left p-1">Council</th><th className="text-left p-1">Number</th><th className="text-left p-1">Expires</th><th className="text-left p-1">Status</th></tr>
+            </thead>
+            <tbody>
+              {lics.map((l) => {
+                const s = licenseStatus(l.expiry_date, today);
+                return (
+                  <tr key={l.id} className="border-t">
+                    <td className="p-1">{l.council}</td>
+                    <td className="p-1">{l.license_number}</td>
+                    <td className="p-1">{l.expiry_date}</td>
+                    <td className="p-1"><Badge variant={s === "valid" ? "outline" : s === "expiring" ? "secondary" : "destructive"}>{s}</Badge></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </CardContent>
+    </Card>
   );
 }
