@@ -212,3 +212,50 @@ function F({ label, v, on, type = "text", readOnly = false }: { label: string; v
     </div>
   );
 }
+
+function MyLicenses({ position, lics }: { position: string | null; lics: Array<{ id: string; council: string; license_number: string; expiry_date: string }> }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const required = requiredCouncilForPosition(position);
+  const requiredLic = required ? lics.filter((l) => l.council === required).sort((a, b) => b.expiry_date.localeCompare(a.expiry_date))[0] : undefined;
+  const requiredStatus = required ? licenseStatus(requiredLic?.expiry_date, today) : null;
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>My practising licence</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        {required && (
+          <p className="text-sm">
+            Your role ({position ?? "—"}) requires a current {required} licence — {COUNCILS[required]}.{" "}
+            {requiredStatus === "missing" && <span className="text-destructive font-medium">No {required} licence is on file — please contact HR immediately.</span>}
+            {requiredStatus === "expired" && <span className="text-destructive font-medium">Your {required} licence has expired — you must not practise until it is renewed. Contact HR.</span>}
+            {requiredStatus === "critical" && requiredLic && <span className="text-destructive font-medium">Your {required} licence expires in {daysUntil(requiredLic.expiry_date, today)} days — renew it now.</span>}
+            {requiredStatus === "expiring" && requiredLic && <span className="text-muted-foreground">Your {required} licence expires in {daysUntil(requiredLic.expiry_date, today)} days.</span>}
+            {requiredStatus === "valid" && <span className="text-muted-foreground">Your licence is current.</span>}
+          </p>
+        )}
+        {lics.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No licences recorded yet. HR maintains the licence register.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="text-muted-foreground">
+              <tr><th className="text-left p-1">Council</th><th className="text-left p-1">Number</th><th className="text-left p-1">Expires</th><th className="text-left p-1">Status</th></tr>
+            </thead>
+            <tbody>
+              {lics.map((l) => {
+                const s = licenseStatus(l.expiry_date, today);
+                return (
+                  <tr key={l.id} className="border-t">
+                    <td className="p-1">{l.council}</td>
+                    <td className="p-1">{l.license_number}</td>
+                    <td className="p-1">{l.expiry_date}</td>
+                    <td className="p-1"><Badge variant={s === "valid" ? "outline" : s === "expiring" ? "secondary" : "destructive"}>{s}</Badge></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
