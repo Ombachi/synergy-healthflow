@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { COUNCILS, daysUntil, licenseStatus, requiredCouncilForPosition } from "@/lib/license-rules";
 
 export const Route = createFileRoute("/_authenticated/hr/me")({
   component: () => (
@@ -51,6 +53,7 @@ function HrMePage() {
   const [balances, setBalances] = useState<Array<{ name: string; balance_days: number; used_days: number }>>([]);
   const [pendingLeave, setPendingLeave] = useState(0);
   const [nextPayslip, setNextPayslip] = useState<string | null>(null);
+  const [lics, setLics] = useState<Array<{ id: string; council: string; license_number: string; expiry_date: string }>>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -75,6 +78,11 @@ function HrMePage() {
       const { data: pp } = await supabase
         .from("payroll_periods" as never).select("label, period_end").order("period_end", { ascending: false }).limit(1);
       setNextPayslip(((pp ?? []) as Array<{ label: string; period_end: string }>)[0]?.label ?? null);
+      // The licence register may not exist yet in the database; ignore failures silently.
+      const { data: lic } = await supabase
+        .from("staff_licenses" as never).select("id, council, license_number, expiry_date")
+        .eq("employee_id", user.id).order("expiry_date", { ascending: false });
+      setLics((lic ?? []) as Array<{ id: string; council: string; license_number: string; expiry_date: string }>);
     })();
   }, [user]);
 
