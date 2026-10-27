@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Pager, usePager } from "@/components/pager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useFacility } from "@/components/facility-context";
+import { hrStaffOptions } from "@/lib/hr.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,11 +17,20 @@ interface Att { id: string; user_id: string; clock_in: string | null; clock_out:
 
 function AttendancePage() {
   const { user, hasRole } = useAuth();
+  const { activeFacility } = useFacility();
+  const loadStaff = useServerFn(hrStaffOptions);
   const qc = useQueryClient();
   const isManager = hasRole("admin") || hasRole("hr_officer") || hasRole("hr_manager") || hasRole("dept_manager");
 
+  // Branch staff ids: the manager view must never cross into another branch.
+  const staffIds = useQuery({
+    queryKey: ["hr-staff-ids", activeFacility.id],
+    queryFn: async () => (await loadStaff({ data: { facilityId: activeFacility.id } })).map((s) => s.id),
+    enabled: isManager,
+  });
+
   const mine = useQuery({
-    queryKey: ["att-mine"],
+    queryKey: ["att-mine", activeFacility.id],
     queryFn: async () => {
       const { data, error } = await supabase.from("attendance" as never).select("*")
         .eq("user_id", user!.id).order("clock_in", { ascending: false }).limit(30);
@@ -29,15 +41,17 @@ function AttendancePage() {
   });
 
   const all = useQuery({
-    queryKey: ["att-all"],
+    queryKey: ["att-all", activeFacility.id],
     queryFn: async () => {
+      const ids = staffIds.data ?? [];
+      if (!ids.length) return [] as Att[];
       const since = new Date(Date.now() - 7 * 86400000).toISOString();
       const { data, error } = await supabase.from("attendance" as never).select("*")
-        .gte("clock_in", since).order("clock_in", { ascending: false });
+        .in("user_id", ids).gte("clock_in", since).order("clock_in", { ascending: false });
       if (error) throw error;
       return (data as unknown as Att[]) ?? [];
     },
-    enabled: isManager,
+    enabled: isManager && !!staffIds.data,
   });
 
   const minePager = usePager(mine.data ?? [], 10);
