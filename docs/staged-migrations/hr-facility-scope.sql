@@ -3,12 +3,12 @@
 -- backfills every existing row into the default MAIN facility; then tightens RLS
 -- so a branch only sees its own HR records. Platform admins keep cross-branch read.
 --
+-- Real key columns: attendance.user_id, leave_requests.user_id, shifts.created_by,
+-- payslips.employee_id (employees.id IS the auth user id in this app).
 -- Depends on: public.facilities, public.user_facilities, public.has_facility_id(uuid),
 -- public.main_facility_id() (migration facilities_modules_telematics).
 
--- 1) Columns (nullable first, backfill, then NOT NULL via default-only contract:
---    we keep them nullable but always set by app/RPC; making them NOT NULL is a
---    later migration once every writer sets facility_id).
+-- 1) Columns (nullable; NOT NULL comes later once every writer sets facility_id).
 ALTER TABLE public.employees      ADD COLUMN IF NOT EXISTS facility_id uuid REFERENCES public.facilities(id);
 ALTER TABLE public.attendance     ADD COLUMN IF NOT EXISTS facility_id uuid REFERENCES public.facilities(id);
 ALTER TABLE public.shifts         ADD COLUMN IF NOT EXISTS facility_id uuid REFERENCES public.facilities(id);
@@ -29,15 +29,26 @@ CREATE INDEX IF NOT EXISTS shifts_facility_idx         ON public.shifts (facilit
 CREATE INDEX IF NOT EXISTS leave_requests_facility_idx ON public.leave_requests (facility_id);
 CREATE INDEX IF NOT EXISTS payslips_facility_idx       ON public.payslips (facility_id);
 
--- 4) Keep child rows aligned with their employee's branch: a trigger copies
---    employees.facility_id onto attendance/shifts/leave_requests/payslips when
---    the writer did not set it, so HR screens cannot accidentally file a record
---    under the wrong branch.
+-- 4) Keep rows aligned with their employee's branch. employees.id is the auth
+--    user id, so user_id / created_by / employee_id all resolve through it.
 CREATE OR REPLACE FUNCTION public.hr_inherit_facility() RETURNS trigger
 LANGUAGE plpgsql SET search_path = public AS $$
+DECLARE
+  owner uuid;
 BEGIN
-  IF NEW.facility_id IS NULL AND NEW.employee_id IS NOT NULL THEN
-    SELECT facility_id INTO NEW.facility_id FROM public.employees WHERE id = NEW.employee_id;
+  IF NEW.facility_id IS NULL THEN
+    owner := COALESCE(
+      CASE TG_TABLE_NAME
+        WHEN 'attendance' THEN NEW.user_id
+        WHEN 'leave_requests' THEN NEW.user_id
+        WHEN 'shifts' THEN NEW.created_by
+        WHEN 'payslips' THEN NEW.employee_id
+      END,
+      auth.uid()
+    );
+    IF owner IS NOT NULL THEN
+      SELECT facility_id INTO NEW.facility_id FROM public.employees WHERE id = owner;
+    END IF;
   END IF;
   IF NEW.facility_id IS NULL THEN
     NEW.facility_id := public.main_facility_id();
@@ -58,36 +69,28 @@ DROP TRIGGER IF EXISTS payslips_inherit_facility ON public.payslips;
 CREATE TRIGGER payslips_inherit_facility BEFORE INSERT OR UPDATE ON public.payslips
   FOR EACH ROW EXECUTE FUNCTION public.hr_inherit_facility();
 
--- 5) RLS: replace permissive policies with branch-scoped ones.
---    Staff always read their OWN row regardless of branch (self-service pages).
---    Branch HR/managers read their branch's rows; platform admins read all.
---    Policy names use DROP IF EXISTS so re-running is safe; adjust names to match
---    the live policies before applying if they differ.
+-- 5) RLS: branch-scoped read policies. Staff always read their OWN rows
+--    (self-service pages); branch members read their branch's rows via
+--    has_facility_id; platform admins read all. Writes stay with the existing
+--    HR/admin policies — these SELECT policies also gate UPDATE/DELETE targeting.
+--    DROP IF EXISTS makes re-running safe; confirm live policy names before applying.
 
--- employees
 DROP POLICY IF EXISTS "employees_select_facility" ON public.employees;
 CREATE POLICY "employees_select_facility" ON public.employees FOR SELECT TO authenticated
   USING (id = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
 
--- attendance
 DROP POLICY IF EXISTS "attendance_select_facility" ON public.attendance;
 CREATE POLICY "attendance_select_facility" ON public.attendance FOR SELECT TO authenticated
-  USING (employee_id = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
-DROP POLICY IF EXISTS "attendance_insert_own" ON public.attendance;
-CREATE POLICY "attendance_insert_own" ON public.attendance FOR INSERT TO authenticated
-  WITH CHECK (employee_id = auth.uid() OR public.has_facility_id(facility_id));
+  USING (user_id = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
 
--- shifts
 DROP POLICY IF EXISTS "shifts_select_facility" ON public.shifts;
 CREATE POLICY "shifts_select_facility" ON public.shifts FOR SELECT TO authenticated
-  USING (employee_id = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
+  USING (created_by = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
 
--- leave_requests
 DROP POLICY IF EXISTS "leave_requests_select_facility" ON public.leave_requests;
 CREATE POLICY "leave_requests_select_facility" ON public.leave_requests FOR SELECT TO authenticated
-  USING (employee_id = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
+  USING (user_id = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
 
--- payslips
 DROP POLICY IF EXISTS "payslips_select_facility" ON public.payslips;
 CREATE POLICY "payslips_select_facility" ON public.payslips FOR SELECT TO authenticated
   USING (employee_id = auth.uid() OR public.has_role(auth.uid(), 'admin') OR public.has_facility_id(facility_id));
