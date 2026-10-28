@@ -1,13 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CalendarDays, Plus, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFacility } from "@/components/facility-context";
-import { hrStaffOptions } from "@/lib/hr.functions";
+import { requireBranchRecord } from "@/lib/hr-facility-rules";
+import { requireFacilityId } from "@/lib/facility-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,6 @@ export const Route = createFileRoute("/_authenticated/roster")({
 
 interface Shift { id: string; name: string; department: string | null; starts_at: string; ends_at: string }
 interface Assignment { id: string; shift_id: string; user_id: string; role: string | null; status: string }
-interface Leave { id: string; user_id: string; starts_at: string; ends_at: string; kind: string; status: string; reason: string | null }
 interface Staff { id: string; full_name: string; role?: string }
 
 const fmt = (s: string) => new Date(s).toLocaleString("en-GB");
@@ -33,44 +32,43 @@ const fmt = (s: string) => new Date(s).toLocaleString("en-GB");
 function RosterPage() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const { activeFacility } = useFacility();
-  const loadStaff = useServerFn(hrStaffOptions);
+  const { activeFacility, loading: facilityLoading, error: facilityError, refresh } = useFacility();
+  const ready = !!user && !facilityLoading && !facilityError;
   const [shiftOpen, setShiftOpen] = useState(false);
   const [shiftForm, setShiftForm] = useState({ name:"", department:"", starts_at:"", ends_at:"" });
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignForm, setAssignForm] = useState({ shift_id:"", user_id:"", role:"" });
   const [conflicts, setConflicts] = useState<{kind:string;label:string;starts_at:string;ends_at:string}[]>([]);
-  const [leaveOpen, setLeaveOpen] = useState(false);
-  const [leaveForm, setLeaveForm] = useState({ user_id:"", starts_at:"", ends_at:"", kind:"annual", reason:"" });
+  useEffect(() => {
+    setShiftOpen(false); setAssignOpen(false); setConflicts([]);
+    setShiftForm({name:"",department:"",starts_at:"",ends_at:""});
+    setAssignForm({shift_id:"",user_id:"",role:""});
+  }, [activeFacility.id]);
 
-  // Branch staff: every roster list below stays inside the active branch.
-  const staff = useQuery({ queryKey:["hr-staff", activeFacility.id], queryFn: async () => {
-    return (await loadStaff({ data: { facilityId: activeFacility.id } })) as Staff[];
+  const staff = useQuery({ queryKey:["roster-staff", activeFacility.id, user?.id], enabled: ready, queryFn: async () => {
+    const { data, error } = await supabase.from("employees" as never).select("id,full_name").eq("facility_id", requireFacilityId(activeFacility.id)).order("full_name");
+    if (error) throw new Error("Staff could not be loaded for this facility.");
+    return (data ?? []) as Staff[];
   }});
-  const staffIds = staff.data?.map(s=>s.id) ?? [];
-  const shifts = useQuery({ queryKey:["shifts", activeFacility.id], queryFn: async () => {
-    if (!staffIds.length) return [] as Shift[];
-    // Interim: shifts have no employee link, so scope by creator's branch until
-    // the shifts.facility_id column lands (docs/staged-migrations/hr-facility-scope.sql).
-    const { data } = await supabase.from("shifts" as never).select("*").in("created_by", staffIds).gte("ends_at", new Date().toISOString()).order("starts_at");
-    return (data as unknown as Shift[]) ?? [];
-  }, enabled: !!staff.data });
-  const assigns = useQuery({ queryKey:["assigns", activeFacility.id], queryFn: async () => {
-    if (!staffIds.length) return [] as Assignment[];
-    const { data } = await supabase.from("shift_assignments" as never).select("*").in("user_id", staffIds);
-    return (data as unknown as Assignment[]) ?? [];
-  }, enabled: !!staff.data });
-  const leaves = useQuery({ queryKey:["leaves", activeFacility.id], queryFn: async () => {
-    if (!staffIds.length) return [] as Leave[];
-    const { data } = await supabase.from("leave_requests" as never).select("*").in("user_id", staffIds).order("starts_at",{ ascending: false }).limit(50);
-    return (data as unknown as Leave[]) ?? [];
-  }, enabled: !!staff.data });
+  const shifts = useQuery({ queryKey:["shifts", activeFacility.id, user?.id], enabled: ready, queryFn: async () => {
+    const { data, error } = await supabase.from("shifts" as never).select("*").eq("facility_id", requireFacilityId(activeFacility.id)).gte("ends_at", new Date().toISOString()).order("starts_at");
+    if (error) throw new Error("Shifts could not be loaded for this facility.");
+    return (data ?? []) as Shift[];
+  }});
+  const shiftIds = (shifts.data ?? []).map(s => s.id);
+  const assigns = useQuery({ queryKey:["assigns", activeFacility.id, user?.id, shiftIds], enabled: ready && shifts.isSuccess, queryFn: async () => {
+    if (!shiftIds.length) return [] as Assignment[];
+    const { data, error } = await supabase.from("shift_assignments" as never).select("*").in("shift_id", shiftIds);
+    if (error) throw new Error("Assignments could not be loaded for this facility.");
+    return (data ?? []) as Assignment[];
+  }});
   const nameOf = (id: string) => staff.data?.find(s=>s.id===id)?.full_name ?? id.slice(0,8);
 
   const createShift = useMutation({
     mutationFn: async () => {
+      if (!ready || !user) throw new Error("Select an authorized facility first.");
       const { error } = await supabase.from("shifts" as never).insert({
-        name: shiftForm.name, department: shiftForm.department || null,
+        facility_id: requireFacilityId(activeFacility.id), name: shiftForm.name, department: shiftForm.department || null,
         starts_at: new Date(shiftForm.starts_at).toISOString(),
         ends_at: new Date(shiftForm.ends_at).toISOString(),
         created_by: user?.id,
@@ -85,12 +83,17 @@ function RosterPage() {
     if (!assignForm.user_id || !assignForm.shift_id) return;
     const sh = shifts.data?.find(s=>s.id===assignForm.shift_id);
     if (!sh) return;
-    const { data } = await supabase.rpc("roster_conflicts" as never, { _user: assignForm.user_id, _starts: sh.starts_at, _ends: sh.ends_at } as never);
+    requireBranchRecord(assignForm.user_id, staff.data ?? []);
+    const { data, error } = await supabase.rpc("roster_conflicts" as never, { _user: assignForm.user_id, _starts: sh.starts_at, _ends: sh.ends_at } as never);
+    if (error) { toast.error("Conflicts could not be checked."); return; }
     setConflicts((data as unknown as typeof conflicts) ?? []);
   }
 
   const assign = useMutation({
     mutationFn: async () => {
+      if (!ready) throw new Error("Select an authorized facility first.");
+      requireBranchRecord(assignForm.shift_id, shifts.data ?? []);
+      requireBranchRecord(assignForm.user_id, staff.data ?? []);
       const { error } = await supabase.from("shift_assignments" as never).insert({
         shift_id: assignForm.shift_id, user_id: assignForm.user_id, role: assignForm.role || null,
       } as never);
@@ -100,27 +103,13 @@ function RosterPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const createLeave = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("leave_requests" as never).insert({
-        user_id: leaveForm.user_id || user?.id, starts_at: new Date(leaveForm.starts_at).toISOString(),
-        ends_at: new Date(leaveForm.ends_at).toISOString(), kind: leaveForm.kind, reason: leaveForm.reason || null,
-      } as never);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Leave requested"); setLeaveOpen(false); setLeaveForm({user_id:"",starts_at:"",ends_at:"",kind:"annual",reason:""}); qc.invalidateQueries({queryKey:["leaves"]}); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const decideLeave = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("leave_requests" as never).update({ status, decided_by: user?.id, decided_at: new Date().toISOString() } as never).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({queryKey:["leaves"]}); },
-  });
-
   const assignsByShift = (sid: string) => (assigns.data ?? []).filter(a=>a.shift_id===sid);
+
+  if (facilityLoading) return <p role="status">Loading your facility…</p>;
+  if (facilityError) return <div role="alert" className="space-y-3"><p>{facilityError}</p><Button onClick={refresh}>Retry</Button></div>;
+  const queryError = staff.error ?? shifts.error ?? assigns.error;
+  if (queryError) return <div role="alert" className="space-y-3"><p className="text-destructive">{queryError.message}</p><Button onClick={() => { void staff.refetch(); void shifts.refetch(); void assigns.refetch(); }}>Retry</Button></div>;
+  if (staff.isPending || shifts.isPending || assigns.isPending) return <p role="status">Loading branch roster…</p>;
 
   return (
     <div className="space-y-6">
@@ -149,7 +138,7 @@ function RosterPage() {
                     <div><Label>Ends</Label><Input type="datetime-local" value={shiftForm.ends_at} onChange={e=>setShiftForm(f=>({...f,ends_at:e.target.value}))}/></div>
                   </div>
                 </div>
-                <DialogFooter><Button onClick={()=>createShift.mutate()} disabled={!shiftForm.name||!shiftForm.starts_at||!shiftForm.ends_at}>Create</Button></DialogFooter>
+                <DialogFooter><Button onClick={()=>createShift.mutate()} disabled={createShift.isPending||!shiftForm.name||!shiftForm.starts_at||!shiftForm.ends_at}>Create</Button></DialogFooter>
               </DialogContent>
             </Dialog>
             <Dialog open={assignOpen} onOpenChange={(o)=>{ setAssignOpen(o); if (!o) setConflicts([]); }}>
@@ -166,7 +155,7 @@ function RosterPage() {
                   <div><Label>Staff</Label>
                     <Select value={assignForm.user_id} onValueChange={v=>{setAssignForm(f=>({...f,user_id:v})); setConflicts([]);}}>
                       <SelectTrigger><SelectValue placeholder="Choose staff"/></SelectTrigger>
-                      <SelectContent>{(staff.data??[]).map(s=><SelectItem key={s.id} value={s.id}>{s.full_name} ({s.role})</SelectItem>)}</SelectContent>
+                      <SelectContent>{(staff.data??[]).map(s=><SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div><Label>Role</Label><Input value={assignForm.role} onChange={e=>setAssignForm(f=>({...f,role:e.target.value}))}/></div>
@@ -180,7 +169,7 @@ function RosterPage() {
                     </div>
                   )}
                 </div>
-                <DialogFooter><Button onClick={()=>assign.mutate()} disabled={!assignForm.shift_id || !assignForm.user_id}>Assign</Button></DialogFooter>
+                <DialogFooter><Button onClick={()=>assign.mutate()} disabled={assign.isPending || !assignForm.shift_id || !assignForm.user_id}>Assign</Button></DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
@@ -207,59 +196,7 @@ function RosterPage() {
         </TabsContent>
 
         <TabsContent value="leave" className="space-y-4">
-          <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
-            <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-4 w-4"/>Request leave</Button></DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Leave request</DialogTitle></DialogHeader>
-              <div className="grid gap-3">
-                <div><Label>Staff (leave empty for self)</Label>
-                  <Select value={leaveForm.user_id} onValueChange={v=>setLeaveForm(f=>({...f,user_id:v}))}>
-                    <SelectTrigger><SelectValue placeholder="Self"/></SelectTrigger>
-                    <SelectContent>{(staff.data??[]).map(s=><SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>From</Label><Input type="datetime-local" value={leaveForm.starts_at} onChange={e=>setLeaveForm(f=>({...f,starts_at:e.target.value}))}/></div>
-                  <div><Label>To</Label><Input type="datetime-local" value={leaveForm.ends_at} onChange={e=>setLeaveForm(f=>({...f,ends_at:e.target.value}))}/></div>
-                </div>
-                <div><Label>Kind</Label>
-                  <Select value={leaveForm.kind} onValueChange={v=>setLeaveForm(f=>({...f,kind:v}))}>
-                    <SelectTrigger><SelectValue/></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="annual">Annual</SelectItem><SelectItem value="sick">Sick</SelectItem>
-                      <SelectItem value="unpaid">Unpaid</SelectItem><SelectItem value="study">Study</SelectItem><SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div><Label>Reason</Label><Input value={leaveForm.reason} onChange={e=>setLeaveForm(f=>({...f,reason:e.target.value}))}/></div>
-              </div>
-              <DialogFooter><Button onClick={()=>createLeave.mutate()} disabled={!leaveForm.starts_at || !leaveForm.ends_at}>Submit</Button></DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Card>
-            <CardContent className="p-0">
-              <table className="w-full text-sm">
-                <thead><tr className="text-left text-muted-foreground"><th className="p-2">Staff</th><th>Kind</th><th>From</th><th>To</th><th>Status</th><th></th></tr></thead>
-                <tbody>
-                  {(leaves.data ?? []).map(l => (
-                    <tr key={l.id} className="border-t">
-                      <td className="p-2">{nameOf(l.user_id)}</td>
-                      <td>{l.kind}</td><td>{fmt(l.starts_at)}</td><td>{fmt(l.ends_at)}</td>
-                      <td><Badge variant={l.status==="approved"?"default":l.status==="denied"?"destructive":"secondary"}>{l.status}</Badge></td>
-                      <td>{l.status==="pending" && (
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="outline" onClick={()=>decideLeave.mutate({id:l.id,status:"approved"})}>Approve</Button>
-                          <Button size="sm" variant="outline" onClick={()=>decideLeave.mutate({id:l.id,status:"denied"})}>Deny</Button>
-                        </div>
-                      )}</td>
-                    </tr>
-                  ))}
-                  {(leaves.data ?? []).length===0 && <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">No leave requests.</td></tr>}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
+          <Button asChild variant="outline"><Link to="/hr/leave">Open leave requests</Link></Button>
         </TabsContent>
       </Tabs>
     </div>

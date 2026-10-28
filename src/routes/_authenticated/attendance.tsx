@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Pager, usePager } from "@/components/pager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFacility } from "@/components/facility-context";
-import { hrStaffOptions } from "@/lib/hr.functions";
+import { hrFacilityScope } from "@/lib/hr-facility-rules";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -16,42 +15,35 @@ component: AttendancePage });
 interface Att { id: string; user_id: string; clock_in: string | null; clock_out: string | null; department: string | null; notes: string | null }
 
 function AttendancePage() {
-  const { user, hasRole } = useAuth();
-  const { activeFacility } = useFacility();
-  const loadStaff = useServerFn(hrStaffOptions);
+  const { user } = useAuth();
+  const { activeFacility, roles, loading: facilityLoading, error: facilityError, refresh } = useFacility();
   const qc = useQueryClient();
-  const isManager = hasRole("admin") || hasRole("hr_officer") || hasRole("hr_manager") || hasRole("dept_manager");
-
-  // Branch staff ids: the manager view must never cross into another branch.
-  const staffIds = useQuery({
-    queryKey: ["hr-staff-ids", activeFacility.id],
-    queryFn: async () => (await loadStaff({ data: { facilityId: activeFacility.id } })).map((s) => s.id),
-    enabled: isManager,
-  });
+  const isManager = roles.some(role => ["admin", "hr_officer", "hr_manager", "dept_manager"].includes(role));
+  const ready = !!user && !facilityLoading && !facilityError;
 
   const mine = useQuery({
-    queryKey: ["att-mine", activeFacility.id],
+    queryKey: ["att-mine", activeFacility.id, user?.id],
     queryFn: async () => {
+      const scope = hrFacilityScope(activeFacility.id, user?.id ?? "", false);
       const { data, error } = await supabase.from("attendance" as never).select("*")
-        .eq("user_id", user!.id).order("clock_in", { ascending: false }).limit(30);
+        .eq("facility_id", scope.facilityId).eq("user_id", user?.id ?? "").order("clock_in", { ascending: false }).limit(30);
       if (error) throw error;
       return (data as unknown as Att[]) ?? [];
     },
-    enabled: !!user,
+    enabled: ready,
   });
 
   const all = useQuery({
-    queryKey: ["att-all", activeFacility.id],
+    queryKey: ["att-all", activeFacility.id, user?.id],
     queryFn: async () => {
-      const ids = staffIds.data ?? [];
-      if (!ids.length) return [] as Att[];
+      const scope = hrFacilityScope(activeFacility.id, user?.id ?? "", true);
       const since = new Date(Date.now() - 7 * 86400000).toISOString();
       const { data, error } = await supabase.from("attendance" as never).select("*")
-        .in("user_id", ids).gte("clock_in", since).order("clock_in", { ascending: false });
+        .eq("facility_id", scope.facilityId).gte("clock_in", since).order("clock_in", { ascending: false });
       if (error) throw error;
       return (data as unknown as Att[]) ?? [];
     },
-    enabled: isManager && !!staffIds.data,
+    enabled: isManager && ready,
   });
 
   const minePager = usePager(mine.data ?? [], 10);
@@ -59,19 +51,21 @@ function AttendancePage() {
   const open = (mine.data ?? []).find((a) => a.clock_in && !a.clock_out);
 
   async function clockIn() {
+    if (!user || !ready || mine.isPending || mine.isError || open) return;
     const { error } = await supabase.from("attendance" as never).insert({
-      user_id: user?.id, clock_in: new Date().toISOString(),
+      facility_id: activeFacility.id, user_id: user.id, clock_in: new Date().toISOString(),
     } as never);
     if (error) return toast.error(error.message);
     toast.success("Clocked in");
     qc.invalidateQueries({ queryKey: ["att-mine"] });
   }
   async function clockOut() {
-    if (!open) return;
-    const { error } = await supabase.from("attendance" as never).update({
+    if (!open || !user || !ready || mine.isPending || mine.isError) return;
+    const { data, error } = await supabase.from("attendance" as never).update({
       clock_out: new Date().toISOString(),
-    } as never).eq("id", open.id);
+    } as never).eq("id", open.id).eq("user_id", user.id).eq("facility_id", activeFacility.id).select("id");
     if (error) return toast.error(error.message);
+    if (!data?.length) return toast.error("Attendance was not updated in this facility.");
     toast.success("Clocked out");
     qc.invalidateQueries({ queryKey: ["att-mine"] });
   }
@@ -81,6 +75,9 @@ function AttendancePage() {
     return acc + (new Date(a.clock_out).getTime() - new Date(a.clock_in).getTime()) / 3600000;
   }, 0);
 
+  if (facilityLoading) return <p role="status">Loading your facility…</p>;
+  if (facilityError) return <div role="alert" className="space-y-3"><p>{facilityError}</p><Button onClick={refresh}>Retry</Button></div>;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -88,8 +85,8 @@ function AttendancePage() {
           <h1 className="text-2xl font-semibold">Attendance</h1>
           <p className="text-sm text-muted-foreground">Clock in and out, view summaries.</p>
         </div>
-        {open ? <Button onClick={clockOut} variant="destructive">Clock out</Button>
-              : <Button onClick={clockIn}>Clock in</Button>}
+        {open ? <Button disabled={mine.isPending || mine.isError} onClick={clockOut} variant="destructive">Clock out</Button>
+              : <Button disabled={mine.isPending || mine.isError} onClick={clockIn}>Clock in</Button>}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -104,7 +101,7 @@ function AttendancePage() {
       <Card>
         <CardHeader><CardTitle>My recent attendance</CardTitle></CardHeader>
         <CardContent>
-          {(mine.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No records yet.</p> : (
+          {mine.isPending ? <p role="status">Loading attendance…</p> : mine.isError ? <div role="alert"><p className="text-destructive">Attendance is unavailable. Check the branch setup and connection.</p><Button variant="outline" onClick={() => void mine.refetch()}>Retry</Button></div> : (mine.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No records yet.</p> : (
             <div className="space-y-1 text-sm">
               {minePager.slice.map((a) => (
                 <div key={a.id} className="flex justify-between rounded border p-2">
@@ -122,7 +119,7 @@ function AttendancePage() {
         <Card>
           <CardHeader><CardTitle>Team attendance — last 7 days</CardTitle></CardHeader>
           <CardContent>
-            {(all.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No records.</p> : (
+            {all.isPending ? <p role="status">Loading team attendance…</p> : all.isError ? <div role="alert"><p className="text-destructive">Team attendance is unavailable for this facility.</p><Button variant="outline" onClick={() => void all.refetch()}>Retry</Button></div> : (all.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No records.</p> : (
               <div className="space-y-1 text-sm">
                 <div className="text-xs text-muted-foreground">Total entries: {all.data?.length}</div>
                 {allPager.slice.map((a) => (

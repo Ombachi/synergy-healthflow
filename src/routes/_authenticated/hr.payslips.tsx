@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useFacility } from "@/components/facility-context";
+import { hrFacilityScope, requireBranchRecord } from "@/lib/hr-facility-rules";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGate } from "@/components/role-gate";
@@ -37,34 +40,37 @@ type Slip = {
 function kes(c: number) { return "KES " + (c / 100).toLocaleString("en-KE", { minimumFractionDigits: 2 }); }
 
 function PayslipsPage() {
-  const { user, hasAnyRole } = useAuth();
-  const isHR = hasAnyRole(["admin", "hr_officer", "hr_manager"]);
-  const [slips, setSlips] = useState<Slip[]>([]);
-  const [periods, setPeriods] = useState<Period[]>([]);
+  const { user } = useAuth();
+  const { activeFacility, roles, loading: facilityLoading, error: facilityError, refresh: refreshFacility } = useFacility();
+  const isHR = roles.some(role => ["admin", "hr_officer", "hr_manager"].includes(role));
   const [refresh, setRefresh] = useState(0);
 
-  useEffect(() => {
-    if (!user) return;
-    void (async () => {
+  const ready = !!user && !facilityLoading && !facilityError;
+  const records = useQuery({
+    queryKey: ["hr-payslips", activeFacility.id, user?.id, isHR, refresh],
+    enabled: ready,
+    queryFn: async () => {
+      const scope = hrFacilityScope(activeFacility.id, user?.id ?? "", isHR);
       let q = supabase.from("payslips" as never)
         .select("*, payroll_periods(*), employees!payslips_employee_id_fkey(id,full_name,employee_no,position)")
-        .order("created_at", { ascending: false }).limit(200);
-      if (!isHR) q = q.eq("employee_id", user.id).eq("published", true);
-      const { data } = await q;
-      setSlips((data ?? []) as Slip[]);
-      const { data: pp } = await supabase.from("payroll_periods" as never).select("*").order("period_end", { ascending: false });
-      setPeriods((pp ?? []) as Period[]);
-    })();
-  }, [user, isHR, refresh]);
-
-  function recalcNet(s: Partial<Slip>): number {
-    return (s.basic_cents ?? 0) + (s.allowances_cents ?? 0) + (s.overtime_cents ?? 0)
-      - (s.paye_cents ?? 0) - (s.nhif_cents ?? 0) - (s.nssf_cents ?? 0) - (s.housing_levy_cents ?? 0) - (s.other_deductions_cents ?? 0);
-  }
+        .eq("facility_id", scope.facilityId).order("created_at", { ascending: false }).limit(200);
+      if (scope.ownerId) q = q.eq("employee_id", scope.ownerId).eq("published", scope.publishedOnly);
+      const { data, error } = await q;
+      if (error) throw new Error("Payslips could not be loaded. Branch payroll setup requires an available database.");
+      const pp = await supabase.from("payroll_periods" as never).select("*").eq("facility_id", scope.facilityId).order("period_end", { ascending: false });
+      if (pp.error) throw new Error("Payroll periods could not be loaded for this facility.");
+      return { slips: (data ?? []) as Slip[], periods: (pp.data ?? []) as Period[] };
+    },
+  });
+  const slips = ready ? records.data?.slips ?? [] : [];
+  const periods = ready ? records.data?.periods ?? [] : [];
 
   async function togglePublished(s: Slip) {
-    const { error } = await supabase.from("payslips" as never).update({ published: !s.published } as never).eq("id", s.id);
+    if (!ready || !isHR) return;
+    requireBranchRecord(s.id, slips);
+    const { data, error } = await supabase.from("payslips" as never).update({ published: !s.published } as never).eq("id", s.id).eq("facility_id", activeFacility.id).select("id");
     if (error) { toast.error(error.message); return; }
+    if (!data?.length) { toast.error("Payslip was not updated in this facility."); return; }
     setRefresh((x) => x + 1);
   }
 
@@ -91,21 +97,24 @@ function PayslipsPage() {
     });
   }
 
+  if (facilityLoading) return <p role="status">Loading your facility…</p>;
+  if (facilityError) return <div role="alert" className="space-y-3"><p>{facilityError}</p><Button onClick={refreshFacility}>Retry</Button></div>;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Payslips</h1>
           <p className="text-sm text-muted-foreground">{isHR ? "Manage payroll periods and per-employee payslips. Amounts in KES." : "Your payslip history. Click download to get the PDF."}</p>
         </div>
-        {isHR && <HrPayrollActions periods={periods} onChange={() => setRefresh((x) => x + 1)} />}
+        {isHR && !records.isPending && !records.isError && <HrPayrollActions key={activeFacility.id} facilityId={activeFacility.id} periods={periods} onChange={() => setRefresh((x) => x + 1)} />}
       </div>
 
       <Card>
         <CardHeader><CardTitle>Payslips</CardTitle></CardHeader>
         <CardContent>
-          {slips.length === 0 ? <p className="text-sm text-muted-foreground">No payslips yet.</p> : (
-            <table className="w-full text-sm">
+          {records.isPending ? <p role="status">Loading payslips…</p> : records.isError ? <div role="alert" className="space-y-3"><p className="text-destructive">{records.error.message}</p><Button variant="outline" onClick={() => void records.refetch()}>Retry</Button></div> : slips.length === 0 ? <p className="text-sm text-muted-foreground">No payslips yet.</p> : (
+            <div className="overflow-x-auto"><table className="w-full text-sm whitespace-nowrap">
               <thead className="text-muted-foreground">
                 <tr>
                   {isHR && <th className="text-left p-2">Employee</th>}
@@ -138,14 +147,16 @@ function PayslipsPage() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           )}
         </CardContent>
       </Card>
     </div>
   );
 
-  function HrPayrollActions({ periods, onChange }: { periods: Period[]; onChange: () => void }) {
+}
+
+function HrPayrollActions({ facilityId, periods, onChange }: { facilityId: string; periods: Period[]; onChange: () => void }) {
     const [periodOpen, setPeriodOpen] = useState(false);
     const [slipOpen, setSlipOpen] = useState(false);
     const [label, setLabel] = useState("");
@@ -153,20 +164,24 @@ function PayslipsPage() {
     const [pEnd, setPEnd] = useState("");
     const [periodId, setPeriodId] = useState("");
     const [empId, setEmpId] = useState("");
-    const [employees, setEmployees] = useState<EmpRef[]>([]);
+    const employeesQuery = useQuery({
+      queryKey: ["payroll-employees", facilityId], enabled: slipOpen,
+      queryFn: async () => {
+        const { data, error } = await supabase.from("employees" as never).select("id,full_name,employee_no,position").eq("facility_id", facilityId).order("full_name");
+        if (error) throw new Error("Staff could not be loaded for this facility.");
+        return (data ?? []) as EmpRef[];
+      },
+    });
+    const employees = employeesQuery.data ?? [];
+    const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<Partial<Slip>>({});
-
-    useEffect(() => {
-      if (!slipOpen) return;
-      void (async () => {
-        const { data } = await supabase.from("employees" as never).select("id,full_name,employee_no,position").order("full_name");
-        setEmployees((data ?? []) as EmpRef[]);
-      })();
-    }, [slipOpen]);
 
     async function addPeriod() {
       if (!label || !pStart || !pEnd) return;
-      const { error } = await supabase.from("payroll_periods" as never).insert({ label, period_start: pStart, period_end: pEnd, status: "open" } as never);
+      if (saving) return;
+      setSaving(true);
+      const { error } = await supabase.from("payroll_periods" as never).insert({ facility_id: facilityId, label, period_start: pStart, period_end: pEnd, status: "open" } as never);
+      setSaving(false);
       if (error) { toast.error(error.message); return; }
       setLabel(""); setPStart(""); setPEnd(""); setPeriodOpen(false); onChange();
     }
@@ -184,8 +199,13 @@ function PayslipsPage() {
 
     async function addSlip() {
       if (!periodId || !empId) { toast.error("Pick period and employee"); return; }
+      if (saving || employeesQuery.isPending || employeesQuery.isError) return;
+      try { requireBranchRecord(empId, employees); requireBranchRecord(periodId, periods); }
+      catch (e) { toast.error(e instanceof Error ? e.message : "Choose branch records"); return; }
       if (!calc) { toast.error(calcError || "Unable to calculate statutory deductions"); return; }
+      setSaving(true);
       const { error } = await supabase.from("payslips" as never).insert({
+        facility_id: facilityId,
         employee_id: empId, period_id: periodId,
         basic_cents: form.basic_cents ?? 0, allowances_cents: form.allowances_cents ?? 0, overtime_cents: form.overtime_cents ?? 0,
         paye_cents: calc.payeCents, nhif_cents: calc.shifCents, nssf_cents: calc.nssf.employeeCents,
@@ -194,6 +214,7 @@ function PayslipsPage() {
         notes: [form.notes, `Auto-calculated (${calc.ruleVersion}). Employer: NSSF ${kes(calc.nssf.employerCents)}, AHL ${kes(calc.employerHousingCents)}.`].filter(Boolean).join("\n"),
         published: false,
       } as never);
+      setSaving(false);
       if (error) { toast.error(error.message); return; }
       toast.success("Payslip saved");
       setSlipOpen(false); setForm({}); setPeriodId(""); setEmpId(""); onChange();
@@ -220,7 +241,7 @@ function PayslipsPage() {
     }
 
     return (
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Dialog open={periodOpen} onOpenChange={setPeriodOpen}>
           <DialogTrigger asChild><Button variant="outline">New period</Button></DialogTrigger>
           <DialogContent>
@@ -230,13 +251,13 @@ function PayslipsPage() {
               <div><Label>Start</Label><Input type="date" value={pStart} onChange={(e) => setPStart(e.target.value)} /></div>
               <div><Label>End</Label><Input type="date" value={pEnd} onChange={(e) => setPEnd(e.target.value)} /></div>
             </div>
-            <DialogFooter><Button onClick={addPeriod}>Save</Button></DialogFooter>
+            <DialogFooter><Button onClick={addPeriod} disabled={saving}>Save</Button></DialogFooter>
           </DialogContent>
         </Dialog>
 
         <Dialog open={slipOpen} onOpenChange={setSlipOpen}>
           <DialogTrigger asChild><Button>New payslip</Button></DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle>New payslip</DialogTitle></DialogHeader>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1">
@@ -248,6 +269,8 @@ function PayslipsPage() {
               </div>
               <div className="space-y-1">
                 <Label>Employee</Label>
+                {employeesQuery.isPending && <p role="status" className="text-sm text-muted-foreground">Loading staff…</p>}
+                {employeesQuery.isError && <div role="alert"><p className="text-sm text-destructive">{employeesQuery.error.message}</p><Button variant="outline" size="sm" onClick={() => void employeesQuery.refetch()}>Retry</Button></div>}
                 <Select value={empId} onValueChange={setEmpId}>
                   <SelectTrigger><SelectValue placeholder="Select employee" /></SelectTrigger>
                   <SelectContent>{employees.map((e) => <SelectItem key={e.id} value={e.id}>{e.full_name}{e.employee_no ? ` · ${e.employee_no}` : ""}</SelectItem>)}</SelectContent>
@@ -268,10 +291,9 @@ function PayslipsPage() {
                 <p><span className="text-muted-foreground">Net pay: </span><span className="font-semibold">{calc ? kes(calc.netCents) : "—"}</span></p>
               </div>
             </div>
-            <DialogFooter><Button onClick={addSlip}>Save as draft</Button></DialogFooter>
+            <DialogFooter><Button onClick={addSlip} disabled={saving || employeesQuery.isPending || employeesQuery.isError}>Save as draft</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
     );
   }
-}
