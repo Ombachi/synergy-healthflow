@@ -1,4 +1,6 @@
 # Billing extension and facility integration
+- [ ] Finish and test branch-scoped payslips, attendance and roster reads/writes; clear branch-switch state and show unavailable data explicitly.
+- [ ] Apply reviewed HR facility isolation SQL and verify two-branch HR access with real accounts; blocked until database connectivity is restored.
 - [ ] Implement verified Kenyan monthly payroll formulas, integrate payslip calculation and add statutory boundary tests.
 - [ ] Verify calculated payroll saves and PDF readback with a real account; blocked while database is unavailable.
 - [x] Build HR onboarding modal, linked branch account selection, job title, department and initial quota validation.
