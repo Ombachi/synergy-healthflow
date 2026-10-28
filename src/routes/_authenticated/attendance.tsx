@@ -26,7 +26,7 @@ function AttendancePage() {
     queryFn: async () => {
       const scope = hrFacilityScope(activeFacility.id, user?.id ?? "", false);
       const { data, error } = await supabase.from("attendance" as never).select("*")
-        .eq("facility_id", scope.facilityId).eq("user_id", scope.ownerId).order("clock_in", { ascending: false }).limit(30);
+        .eq("facility_id", scope.facilityId).eq("user_id", user?.id ?? "").order("clock_in", { ascending: false }).limit(30);
       if (error) throw error;
       return (data as unknown as Att[]) ?? [];
     },
