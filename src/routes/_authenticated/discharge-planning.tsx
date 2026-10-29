@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { LogOut, CheckCircle2, Circle, Sparkles, FileText, ShieldCheck, Receipt } from "lucide-react";
@@ -13,6 +13,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RoleGate } from "@/components/role-gate";
 import { useActiveAdmissions } from "@/components/admission-picker";
+import { CLEARANCE_STEPS, DEFAULT_DIET, DEFAULT_RED_FLAGS, aggregateFinalBill, canSignStep, isFullyCleared, type ClearanceState, type ClearanceStep } from "@/lib/discharge-rules";
+import { exportTakeHomePDF } from "@/lib/take-home-pdf";
+
+const clearanceKey = (id: string) => `litu-vault:discharge-clearance:${id}`;
 
 export const Route = createFileRoute("/_authenticated/discharge-planning")({
   head: () => ({ meta: [{ title: "Discharge Planning — Litu Vault" }, { name: "description", content: "Discharge Planning workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Discharge Planning — Litu Vault" }, { property: "og:description", content: "Discharge Planning workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -28,7 +32,7 @@ interface MarRow { medication_order_id: string; administered_at: string; status:
 
 function DischargePage() {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const { user, roles } = useAuth();
   const admissions = useActiveAdmissions();
   const [selected, setSelected] = useState("");
   const [expected, setExpected] = useState("");
@@ -36,6 +40,23 @@ function DischargePage() {
   const [generating, setGenerating] = useState(false);
 
   const sel = admissions.data?.find((a) => a.id === selected);
+  const [clearance, setClearance] = useState<ClearanceState>({});
+  const [ttoDone, setTtoDone] = useState<string[]>([]);
+  const [sponsorSigned, setSponsorSigned] = useState(false);
+  const [bedRate, setBedRate] = useState("5000");
+  const [pack, setPack] = useState({ diet: DEFAULT_DIET, red_flags: DEFAULT_RED_FLAGS.join("\n"), sick_off_days: "0" });
+
+  useEffect(() => {
+    if (!selected) return;
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(clearanceKey(selected)) ?? "{}");
+      setClearance(raw.clearance ?? {}); setTtoDone(raw.ttoDone ?? []); setSponsorSigned(!!raw.sponsorSigned);
+    } catch { setClearance({}); setTtoDone([]); setSponsorSigned(false); }
+  }, [selected]);
+  function persist(next: { clearance?: ClearanceState; ttoDone?: string[]; sponsorSigned?: boolean }) {
+    const merged = { clearance, ttoDone, sponsorSigned, ...next };
+    window.localStorage.setItem(clearanceKey(selected), JSON.stringify(merged));
+  }
 
   const pIds = (admissions.data ?? []).map((a) => a.patient_id);
   const invoices = useQuery({
@@ -130,25 +151,57 @@ function DischargePage() {
 
   const outstanding = sel ? (invoices.data ?? []).filter((i) => i.patient_id === sel.patient_id && !["paid", "void"].includes(i.status)) : [];
 
+  const patientInvoices = sel ? (invoices.data ?? []).filter((i) => i.patient_id === sel.patient_id) : [];
+  const finalBill = sel ? aggregateFinalBill({
+    admittedAt: sel.admitted_at, bedDailyRateCents: Math.round((Number(bedRate) || 0) * 100), unbilled: [],
+    invoices: patientInvoices,
+  }) : null;
+  const ttoMeds = (clinicalData.data?.meds ?? []).filter((m) => m.status === "active" && !m.stop_at);
+  const ttoPending = ttoMeds.filter((m) => !ttoDone.includes(m.id)).length;
+  const bedAlreadyBilled = patientInvoices.some((i) => i.status !== "void" && (i as Invoice & { notes?: string }).notes?.startsWith("Inpatient final bill"));
+  const balanceCents = finalBill ? (bedAlreadyBilled ? finalBill.priorBilled - finalBill.paid : finalBill.balance) : 0;
+
   const triggerBilling = useMutation({
     mutationFn: async () => {
-      if (!sel) throw new Error("No admission");
-      // Compile a discharge invoice covering the admission length of stay
-      const days = Math.max(1, Math.ceil((Date.now() - new Date(sel.admitted_at).getTime()) / 86_400_000));
-      const perDiem = 5000_00; // KES 5000 per day placeholder
-      const total = days * perDiem;
+      if (!sel || !finalBill) throw new Error("No admission");
+      if (bedAlreadyBilled) throw new Error("Final bill already posted for this admission");
+      const bed = finalBill.lines[0];
       const { data, error } = await supabase.from("invoices" as never).insert({
         patient_id: sel.patient_id, visit_id: null,
-        total_cents: total, paid_cents: 0, status: "issued",
-        notes: `Inpatient discharge invoice — ${days} day(s) inpatient stay`,
+        total_cents: bed.amount_cents, paid_cents: 0, status: "issued",
+        notes: `Inpatient final bill — ${finalBill.days} day(s) inpatient stay`,
         created_by: user?.id,
       } as never).select("id").single();
       if (error) throw error;
-      return (data as { id: string }).id;
+      const id = (data as { id: string }).id;
+      await supabase.from("invoice_items" as never).insert({ invoice_id: id, kind: "bed", description: bed.description, qty: bed.qty, unit_price_cents: bed.unit_price_cents, amount_cents: bed.amount_cents } as never);
+      return id;
     },
-    onSuccess: (id) => { toast.success(`Discharge invoice #${id.slice(0,8)} created`); qc.invalidateQueries({ queryKey: ["disc-invoices"] }); },
+    onSuccess: (id) => { toast.success(`Final bill #${id.slice(0,8)} posted`); qc.invalidateQueries({ queryKey: ["disc-invoices"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  function sign(step: ClearanceStep) {
+    const err = canSignStep(step, clearance, {
+      roles, summaryReady: !!summary.diagnosis.trim() && !!summary.course.trim(),
+      ttoPending, balanceCents, sponsorClaimSigned: sponsorSigned,
+    });
+    if (err) { toast.error(err); return; }
+    const next = { ...clearance, [step]: { by: user!.id, at: new Date().toISOString() } };
+    setClearance(next); persist({ clearance: next });
+    toast.success(`${CLEARANCE_STEPS.find((s) => s.key === step)!.label} signed`);
+  }
+
+  function printPack() {
+    if (!sel) return;
+    exportTakeHomePDF({
+      patient_name: sel.patient_name, mrn: null, admitted_at: sel.admitted_at, discharged_at: new Date().toISOString(),
+      diagnosis: summary.diagnosis,
+      medicines: ttoMeds.map((m) => ({ name: `${m.medication} ${m.dose ?? ""}`.trim(), how: [m.route, m.frequency, m.indication ? `for ${m.indication}` : ""].filter(Boolean).join(", ") || "As directed" })),
+      diet: pack.diet, red_flags: pack.red_flags.split("\n").map((l) => l.trim()).filter(Boolean),
+      follow_up: summary.follow_up || "As advised by your doctor.", sick_off_days: Math.max(0, Math.floor(Number(pack.sick_off_days) || 0)),
+    });
+  }
 
   const triggerInsurance = useMutation({
     mutationFn: async () => {
@@ -170,7 +223,7 @@ function DischargePage() {
   const discharge = useMutation({
     mutationFn: async () => {
       if (!sel) throw new Error("No admission");
-      if (outstanding.length > 0) throw new Error(`${outstanding.length} invoice(s) not cleared. Complete billing first.`);
+      if (!isFullyCleared(clearance)) throw new Error("All four clearance steps must be signed first.");
       const { error: sErr } = await supabase.from("discharge_summaries" as never).insert({
         visit_id: null, patient_id: sel.patient_id, admission_id: sel.id,
         diagnosis: summary.diagnosis, hospital_course: summary.course,
@@ -178,7 +231,7 @@ function DischargePage() {
         summary: summary.course, treatment_plan: summary.medications,
         discharged_by: user?.id, discharged_at: new Date().toISOString(),
         clearance_status: "cleared",
-        source_data: clinicalData.data as never,
+        source_data: { ...clinicalData.data, clearance, tto_dispensed: ttoDone, sponsor_claim_signed: sponsorSigned, final_bill: finalBill } as never,
       } as never);
       if (sErr) throw sErr;
       const { error } = await supabase.from("admissions" as never)
@@ -187,7 +240,9 @@ function DischargePage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Discharged; bed released");
+      window.localStorage.removeItem(clearanceKey(selected));
+      printPack();
+      toast.success("Discharged; bed released. Take-home pack downloaded.");
       setSelected(""); setSummary({ diagnosis: "", course: "", medications: "", follow_up: "" });
       qc.invalidateQueries({ queryKey: ["haims-active-admissions"] });
     },
@@ -247,35 +302,82 @@ function DischargePage() {
                 </div>
               </div>
 
-              <div className="rounded-md border p-3">
-                <div className="mb-2 font-medium flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Clearance steps</div>
-                <ul className="space-y-1.5">
-                  <li className="flex items-center gap-2">
-                    {outstanding.length === 0 ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Circle className="h-4 w-4 text-amber-500" />}
-                    <span className="flex-1">Billing: {outstanding.length === 0 ? "cleared" : `${outstanding.length} outstanding`}</span>
-                    <Button size="sm" variant="outline" onClick={() => triggerBilling.mutate()} disabled={triggerBilling.isPending}>
-                      <Receipt className="mr-1 h-3.5 w-3.5" /> Generate invoice
-                    </Button>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Circle className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1">Insurance pre-authorisation</span>
-                    <Button size="sm" variant="outline" onClick={() => triggerInsurance.mutate()} disabled={triggerInsurance.isPending}>
-                      <ShieldCheck className="mr-1 h-3.5 w-3.5" /> Request clearance
-                    </Button>
-                  </li>
-                  <li className="flex items-center gap-2"><Circle className="h-4 w-4 text-muted-foreground" /> Take-home medications dispensed (pharmacy)</li>
-                  <li className="flex items-center gap-2"><Circle className="h-4 w-4 text-muted-foreground" /> Follow-up appointment booked</li>
-                </ul>
+              <div className="rounded-md border p-3 space-y-3">
+                <div className="font-medium flex items-center gap-2"><Receipt className="h-4 w-4" /> Final bill</div>
+                <div className="flex flex-wrap items-end gap-2">
+                  <div><Label>Bed rate per day (KES)</Label><Input className="w-32" inputMode="decimal" value={bedRate} onChange={(e) => setBedRate(e.target.value)} disabled={bedAlreadyBilled} /></div>
+                  <Button size="sm" variant="outline" onClick={() => triggerBilling.mutate()} disabled={triggerBilling.isPending || bedAlreadyBilled}>
+                    {bedAlreadyBilled ? "Final bill posted" : "Post final bill"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => triggerInsurance.mutate()} disabled={triggerInsurance.isPending}>
+                    <ShieldCheck className="mr-1 h-3.5 w-3.5" /> Request insurer clearance
+                  </Button>
+                </div>
+                {finalBill && (
+                  <div className="text-xs grid gap-1">
+                    {!bedAlreadyBilled && <div className="flex justify-between"><span>{finalBill.lines[0].description}</span><span>KES {(finalBill.lines[0].amount_cents / 100).toFixed(2)}</span></div>}
+                    <div className="flex justify-between"><span>Already billed (pharmacy, lab, procedures, earlier invoices)</span><span>KES {(finalBill.priorBilled / 100).toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Paid</span><span>KES {(finalBill.paid / 100).toFixed(2)}</span></div>
+                    <div className="flex justify-between font-semibold border-t pt-1"><span>Balance</span><span>KES {(balanceCents / 100).toFixed(2)}</span></div>
+                  </div>
+                )}
                 {outstanding.length > 0 && (
-                  <div className="mt-2 space-y-1">
+                  <div className="space-y-1">
                     {outstanding.map((i) => (
-                      <div key={i.id} className="rounded bg-amber-50 px-2 py-1 text-xs">
+                      <div key={i.id} className="rounded bg-muted px-2 py-1 text-xs">
                         Invoice #{i.id.slice(0, 8)} — <Badge variant="outline" className="capitalize">{i.status}</Badge> · KES {((i.total_cents - i.paid_cents) / 100).toFixed(2)} outstanding
                       </div>
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="rounded-md border p-3">
+                <div className="mb-2 font-medium flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Discharge clearance (in order)</div>
+                <ol className="space-y-3">
+                  {CLEARANCE_STEPS.map((step, idx) => {
+                    const done = clearance[step.key];
+                    return (
+                      <li key={step.key} className="rounded border p-2">
+                        <div className="flex items-center gap-2">
+                          {done ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
+                          <span className="flex-1"><span className="font-medium">{idx + 1}. {step.label}</span><span className="block text-xs text-muted-foreground">{done ? `Signed ${new Date(done.at).toLocaleString("en-GB")}` : step.description}</span></span>
+                          {!done && <Button size="sm" variant="outline" onClick={() => sign(step.key)}>Sign off</Button>}
+                        </div>
+                        {step.key === "pharmacy" && !done && (
+                          <div className="mt-2 space-y-1 pl-6 text-xs">
+                            {ttoMeds.length === 0 && <p className="text-muted-foreground">No take-home medicines on the active list.</p>}
+                            {ttoMeds.map((m) => (
+                              <label key={m.id} className="flex items-center gap-2">
+                                <input type="checkbox" checked={ttoDone.includes(m.id)} disabled={!roles.some((r) => r === "pharmacist" || r === "admin")}
+                                  onChange={(e) => { const n = e.target.checked ? [...ttoDone, m.id] : ttoDone.filter((x) => x !== m.id); setTtoDone(n); persist({ ttoDone: n }); }} />
+                                {m.medication} {m.dose ?? ""} {m.frequency ?? ""} — dispensed
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                        {step.key === "cashier" && !done && (
+                          <label className="mt-2 flex items-center gap-2 pl-6 text-xs">
+                            <input type="checkbox" checked={sponsorSigned} disabled={!roles.some((r) => ["insurance_officer", "billing_officer", "cashier", "admin"].includes(r))}
+                              onChange={(e) => { setSponsorSigned(e.target.checked); persist({ sponsorSigned: e.target.checked }); }} />
+                            SHA / insurance / sponsor claim form signed (balance will be claimed)
+                          </label>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+                <p className="mt-2 text-xs text-muted-foreground">Sign-offs are kept on this device until discharge is completed, then saved with the discharge record.</p>
+              </div>
+
+              <div className="rounded-md border p-3 space-y-2">
+                <div className="font-medium flex items-center gap-2"><FileText className="h-4 w-4" /> Take-home pack</div>
+                <div><Label>Food and drink advice</Label><Textarea rows={2} value={pack.diet} onChange={(e) => setPack((p) => ({ ...p, diet: e.target.value }))} /></div>
+                <div><Label>Return immediately if (one per line)</Label><Textarea rows={4} value={pack.red_flags} onChange={(e) => setPack((p) => ({ ...p, red_flags: e.target.value }))} /></div>
+                <div className="flex items-end gap-2">
+                  <div><Label>Sick-off days after discharge</Label><Input className="w-24" inputMode="numeric" value={pack.sick_off_days} onChange={(e) => setPack((p) => ({ ...p, sick_off_days: e.target.value }))} /></div>
+                  <Button size="sm" variant="secondary" onClick={printPack}>Preview take-home pack</Button>
+                </div>
               </div>
 
               <div className="border-t pt-3">
@@ -288,7 +390,7 @@ function DischargePage() {
                 </div>
               </div>
 
-              <Button className="w-full" disabled={!summary.diagnosis || discharge.isPending} onClick={() => discharge.mutate()}>
+              <Button className="w-full" disabled={!isFullyCleared(clearance) || discharge.isPending} onClick={() => discharge.mutate()}>
                 <LogOut className="mr-2 h-4 w-4" />Complete discharge &amp; release bed
               </Button>
             </CardContent>
