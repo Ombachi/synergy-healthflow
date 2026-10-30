@@ -1,3 +1,4 @@
+import { outpatientCloseBlockers } from "@/lib/discharge-rules";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -265,6 +266,29 @@ function VisitDetail() {
     mutationFn: async (finalize: boolean) => {
       if (finalize && !ds.summary.trim()) throw new Error("Discharge summary required");
       if (finalize && diagnoses.data?.length === 0) throw new Error("Add at least one diagnosis");
+      if (finalize) {
+        const [labs, rx, inv] = await Promise.all([
+          supabase.from("lab_orders" as never).select("status").eq("visit_id", visitId),
+          supabase.from("prescriptions" as never).select("id").eq("visit_id", visitId),
+          supabase.from("invoices" as never).select("status, total_cents, paid_cents").eq("visit_id", visitId),
+        ]);
+        const firstErr = labs.error || rx.error || inv.error;
+        if (firstErr) throw new Error(`Couldn't check open orders and bills: ${firstErr.message}`);
+        const rxRows = (rx.data ?? []) as unknown as { id: string }[];
+        let dispensedIds: string[] = [];
+        if (rxRows.length) {
+          const d = await supabase.from("pharmacy_dispenses" as never).select("prescription_id, status").in("prescription_id", rxRows.map((r) => r.id));
+          if (d.error) throw new Error(`Couldn't check dispensing: ${d.error.message}`);
+          dispensedIds = ((d.data ?? []) as unknown as { prescription_id: string; status: string }[])
+            .filter((x) => x.status !== "cancelled" && x.status !== "voided").map((x) => x.prescription_id);
+        }
+        const blockers = outpatientCloseBlockers({
+          labOrders: (labs.data ?? []) as unknown as { status: string }[],
+          prescriptions: rxRows, dispensedPrescriptionIds: dispensedIds,
+          invoices: (inv.data ?? []) as unknown as { status: string; total_cents: number; paid_cents: number }[],
+        });
+        if (blockers.length) throw new Error(`Can't complete visit yet: ${blockers.join("; ")}.`);
+      }
       const keepFinalized = Boolean(discharge.data?.finalized && !finalize);
       const payload: Record<string, unknown> = {
         visit_id: visitId, summary: ds.summary, treatment_plan: ds.treatment_plan || null,

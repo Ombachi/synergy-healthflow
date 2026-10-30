@@ -195,7 +195,7 @@ function DischargePage() {
   function printPack() {
     if (!sel) return;
     exportTakeHomePDF({
-      patient_name: sel.patient_name, mrn: null, admitted_at: sel.admitted_at, discharged_at: new Date().toISOString(),
+      patient_name: sel.patient_name ?? "Patient", mrn: null, admitted_at: sel.admitted_at, discharged_at: new Date().toISOString(),
       diagnosis: summary.diagnosis,
       medicines: ttoMeds.map((m) => ({ name: `${m.medication} ${m.dose ?? ""}`.trim(), how: [m.route, m.frequency, m.indication ? `for ${m.indication}` : ""].filter(Boolean).join(", ") || "As directed" })),
       diet: pack.diet, red_flags: pack.red_flags.split("\n").map((l) => l.trim()).filter(Boolean),
