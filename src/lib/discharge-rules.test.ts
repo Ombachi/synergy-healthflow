@@ -9,18 +9,18 @@ describe("discharge clearance", () => {
   it("runs clinical → pharmacy → nursing → cashier in order", () => {
     assert.equal(nextStep({}), "clinical");
     assert.equal(nextStep({ clinical: sig }), "pharmacy");
-    assert.match(canSignStep("nursing", { clinical: sig }, { roles: ["nurse"] }), /Earlier/);
+    assert.match(canSignStep("nursing", { clinical: sig }, { roles: ["nurse"] }) ?? "", /Earlier/);
     assert.equal(isFullyCleared({ clinical: sig, pharmacy: sig, nursing: sig, cashier: sig }), true);
   });
   it("only a pharmacist signs TTO and only when all take-home meds are dispensed", () => {
     const s = { clinical: sig };
-    assert.match(canSignStep("pharmacy", s, { roles: ["nurse"] }), /Only/);
-    assert.match(canSignStep("pharmacy", s, { roles: ["pharmacist"], ttoPending: 2 }), /2 take-home/);
+    assert.match(canSignStep("pharmacy", s, { roles: ["nurse"] }) ?? "", /Only/);
+    assert.match(canSignStep("pharmacy", s, { roles: ["pharmacist"], ttoPending: 2 }) ?? "", /2 take-home/);
     assert.equal(canSignStep("pharmacy", s, { roles: ["pharmacist"], ttoPending: 0 }), null);
   });
   it("cashier needs zero balance or a signed sponsor claim", () => {
     const s = { clinical: sig, pharmacy: sig, nursing: sig };
-    assert.match(canSignStep("cashier", s, { roles: ["cashier"], balanceCents: 500 }), /Balance/);
+    assert.match(canSignStep("cashier", s, { roles: ["cashier"], balanceCents: 500 }) ?? "", /Balance/);
     assert.equal(canSignStep("cashier", s, { roles: ["insurance_officer"], balanceCents: 500, sponsorClaimSigned: true }), null);
   });
 });
