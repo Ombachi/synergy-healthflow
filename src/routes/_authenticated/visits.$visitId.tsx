@@ -1,3 +1,4 @@
+import { outpatientCloseBlockers } from "@/lib/discharge-rules";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
