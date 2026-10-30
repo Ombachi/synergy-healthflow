@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { aggregateFinalBill, canSignStep, isFullyCleared, nextStep, outpatientCloseBlockers } from "./discharge-rules";
 import { canPerform } from "./action-permissions";
 
