@@ -7,6 +7,8 @@ import { useFacility } from "@/components/facility-context";
 import { hrFacilityScope } from "@/lib/hr-facility-rules";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/attendance")({  head: () => ({ meta: [{ title: "Attendance — Litu Vault" }, { name: "description", content: "Attendance workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Attendance — Litu Vault" }, { property: "og:description", content: "Attendance workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -19,6 +21,8 @@ function AttendancePage() {
   const { activeFacility, roles, loading: facilityLoading, error: facilityError, refresh } = useFacility();
   const qc = useQueryClient();
   const isManager = roles.some(role => ["admin", "hr_officer", "hr_manager", "dept_manager"].includes(role));
+  const [view, setView] = useState("mine");
+  const managing = isManager && view === "team";
   const ready = !!user && !facilityLoading && !facilityError;
 
   const mine = useQuery({
@@ -43,7 +47,7 @@ function AttendancePage() {
       if (error) throw error;
       return (data as unknown as Att[]) ?? [];
     },
-    enabled: isManager && ready,
+    enabled: managing && ready,
   });
 
   const minePager = usePager(mine.data ?? [], 10);
@@ -80,7 +84,7 @@ function AttendancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Attendance</h1>
           <p className="text-sm text-muted-foreground">Clock in and out, view summaries.</p>
@@ -89,6 +93,10 @@ function AttendancePage() {
               : <Button disabled={mine.isPending || mine.isError} onClick={clockIn}>Clock in</Button>}
       </div>
 
+      {isManager && <Tabs value={view} onValueChange={setView}>
+        <TabsList className="h-auto flex-wrap"><TabsTrigger value="mine">My attendance</TabsTrigger><TabsTrigger value="team">Team attendance</TabsTrigger></TabsList>
+      </Tabs>}
+      {!managing && <>
       <div className="grid gap-4 md:grid-cols-3">
         <Card><CardHeader><CardTitle className="text-sm">Status</CardTitle></CardHeader>
           <CardContent className="text-2xl font-semibold">{open ? "On shift" : "Off"}</CardContent></Card>
@@ -115,7 +123,8 @@ function AttendancePage() {
         </CardContent>
       </Card>
 
-      {isManager && (
+      </>}
+      {managing && (
         <Card>
           <CardHeader><CardTitle>Team attendance — last 7 days</CardTitle></CardHeader>
           <CardContent>

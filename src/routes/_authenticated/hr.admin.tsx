@@ -65,7 +65,7 @@ function HrAdminPage() {
       <KPIBlock />
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
+        <TabsList className="h-auto flex-wrap justify-start">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="employees">Employees</TabsTrigger>
           <TabsTrigger value="departments">Departments</TabsTrigger>

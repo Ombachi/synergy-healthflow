@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { exportPayslipPDF } from "@/lib/payslip-pdf";
@@ -43,14 +44,16 @@ function PayslipsPage() {
   const { user } = useAuth();
   const { activeFacility, roles, loading: facilityLoading, error: facilityError, refresh: refreshFacility } = useFacility();
   const isHR = roles.some(role => ["admin", "hr_officer", "hr_manager"].includes(role));
+  const [view, setView] = useState("mine");
+  const managing = isHR && view === "manage";
   const [refresh, setRefresh] = useState(0);
 
   const ready = !!user && !facilityLoading && !facilityError;
   const records = useQuery({
-    queryKey: ["hr-payslips", activeFacility.id, user?.id, isHR, refresh],
+    queryKey: ["hr-payslips", activeFacility.id, user?.id, managing, refresh],
     enabled: ready,
     queryFn: async () => {
-      const scope = hrFacilityScope(activeFacility.id, user?.id ?? "", isHR);
+      const scope = hrFacilityScope(activeFacility.id, user?.id ?? "", managing);
       let q = supabase.from("payslips" as never)
         .select("*, payroll_periods(*), employees!payslips_employee_id_fkey(id,full_name,employee_no,position)")
         .eq("facility_id", scope.facilityId).order("created_at", { ascending: false }).limit(200);
@@ -105,19 +108,22 @@ function PayslipsPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Payslips</h1>
-          <p className="text-sm text-muted-foreground">{isHR ? "Manage payroll periods and per-employee payslips. Amounts in KES." : "Your payslip history. Click download to get the PDF."}</p>
+          <p className="text-sm text-muted-foreground">{managing ? "Manage payroll periods and per-employee payslips. Amounts in KES." : "Your payslip history. Click download to get the PDF."}</p>
         </div>
-        {isHR && !records.isPending && !records.isError && <HrPayrollActions key={activeFacility.id} facilityId={activeFacility.id} periods={periods} onChange={() => setRefresh((x) => x + 1)} />}
+        {managing && !records.isPending && !records.isError && <HrPayrollActions key={activeFacility.id} facilityId={activeFacility.id} periods={periods} onChange={() => setRefresh((x) => x + 1)} />}
       </div>
 
+      {isHR && <Tabs value={view} onValueChange={setView}>
+        <TabsList className="h-auto flex-wrap"><TabsTrigger value="mine">My payslips</TabsTrigger><TabsTrigger value="manage">Payroll management</TabsTrigger></TabsList>
+      </Tabs>}
       <Card>
-        <CardHeader><CardTitle>Payslips</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{managing ? "Branch payroll" : "My payslips"}</CardTitle></CardHeader>
         <CardContent>
           {records.isPending ? <p role="status">Loading payslips…</p> : records.isError ? <div role="alert" className="space-y-3"><p className="text-destructive">{records.error.message}</p><Button variant="outline" onClick={() => void records.refetch()}>Retry</Button></div> : slips.length === 0 ? <p className="text-sm text-muted-foreground">No payslips yet.</p> : (
             <div className="overflow-x-auto"><table className="w-full text-sm whitespace-nowrap">
               <thead className="text-muted-foreground">
                 <tr>
-                  {isHR && <th className="text-left p-2">Employee</th>}
+                  {managing && <th className="text-left p-2">Employee</th>}
                   <th className="text-left p-2">Period</th>
                   <th className="text-right p-2">Basic</th>
                   <th className="text-right p-2">Allow.</th>
@@ -132,7 +138,7 @@ function PayslipsPage() {
                   const deductions = s.paye_cents + s.nhif_cents + s.nssf_cents + s.housing_levy_cents + s.other_deductions_cents;
                   return (
                     <tr key={s.id} className="border-t">
-                      {isHR && <td className="p-2">{s.employees?.full_name ?? "—"}</td>}
+                      {managing && <td className="p-2">{s.employees?.full_name ?? "—"}</td>}
                       <td className="p-2">{s.payroll_periods?.label ?? "—"}</td>
                       <td className="p-2 text-right">{kes(s.basic_cents)}</td>
                       <td className="p-2 text-right">{kes(s.allowances_cents)}</td>
@@ -141,7 +147,7 @@ function PayslipsPage() {
                       <td className="p-2"><Badge variant="outline">{s.published ? "published" : "draft"}</Badge></td>
                       <td className="p-2 text-right space-x-2">
                         <Button size="sm" variant="outline" onClick={() => download(s)}>PDF</Button>
-                        {isHR && <Button size="sm" variant="outline" onClick={() => togglePublished(s)}>{s.published ? "Unpublish" : "Publish"}</Button>}
+                        {managing && <Button size="sm" variant="outline" onClick={() => togglePublished(s)}>{s.published ? "Unpublish" : "Publish"}</Button>}
                       </td>
                     </tr>
                   );

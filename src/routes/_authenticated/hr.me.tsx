@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { COUNCILS, daysUntil, licenseStatus, requiredCouncilForPosition } from "@/lib/license-rules";
 
 export const Route = createFileRoute("/_authenticated/hr/me")({
+  head: () => ({ meta: [{ title: "My Staff Profile — Litu Vault" }, { name: "description", content: "Your employment details, leave balances and practising licences." }, { property: "og:title", content: "My Staff Profile — Litu Vault" }, { property: "og:description", content: "Personal employment and licence records in Litu Vault." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: () => (
     <RoleGate path="/hr/me">
       <HrMePage />
@@ -107,7 +108,7 @@ function HrMePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">My HR profile</h1>
+        <h1 className="text-2xl font-bold">My staff profile</h1>
         <p className="text-sm text-muted-foreground">Personal employment details and leave overview.</p>
       </div>
 

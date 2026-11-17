@@ -2,8 +2,47 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import type { AppRole } from "@/hooks/use-auth";
 import { canAccess, ROLE_HOME } from "./role-permissions";
+import { isItemVisibleForRoles } from "./navigation-visibility";
 
 describe("role and module access", () => {
+  it("limits Admissions navigation to admissions operations and personal staff services", () => {
+    for (const path of ["/admissions", "/beds", "/nursing-station", "/patients", "/mobility/request"]) {
+      assert.equal(isItemVisibleForRoles(path, "inpatient", ["admissions_officer"]), true, path);
+    }
+    for (const path of ["/my-inpatients", "/prescribe", "/billing", "/users", "/coming-soon/ward-board", "/hr/admin"]) {
+      assert.equal(isItemVisibleForRoles(path, "inpatient", ["admissions_officer"]), false, path);
+    }
+    assert.equal(isItemVisibleForRoles("/hr/me", "staff-self-service", ["admissions_officer"]), true);
+  });
+
+  it("keeps HR roles out of clinical, platform-admin and unfinished navigation", () => {
+    for (const role of ["hr_officer", "hr_manager"] as const) {
+      assert.equal(isItemVisibleForRoles("/hr/admin", "hr-management", [role]), true);
+      for (const path of ["/users", "/patients", "/coming-soon/outpatient-procedures"]) {
+        assert.equal(isItemVisibleForRoles(path, "outpatient", [role]), false, path);
+      }
+    }
+  });
+
+  it("provides staff self-service without giving clinical staff HR management", () => {
+    for (const role of ["doctor", "nurse", "receptionist", "admissions_officer", "pharmacist", "cashier"] as const) {
+      for (const path of ["/hr/me", "/hr/leave", "/hr/payslips", "/attendance"]) {
+        assert.equal(canAccess(path, [role]), true, `${role}: ${path}`);
+        assert.equal(canAccess(path, [role], { hr: false }), false, `${role}: disabled ${path}`);
+      }
+      assert.equal(canAccess("/hr/admin", [role]), false);
+      assert.equal(isItemVisibleForRoles("/hr/admin", "hr-management", [role]), false);
+    }
+    assert.equal(canAccess("/hr/me", ["patient"]), false);
+    assert.equal(canAccess("/hr/payslips", ["athlete"]), false);
+  });
+
+  it("preserves additional-role navigation in the selected branch", () => {
+    assert.equal(isItemVisibleForRoles("/billing", "outpatient", ["admissions_officer", "cashier"]), true);
+    assert.equal(canAccess("/billing", ["admissions_officer", "cashier"]), true);
+    assert.equal(isItemVisibleForRoles("/hr/me", "staff-self-service", ["admin"]), true);
+  });
+
   it("blocks a route when the facility switched its module off, even for admins", () => {
     assert.equal(canAccess("/pharmacy", ["pharmacist"], { pharmacy: false }), false);
     assert.equal(canAccess("/pharmacy", ["admin"], { pharmacy: false }), false);

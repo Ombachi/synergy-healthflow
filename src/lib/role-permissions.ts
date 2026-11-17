@@ -1,4 +1,4 @@
-import type { AppRole } from "@/hooks/use-auth";
+import { ALL_ROLES, type AppRole } from "@/hooks/use-auth";
 import { isModuleEnabled, type ModuleKey } from "@/lib/facilities";
 
 /**
@@ -18,6 +18,9 @@ export const CLINICAL_ROLES: AppRole[] = [
   "receptionist",
   "admissions_officer",
 ];
+
+export const STAFF_ROLES: AppRole[] = ALL_ROLES.filter(role => role !== "patient" && role !== "athlete");
+export const HR_MANAGEMENT_ROLES: AppRole[] = ["admin", "hr_officer", "hr_manager", "dept_manager"];
 
 // Sub-domain role sets for gated inpatient areas.
 const THEATRE_ROLES: AppRole[] = ["doctor", "nurse"];
@@ -87,7 +90,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/department": [],
   "/lab-templates": [],
   "/admin-kpi": [],
-  "/roster": [],
+  "/roster": ["hr_officer", "hr_manager"],
 
   // Removed from clinical-staff nav — kept for admins only.
   "/beds": ["nurse", "doctor", "receptionist", "admissions_officer"],
@@ -116,19 +119,16 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Orders (stock requests live globally for lab/pharmacy/ward/store)
   "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper", "nurse"],
 
-  // HR / Employee Self-Service — moved to the staff portal.
-  // Only HR admins retain in-app access; regular staff will access via staff.vitalis.health.
-  "/hr/me": ["hr_officer", "hr_manager", "dept_manager"],
-  "/hr/leave": ["hr_officer", "hr_manager", "dept_manager"],
-  "/hr/payslips": ["hr_officer", "hr_manager", "dept_manager"],
-  "/hr/documents": ["hr_officer", "hr_manager", "dept_manager"],
+  // Personal staff pages never grant HR administration privileges.
+  "/hr/me": STAFF_ROLES,
+  "/hr/leave": STAFF_ROLES,
+  "/hr/payslips": STAFF_ROLES,
+  "/hr/documents": STAFF_ROLES,
   "/hr/admin": ["hr_officer", "hr_manager"],
-
-  // Workplace modules — also gated to HR admins (staff portal owns the rest).
-  "/requests": ["hr_officer", "hr_manager", "dept_manager"],
-  "/attendance": ["hr_officer", "hr_manager", "dept_manager"],
+  "/requests": STAFF_ROLES,
+  "/attendance": STAFF_ROLES,
   "/leave-inbox": ["hr_officer", "hr_manager", "dept_manager"],
-  "/announcements": ["hr_officer", "hr_manager", "dept_manager"],
+  "/announcements": STAFF_ROLES,
   // Tenders & bids remain in the procurement dashboard.
   "/tenders": ["procurement"],
 
@@ -220,6 +220,10 @@ export function canAccess(path: string, roles: AppRole[], modules?: Partial<Reco
 
 // Where each role should land after sign-in.
 export const ROLE_HOME: Partial<Record<AppRole, string>> = {
+  admissions_officer: "/admissions",
+  hr_officer: "/hr/admin",
+  hr_manager: "/hr/admin",
+  dept_manager: "/hr/me",
   patient: "/me",
   receptionist: "/reception",
   nurse: "/dashboard",

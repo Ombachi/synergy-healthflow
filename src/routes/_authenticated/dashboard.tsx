@@ -13,6 +13,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     { name: "description", content: "Live department metrics and patient queue for your role." },
     { property: "og:title", content: "Workstation — Litu Vault" },
     { property: "og:description", content: "Live department metrics and patient queue for your role." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: Dashboard,
 });

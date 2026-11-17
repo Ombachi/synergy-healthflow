@@ -25,158 +25,7 @@ import { FacilitySwitcher } from "@/components/facility-switcher";
 import { useFacility } from "@/components/facility-context";
 import { isModuleEnabled } from "@/lib/facilities";
 
-// ============================================================================
-// Per-role sidebar visibility rules.
-// These filter what is *shown* in the nav; they do NOT relax route access
-// (canAccess() still owns that). A user with multiple roles sees an item if
-// at least one of their roles would show it.
-// ============================================================================
-
-// Whole groups hidden for a role.
-const HIDE_GROUPS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  lab_tech:          ["inpatient", "emergency", "store"],
-  billing_officer:   ["outpatient", "inpatient", "emergency", "finance"],
-  doctor:            ["emergency"],
-  nurse:             ["emergency"],
-  pharmacist:        ["emergency"],
-  physio:            ["emergency"],
-  nutritionist:      ["emergency"],
-  radiologist:       ["emergency"],
-  procurement:       ["outpatient", "inpatient", "emergency"],
-  store_keeper:      ["outpatient", "inpatient", "emergency"],
-  admin:             ["emergency"],
-};
-
-// Theatre / ICU / Maternity stub prefixes (nested under Inpatient).
-const THEATRE_PREFIXES = ["/surgery", "/coming-soon/theatre-", "/coming-soon/surgical-", "/coming-soon/anaesthesia-", "/coming-soon/recovery"];
-const ICU_PREFIXES = ["/coming-soon/icu-", "/coming-soon/ventilator-", "/coming-soon/sedation", "/coming-soon/critical-care-"];
-const MATERNITY_PREFIXES = ["/coming-soon/maternity-", "/coming-soon/antenatal", "/coming-soon/labour-", "/coming-soon/postnatal", "/coming-soon/newborn-"];
-const SUBDOMAIN_PREFIXES = [...THEATRE_PREFIXES, ...ICU_PREFIXES, ...MATERNITY_PREFIXES];
-
-// Individual URLs hidden for a role.
-const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  lab_tech: [
-    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
-    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-  ],
-  doctor: [
-    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
-    "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/admissions",
-    "/beds", "/coming-soon/ward-board", "/nursing-station", "/emar",
-    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
-    "/care-plans", "/ward-rounds",
-    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
-    ...SUBDOMAIN_PREFIXES,
-  ],
-
-  nurse: [
-    "/coming-soon/nursing-triage", "/visits", "/lab-order",
-    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/outpatient-procedures",
-    "/admissions", "/beds", "/coming-soon/ward-board", "/nursing-station",
-    "/care-plans", "/ward-rounds", "/emar",
-    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
-    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
-    "/discharge-planning",
-    ...SUBDOMAIN_PREFIXES,
-  ],
-  pharmacist: [
-    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
-    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/my-inpatients", "/emar",
-    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
-    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
-    ...SUBDOMAIN_PREFIXES,
-  ],
-  physio: [
-    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
-    "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/my-inpatients", "/emar",
-    "/care-plans", "/ward-rounds",
-    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
-    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
-    ...SUBDOMAIN_PREFIXES,
-  ],
-  nutritionist: [
-    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
-    "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/my-inpatients",
-    "/care-plans", "/coming-soon/inpatient-imaging",
-    "/allied-health",
-    "/sports",
-    ...SUBDOMAIN_PREFIXES,
-  ],
-  radiologist: [
-    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
-    "/lab-order", "/prescribe", "/coming-soon/outpatient-imaging", "/coming-soon/visit-history",
-    "/coming-soon/ward-board", "/my-inpatients", "/emar",
-    "/inpatient-procedures", "/coming-soon/inpatient-imaging",
-    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
-    ...SUBDOMAIN_PREFIXES,
-  ],
-  store_keeper: [
-    "/orders/stock-requests",
-  ],
-  admin: [
-    // Outpatient trims
-    "/coming-soon/nursing-triage", "/coming-soon/outpatient-procedures",
-    "/lab-order", "/coming-soon/outpatient-imaging", "/prescribe",
-    "/coming-soon/visit-history",
-    // Inpatient trims
-    "/admissions", "/beds", "/nursing-station",
-    "/coming-soon/ward-board", "/my-inpatients",
-    "/care-plans", "/coming-soon/inpatient-imaging",
-    "/allied-health", "/monitoring", "/infection-control", "/ward-analytics",
-    "/inpatient-procedures", "/discharge-planning", "/emar", "/ward-rounds",
-    ...SUBDOMAIN_PREFIXES,
-    // Sports trims
-    "/sports-medicine", "/anti-doping", "/assessments",
-    // Store trims
-    "/tenders", "/audit-inventory", "/orders/stock-requests",
-    // HR trims
-    "/hr/me", "/hr/leave", "/hr/payslips", "/hr/documents", "/hr/admin",
-    "/requests", "/attendance", "/leave-inbox", "/announcements",
-    // Finance trims
-    "/cash-reconciliation", "/credit-notes", "/preauth",
-    // Mobility trims
-    "/mobility/request", "/mobility/trips", "/mobility/driver",
-    // Clinical/ops screens owned by their specialist roles
-    "/immunization", "/my-vaccines", "/instruments", "/critical-results",
-    "/referrals", "/pharmacy-safety", "/controlled-drugs", "/chronic-care",
-    "/mobility/dispatch", "/mobility/fleet",
-    // Admin group trims
-    "/roster", "/admin-kpi",
-  ],
-
-};
-
-// Strict whitelist: role sees ONLY these URLs (both groups and standalone).
-const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
-  athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
-  receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/patients"],
-  insurance_officer: ["/insurance", "/preauth", "/dashboard", "/messages"],
-  fleet_manager:     ["/dashboard", "/messages", "/mobility/dispatch", "/mobility/fleet", "/mobility/trips", "/mobility/request"],
-  driver:            ["/dashboard", "/messages", "/mobility/driver", "/mobility/trips"],
-};
-
-function urlMatches(url: string, pattern: string): boolean {
-  return url === pattern || url.startsWith(pattern);
-}
-
-function isItemVisibleForRoles(url: string, groupKey: string | null, roles: AppRole[]): boolean {
-  if (roles.length === 0) return true; // let canAccess handle it
-  // Item is visible if ANY of the user's roles would show it.
-  return roles.some((role) => {
-    const only = ONLY_URLS_BY_ROLE[role];
-    if (only) return only.some((p) => urlMatches(url, p));
-    if (groupKey && HIDE_GROUPS_BY_ROLE[role]?.includes(groupKey)) return false;
-    const hides = HIDE_URLS_BY_ROLE[role];
-    if (hides && hides.some((p) => urlMatches(url, p))) return false;
-    return true;
-  });
-}
+import { isItemVisibleForRoles } from "@/lib/navigation-visibility";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -340,17 +189,23 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    key: "hr", label: "HR & Workplace", icon: Briefcase,
+    key: "staff-self-service", label: "Staff self-service", icon: User,
     items: [
-      { title: "My HR profile", url: "/hr/me", icon: User },
-      { title: "Leave", url: "/hr/leave", icon: CalendarDays },
-      { title: "Payslips", url: "/hr/payslips", icon: Wallet },
+      { title: "My staff profile", url: "/hr/me", icon: User },
+      { title: "My leave", url: "/hr/leave", icon: CalendarDays },
+      { title: "My payslips", url: "/hr/payslips", icon: Wallet },
+      { title: "My attendance", url: "/attendance", icon: Clock },
       { title: "SOPs & Policies", url: "/hr/documents", icon: FileText },
-      { title: "HR administration", url: "/hr/admin", icon: Briefcase },
-      { title: "Internal requests", url: "/requests", icon: Ticket },
-      { title: "Attendance", url: "/attendance", icon: Clock },
-      { title: "Leave inbox", url: "/leave-inbox", icon: InboxIcon },
+      { title: "My requests", url: "/requests", icon: Ticket },
       { title: "Announcements", url: "/announcements", icon: Bell },
+    ],
+  },
+  {
+    key: "hr-management", label: "HR management", icon: Briefcase,
+    items: [
+      { title: "HR administration", url: "/hr/admin", icon: Briefcase },
+      { title: "Leave inbox", url: "/leave-inbox", icon: InboxIcon },
+      { title: "Rostering", url: "/roster", icon: CalendarDays },
     ],
   },
   {
@@ -367,7 +222,6 @@ const GROUPS: Group[] = [
     items: [
       { title: "User management", url: "/users", icon: ShieldCheck },
       { title: "Facilities", url: "/admin/facilities", icon: ShieldCheck },
-      { title: "Rostering", url: "/roster", icon: CalendarDays },
       { title: "Audit log", url: "/audit", icon: Shield },
       { title: "Soft-deleted", url: "/admin/soft-deleted", icon: Archive },
       { title: "Consent management", url: "/admin/consent", icon: FileText },
@@ -461,7 +315,7 @@ function AuthedLayout() {
                 <SidebarMenu>
                   {STANDALONE
                     .filter((it) => canAccess(it.url, accessRoles, enabledModules))
-                    .filter((it) => isItemVisibleForRoles(it.url, null, roles))
+                    .filter((it) => isItemVisibleForRoles(it.url, null, accessRoles))
                     .map((it) => (
                     <SidebarMenuItem key={it.url}>
                       <SidebarMenuButton asChild isActive={pathname === it.url}>
@@ -480,7 +334,7 @@ function AuthedLayout() {
               const visibleItems = group.items
                 .filter((it) => canAccess(it.url, accessRoles, enabledModules))
                 .filter((it) => !(isAdmin && it.hideForAdmin))
-                .filter((it) => isItemVisibleForRoles(it.url, group.key, roles));
+                .filter((it) => isItemVisibleForRoles(it.url, group.key, accessRoles));
               if (visibleItems.length === 0 && !group.alwaysShow) return null;
 
               const isOpen = !!openGroups[group.key];

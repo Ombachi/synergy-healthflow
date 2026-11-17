@@ -22,3 +22,9 @@
 - [ ] Verify branch creation, staff assignments, module saves and two-branch isolation while signed in; blocked by unavailable database and session minting.
 - [ ] Run the docs/acceptance/ scripts per role in staging before go-live; blocked by unavailable database.
 - [ ] Apply docs/staged-migrations/staff-licenses.sql (blocked: database unreachable)
+
+# Admissions and HR navigation cleanup
+- [x] Limit Admissions Officer menus to admissions, beds, ward census, patient lookup and transport.
+- [x] Separate staff self-service navigation and personal tabs from HR management; remove admin dashboard fallback for these roles.
+- [x] Test role/module menu rules and verify the available signed-out preview (30 regression tests passed).
+- [ ] Verify Admissions and HR menus and personal/management tab switching with real staff accounts; blocked by database unavailability when minting a preview session.

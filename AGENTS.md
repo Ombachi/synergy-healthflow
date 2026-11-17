@@ -6,3 +6,4 @@
 - HR onboarding and final leave decisions use authenticated server wrappers over database-authorized transactional RPCs; one BEFORE trigger owns leave accounting so neither approval screen can deduct twice.
 - Unapplied HR SQL lives under docs/staged-migrations, outside the managed migration journal, until the migration tool can apply it; unavailable database writes must fail visibly rather than simulate success.
 - HR workspace reads and writes use direct facility ownership; roster assignments inherit the shift's scope, and roster leave actions use the canonical HR leave page to avoid parallel approval accounting.
+- Sidebar visibility rules live in a browser-safe helper and use active-facility roles; personal HR pages default to self-service so management privileges do not expose team payroll by default.
