@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -108,7 +108,7 @@ function HrMePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">My staff profile</h1>
+        <h1 className="text-2xl font-bold">My staff portal</h1>
         <p className="text-sm text-muted-foreground">Personal employment details and leave overview.</p>
       </div>
 
@@ -117,6 +117,13 @@ function HrMePage() {
         <KPI label="Pending leave requests" value={String(pendingLeave)} />
         <KPI label="Annual balance (days)" value={String(balances.find((b) => /annual/i.test(b.name))?.balance_days ?? 0)} />
         <KPI label="Next payroll" value={nextPayslip ?? "—"} />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Button asChild variant="outline" className="h-auto py-4"><Link to="/hr/leave">Apply for / view leave</Link></Button>
+        <Button asChild variant="outline" className="h-auto py-4"><Link to="/hr/payslips">My payslips</Link></Button>
+        <Button asChild variant="outline" className="h-auto py-4"><Link to="/attendance">Clock in / attendance</Link></Button>
+        <Button asChild variant="outline" className="h-auto py-4"><Link to="/hr/documents">SOPs & policies</Link></Button>
       </div>
 
       <Card>

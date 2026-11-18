@@ -875,6 +875,7 @@ export type Database = {
           clock_in: string | null
           clock_out: string | null
           department: string | null
+          facility_id: string | null
           id: string
           notes: string | null
           recorded_at: string
@@ -888,6 +889,7 @@ export type Database = {
           clock_in?: string | null
           clock_out?: string | null
           department?: string | null
+          facility_id?: string | null
           id?: string
           notes?: string | null
           recorded_at?: string
@@ -901,6 +903,7 @@ export type Database = {
           clock_in?: string | null
           clock_out?: string | null
           department?: string | null
+          facility_id?: string | null
           id?: string
           notes?: string | null
           recorded_at?: string
@@ -915,6 +918,13 @@ export type Database = {
             columns: ["athlete_id"]
             isOneToOne: false
             referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
             referencedColumns: ["id"]
           },
           {
@@ -2361,8 +2371,10 @@ export type Database = {
           emergency_contact_phone: string | null
           employee_no: string | null
           employment_status: string
+          facility_id: string | null
           full_name: string
           gender: string | null
+          hr_onboarded_at: string | null
           id: string
           job_grade: string | null
           licenses: string | null
@@ -2391,8 +2403,10 @@ export type Database = {
           emergency_contact_phone?: string | null
           employee_no?: string | null
           employment_status?: string
+          facility_id?: string | null
           full_name: string
           gender?: string | null
+          hr_onboarded_at?: string | null
           id: string
           job_grade?: string | null
           licenses?: string | null
@@ -2421,8 +2435,10 @@ export type Database = {
           emergency_contact_phone?: string | null
           employee_no?: string | null
           employment_status?: string
+          facility_id?: string | null
           full_name?: string
           gender?: string | null
+          hr_onboarded_at?: string | null
           id?: string
           job_grade?: string | null
           licenses?: string | null
@@ -2442,6 +2458,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "hr_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
             referencedColumns: ["id"]
           },
         ]
@@ -4709,12 +4732,14 @@ export type Database = {
       leave_requests: {
         Row: {
           approver_comment: string | null
+          balance_deducted_at: string | null
           created_at: string
           days: number
           decided_at: string | null
           decided_by: string | null
           employee_id: string
           end_date: string
+          facility_id: string | null
           hr_decision_at: string | null
           hr_id: string | null
           hr_notes: string | null
@@ -4731,12 +4756,14 @@ export type Database = {
         }
         Insert: {
           approver_comment?: string | null
+          balance_deducted_at?: string | null
           created_at?: string
           days: number
           decided_at?: string | null
           decided_by?: string | null
           employee_id: string
           end_date: string
+          facility_id?: string | null
           hr_decision_at?: string | null
           hr_id?: string | null
           hr_notes?: string | null
@@ -4753,12 +4780,14 @@ export type Database = {
         }
         Update: {
           approver_comment?: string | null
+          balance_deducted_at?: string | null
           created_at?: string
           days?: number
           decided_at?: string | null
           decided_by?: string | null
           employee_id?: string
           end_date?: string
+          facility_id?: string | null
           hr_decision_at?: string | null
           hr_id?: string | null
           hr_notes?: string | null
@@ -4779,6 +4808,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
             referencedColumns: ["id"]
           },
           {
@@ -6318,6 +6354,7 @@ export type Database = {
       payroll_periods: {
         Row: {
           created_at: string
+          facility_id: string | null
           id: string
           label: string
           period_end: string
@@ -6327,6 +6364,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          facility_id?: string | null
           id?: string
           label: string
           period_end: string
@@ -6336,6 +6374,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          facility_id?: string | null
           id?: string
           label?: string
           period_end?: string
@@ -6343,7 +6382,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payroll_periods_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payslip_lines: {
         Row: {
@@ -6386,6 +6433,7 @@ export type Database = {
           basic_cents: number
           created_at: string
           employee_id: string
+          facility_id: string | null
           housing_levy_cents: number
           id: string
           net_cents: number
@@ -6404,6 +6452,7 @@ export type Database = {
           basic_cents?: number
           created_at?: string
           employee_id: string
+          facility_id?: string | null
           housing_levy_cents?: number
           id?: string
           net_cents?: number
@@ -6422,6 +6471,7 @@ export type Database = {
           basic_cents?: number
           created_at?: string
           employee_id?: string
+          facility_id?: string | null
           housing_levy_cents?: number
           id?: string
           net_cents?: number
@@ -6441,6 +6491,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payslips_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
             referencedColumns: ["id"]
           },
           {
@@ -7586,6 +7643,7 @@ export type Database = {
           created_by: string | null
           department: string | null
           ends_at: string
+          facility_id: string | null
           id: string
           name: string
           notes: string | null
@@ -7597,6 +7655,7 @@ export type Database = {
           created_by?: string | null
           department?: string | null
           ends_at: string
+          facility_id?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -7608,13 +7667,22 @@ export type Database = {
           created_by?: string | null
           department?: string | null
           ends_at?: string
+          facility_id?: string | null
           id?: string
           name?: string
           notes?: string | null
           starts_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shifts_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sick_off_notes: {
         Row: {
@@ -7779,6 +7847,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staff_licenses: {
+        Row: {
+          council: string
+          created_at: string
+          employee_id: string
+          expiry_date: string
+          id: string
+          issue_date: string | null
+          license_number: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          council: string
+          created_at?: string
+          employee_id: string
+          expiry_date: string
+          id?: string
+          issue_date?: string | null
+          license_number: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          council?: string
+          created_at?: string
+          employee_id?: string
+          expiry_date?: string
+          id?: string
+          issue_date?: string | null
+          license_number?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       stock_batches: {
         Row: {
@@ -9441,6 +9545,35 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      hr_can_manage: { Args: { _facility: string }; Returns: boolean }
+      hr_decide_leave: {
+        Args: {
+          _comment: string
+          _facility: string
+          _request: string
+          _status: string
+        }
+        Returns: undefined
+      }
+      hr_onboard_employee: {
+        Args: {
+          _department: string
+          _facility: string
+          _position: string
+          _quotas: Json
+          _user: string
+          _year: number
+        }
+        Returns: undefined
+      }
+      hr_staff_options: {
+        Args: { _facility: string }
+        Returns: {
+          full_name: string
+          id: string
+          onboarded: boolean
+        }[]
       }
       is_clinical_requester: { Args: never; Returns: boolean }
       is_fleet_staff: { Args: never; Returns: boolean }

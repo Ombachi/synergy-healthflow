@@ -36,6 +36,13 @@
       "when": 1795035720282,
       "tag": "0004_harden_definer_functions_and_reference_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795036328449,
+      "tag": "0005_hr_staff_portal_rollout",
+      "breakpoints": true
     }
   ]
 }
