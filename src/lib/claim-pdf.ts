@@ -133,7 +133,7 @@ export function exportClaimsBatchCSV(rows: Array<{
     (r.total_cents / 100).toFixed(2), r.approved_cents != null ? (r.approved_cents / 100).toFixed(2) : "",
     r.status, r.preauth_code ?? "",
   ]);
-  const csv = [header, ...body].map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = [header, ...body].map((row) => row.map((c) => { const raw = String(c ?? ""); const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw; return `"${safe.replace(/"/g, '""')}"`; }).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

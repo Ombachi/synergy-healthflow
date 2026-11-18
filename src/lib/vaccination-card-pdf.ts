@@ -117,7 +117,7 @@ export function immunizationsToCSV(
     "Patient", "MRN", "Date", "Vaccine", "Antigen", "Dose", "Route", "Site",
     "Batch", "Manufacturer", "Vaccinator", "Facility",
   ];
-  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const esc = (v: unknown) => { const raw = String(v ?? ""); const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw; return `"${safe.replace(/"/g, '""')}"`; };
   const lines = rows.map((r) =>
     [
       r.patient_name, r.mrn ?? "", d(r.administered_at), r.vaccine_name, r.antigen ?? "",
