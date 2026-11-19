@@ -129,7 +129,7 @@ export function DoctorStation() {
   });
 
   useEffect(() => {
-    const ch = supabase.channel("doc-queue-live")
+    const ch = supabase.channel(`doc-queue-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "visit_queue" }, () => qc.invalidateQueries({ queryKey: ["doc-queue"] }))
       .subscribe();
     return () => { supabase.removeChannel(ch); };

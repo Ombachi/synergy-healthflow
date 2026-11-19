@@ -162,12 +162,23 @@ function ReceptionPage() {
   const walkIn = useMutation({
     mutationFn: async () => {
       if (!walkForm.full_name.trim()) throw new Error("Full name is required");
-      const { data: p, error: pe } = await supabase.from("patients" as never).insert({
+      const idNumber = walkForm.id_number.trim() || null;
+      type Found = { id: string; medical_record_number: string | null };
+      const findByIdNumber = async (): Promise<Found | null> => {
+        if (!idNumber) return null;
+        const { data } = await supabase.from("patients" as never)
+          .select("id, medical_record_number").eq("id_number", idNumber).maybeSingle();
+        return (data as Found | null) ?? null;
+      };
+      let existing = await findByIdNumber();
+      let p: Found | null = existing;
+      if (!existing) {
+      const { data: inserted, error: pe } = await supabase.from("patients" as never).insert({
         full_name: walkForm.full_name.trim(),
         date_of_birth: walkForm.date_of_birth || null,
         gender: walkForm.gender || null,
         id_type: walkForm.id_type,
-        id_number: walkForm.id_number.trim() || null,
+        id_number: idNumber,
         phone: walkForm.phone || null,
         email: walkForm.email || null,
         address: walkForm.address || null,
@@ -175,9 +186,22 @@ function ReceptionPage() {
         emergency_contact_phone: walkForm.emergency_contact_phone || null,
         created_by: user!.id,
       } as never).select("id, medical_record_number").single();
-      if (pe) throw pe;
-      const pid = (p as { id: string }).id;
-      const mrn = (p as { medical_record_number: string | null }).medical_record_number;
+        if (pe) {
+          // Duplicate ID number (created by someone else in the meantime): reuse that patient
+          if ((pe as { code?: string }).code === "23505") existing = await findByIdNumber();
+          if (!existing) throw pe;
+          p = existing;
+        } else {
+          p = inserted as Found;
+        }
+      }
+      const pid = p!.id;
+      const mrn = p!.medical_record_number;
+      if (existing) {
+        const { data: openVisit } = await supabase.from("visits" as never)
+          .select("id").eq("patient_id", pid).eq("status", "open").limit(1).maybeSingle();
+        if (openVisit) return { mrn, existing: true, reusedVisit: true };
+      }
       const { data: v, error: ve } = await supabase.from("visits" as never).insert({
         patient_id: pid,
         opened_by: user!.id,
@@ -189,13 +213,15 @@ function ReceptionPage() {
       if (ve) throw ve;
       const vid = (v as { id: string }).id;
       await supabase.from("visit_queue" as never).insert({ visit_id: vid, queue_type: "triage", priority: 3 } as never);
-      return mrn;
+      return { mrn, existing: !!existing, reusedVisit: false };
     },
-    onSuccess: (mrn) => {
+    onSuccess: ({ mrn, existing, reusedVisit }) => {
       setCreatedMrn(mrn ?? null);
       setWalkForm({ ...EMPTY_REG });
       qc.invalidateQueries({ queryKey: ["recep-visits"] });
-      toast.success(mrn ? `Registered · MRN ${mrn}` : "Registered & queued");
+      if (reusedVisit) toast.info(`Patient already registered${mrn ? ` (MRN ${mrn})` : ""} and already has an open visit.`);
+      else if (existing) toast.success(`Existing patient found${mrn ? ` · MRN ${mrn}` : ""} — new visit opened.`);
+      else toast.success(mrn ? `Registered · MRN ${mrn}` : "Registered & queued");
     },
     onError: (e: Error) => toast.error(e.message),
   });

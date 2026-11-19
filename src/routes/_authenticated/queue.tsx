@@ -72,7 +72,7 @@ function QueueBoard() {
   });
 
   useEffect(() => {
-    const ch = supabase.channel("queue-live")
+    const ch = supabase.channel(`queue-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "visit_queue" }, () => qc.invalidateQueries({ queryKey: ["queue"] }))
       .subscribe();
     return () => { supabase.removeChannel(ch); };

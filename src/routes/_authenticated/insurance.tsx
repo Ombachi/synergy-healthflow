@@ -57,7 +57,7 @@ function InsurancePage() {
   // Real-time updates from payer status changes
   useEffect(() => {
     const ch = supabase
-      .channel("insurance-live")
+      .channel(`insurance-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "insurance_claims" }, () => {
         qc.invalidateQueries({ queryKey: ["claims"] });
       })

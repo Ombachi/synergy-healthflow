@@ -98,7 +98,7 @@ export function NurseStation() {
   });
 
   useEffect(() => {
-    const ch = supabase.channel("nurse-queue-live")
+    const ch = supabase.channel(`nurse-queue-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "visit_queue" }, () => qc.invalidateQueries({ queryKey: ["nurse-queue"] }))
       .subscribe();
     return () => { supabase.removeChannel(ch); };

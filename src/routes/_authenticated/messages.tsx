@@ -58,7 +58,7 @@ function Messages() {
 
   useEffect(() => {
     if (!active) return;
-    const ch = supabase.channel(`msg-${active}`)
+    const ch = supabase.channel(`msg-${active}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `thread_id=eq.${active}` }, () => {
         qc.invalidateQueries({ queryKey: ["messages", active] });
       })

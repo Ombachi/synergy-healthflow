@@ -32,7 +32,7 @@ export function DepartmentMetrics() {
   });
 
   useEffect(() => {
-    const ch = supabase.channel("dept-metrics-live")
+    const ch = supabase.channel(`dept-metrics-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "visit_queue" }, () => qc.invalidateQueries({ queryKey: ["dept-metrics"] }))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
