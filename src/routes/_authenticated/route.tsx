@@ -204,7 +204,11 @@ const GROUPS: Group[] = [
     key: "hr-management", label: "HR management", icon: Briefcase,
     items: [
       { title: "HR administration", url: "/hr/admin", icon: Briefcase },
-      { title: "Leave inbox", url: "/leave-inbox", icon: InboxIcon },
+      { title: "Payroll management", url: "/hr/payslips?view=manage", icon: Wallet },
+      { title: "Team attendance", url: "/attendance?view=team", icon: Clock },
+      { title: "Upload documents", url: "/hr/documents?view=manage", icon: FileText },
+      { title: "Approver inbox", url: "/leave-inbox", icon: InboxIcon },
+      { title: "New announcement", url: "/announcements?view=manage", icon: Bell },
       { title: "Rostering", url: "/roster", icon: CalendarDays },
     ],
   },
@@ -362,7 +366,7 @@ function AuthedLayout() {
                             return (
                               <SidebarMenuItem key={`${group.key}-${it.title}-${it.url}`}>
                                 <SidebarMenuButton asChild isActive={pathname === targetUrl}>
-                                  <Link to={targetUrl as string}>
+                                  <Link to={targetUrl.split("?")[0] as string} search={(targetUrl.includes("?") ? Object.fromEntries(new URLSearchParams(targetUrl.split("?")[1])) : undefined) as never}>
                                     <it.icon />
                                     <span className="flex-1">{it.title}</span>
                                     {isStub && (

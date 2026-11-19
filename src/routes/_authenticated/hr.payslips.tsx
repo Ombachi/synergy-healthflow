@@ -28,12 +28,15 @@ export const Route = createFileRoute("/_authenticated/hr/payslips")({
 });
 
 type Period = { id: string; label: string; period_start: string; period_end: string; status: string };
-type EmpRef = { id: string; full_name: string; employee_no: string | null; position: string | null };
+type EmpRef = { id: string; full_name: string; employee_no: string | null; position: string | null; department?: string | null; id_number?: string | null; kra_pin?: string | null; nssf_no?: string | null; sha_no?: string | null; bank_name?: string | null; bank_branch?: string | null; bank_account?: string | null };
 type Slip = {
   id: string; employee_id: string; period_id: string;
   basic_cents: number; allowances_cents: number; overtime_cents: number;
   paye_cents: number; nhif_cents: number; nssf_cents: number; housing_levy_cents: number;
   other_deductions_cents: number; net_cents: number; notes: string | null; published: boolean;
+  personal_relief_cents?: number | null;
+  earning_lines?: { label: string; amount_cents: number }[] | null;
+  deduction_lines?: { label: string; amount_cents: number; balance_cents?: number | null }[] | null;
   payroll_periods: Period | null;
   employees: EmpRef | null;
 };
@@ -44,7 +47,7 @@ function PayslipsPage() {
   const { user } = useAuth();
   const { activeFacility, roles, loading: facilityLoading, error: facilityError, refresh: refreshFacility } = useFacility();
   const isHR = roles.some(role => ["admin", "hr_officer", "hr_manager"].includes(role));
-  const [view, setView] = useState("mine");
+  const [view, setView] = useState(() => (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "manage" ? "manage" : "mine"));
   const managing = isHR && view === "manage";
   const [refresh, setRefresh] = useState(0);
 
@@ -55,7 +58,7 @@ function PayslipsPage() {
     queryFn: async () => {
       const scope = hrFacilityScope(activeFacility.id, user?.id ?? "", managing);
       let q = supabase.from("payslips" as never)
-        .select("*, payroll_periods(*), employees!payslips_employee_id_fkey(id,full_name,employee_no,position)")
+        .select("*, payroll_periods(*), employees!payslips_employee_id_fkey(*)")
         .eq("facility_id", scope.facilityId).order("created_at", { ascending: false }).limit(200);
       if (scope.ownerId) q = q.eq("employee_id", scope.ownerId).eq("published", scope.publishedOnly);
       const { data, error } = await q;
@@ -81,6 +84,22 @@ function PayslipsPage() {
     if (!s.employees || !s.payroll_periods) return;
     exportPayslipPDF({
       id: s.id,
+      organisation_name: activeFacility.name || "Hospital",
+      organisation_address: activeFacility.address || null,
+      organisation_contact: [activeFacility.phone, activeFacility.email].filter(Boolean).join("  ·  ") || null,
+      department: s.employees.department ?? null,
+      id_number: s.employees.id_number ?? null,
+      kra_pin: s.employees.kra_pin ?? null,
+      nssf_no: s.employees.nssf_no ?? null,
+      sha_no: s.employees.sha_no ?? null,
+      bank_name: s.employees.bank_name ?? null,
+      bank_branch: s.employees.bank_branch ?? null,
+      bank_account: s.employees.bank_account ?? null,
+      personal_relief_cents: s.personal_relief_cents ?? null,
+      lines: [
+        ...(s.earning_lines ?? []).map((l) => ({ kind: "earning", ...l })),
+        ...(s.deduction_lines ?? []).map((l) => ({ kind: "deduction", ...l })),
+      ],
       employee_name: s.employees.full_name,
       employee_no: s.employees.employee_no,
       position: s.employees.position,
@@ -96,7 +115,6 @@ function PayslipsPage() {
       housing_levy_cents: s.housing_levy_cents,
       other_deductions_cents: s.other_deductions_cents,
       net_cents: s.net_cents,
-      notes: s.notes,
     });
   }
 
