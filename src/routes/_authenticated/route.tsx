@@ -226,6 +226,7 @@ const GROUPS: Group[] = [
     items: [
       { title: "User management", url: "/users", icon: ShieldCheck },
       { title: "Facilities", url: "/admin/facilities", icon: ShieldCheck },
+      { title: "Branch staff", url: "/facility/staff", icon: Users },
       { title: "Audit log", url: "/audit", icon: Shield },
       { title: "Soft-deleted", url: "/admin/soft-deleted", icon: Archive },
       { title: "Consent management", url: "/admin/consent", icon: FileText },
@@ -253,9 +254,9 @@ function AuthedLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, roles, loading: authLoading } = useAuth();
   const { activeFacility, enabledModules, loading: facilityLoading, error: facilityError, roles: facilityRoles } = useFacility();
-  const accessRoles = isAdminRole(roles) ? roles : facilityRoles;
+  const accessRoles = facilityRoles;
   const work = useWorkCounts();
-  const isAdmin = roles.includes("admin");
+  const isAdmin = facilityRoles.some((r) => r === "admin" || r === "superadmin" || r === "facility_admin");
 
 
   // Hydration-safe: initialize empty on server & first client render, then load from localStorage.
@@ -433,4 +434,3 @@ function resolveUrl(it: Item, isAdmin: boolean): string {
   return isAdmin && it.dept ? `/department/${it.dept}` : it.url;
 }
 
-function isAdminRole(roles: AppRole[]) { return roles.includes("admin"); }

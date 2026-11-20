@@ -20,7 +20,7 @@ export const CLINICAL_ROLES: AppRole[] = [
 ];
 
 export const STAFF_ROLES: AppRole[] = ALL_ROLES.filter(role => role !== "patient" && role !== "athlete");
-export const HR_MANAGEMENT_ROLES: AppRole[] = ["admin", "hr_officer", "hr_manager", "dept_manager"];
+export const HR_MANAGEMENT_ROLES: AppRole[] = ["superadmin", "facility_admin", "admin", "hr_officer", "hr_manager", "dept_manager"];
 
 // Sub-domain role sets for gated inpatient areas.
 const THEATRE_ROLES: AppRole[] = ["doctor", "nurse"];
@@ -87,10 +87,10 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Admin-only
   "/audit": [],
   "/users": [],
-  "/department": [],
+  "/department": ["facility_admin"],
   "/lab-templates": [],
   "/admin-kpi": [],
-  "/roster": ["hr_officer", "hr_manager"],
+  "/roster": ["facility_admin", "hr_officer", "hr_manager"],
 
   // Removed from clinical-staff nav — kept for admins only.
   "/beds": ["nurse", "doctor", "receptionist", "admissions_officer"],
@@ -124,10 +124,10 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/hr/leave": STAFF_ROLES,
   "/hr/payslips": STAFF_ROLES,
   "/hr/documents": STAFF_ROLES,
-  "/hr/admin": ["hr_officer", "hr_manager"],
+  "/hr/admin": ["facility_admin", "hr_officer", "hr_manager"],
   "/requests": STAFF_ROLES,
   "/attendance": STAFF_ROLES,
-  "/leave-inbox": ["hr_officer", "hr_manager", "dept_manager"],
+  "/leave-inbox": ["facility_admin", "hr_officer", "hr_manager", "dept_manager"],
   "/announcements": STAFF_ROLES,
   // Tenders & bids remain in the procurement dashboard.
   "/tenders": ["procurement"],
@@ -154,6 +154,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/admin/errors": [],
   "/admin/portal-invitations": [],
   "/admin/facilities": [],
+  "/facility/staff": ["facility_admin"],
 };
 
 
@@ -163,7 +164,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
 // Prefix-based rules for dynamic routes (path starts with key).
 export const ROUTE_PREFIX_ROLES: Record<string, AppRole[]> = {
   "/visits/": ["nurse", "doctor", "physio", "nutritionist"],
-  "/department/": [],
+  "/department/": ["facility_admin"],
   "/orders/": ["lab_tech", "pharmacist", "store_keeper", "nurse"],
   "/print/wristband/": ["receptionist", "nurse", "doctor"],
   "/print/sample/": ["lab_tech", "nurse", "doctor"],
@@ -203,6 +204,9 @@ export const ALWAYS_VISIBLE = new Set<string>([
 export function canAccess(path: string, roles: AppRole[], modules?: Partial<Record<ModuleKey, boolean>>): boolean {
   if (!isModuleEnabled(path, modules)) return false;
   if (ALWAYS_VISIBLE.has(path)) return true;
+  // Legacy admin is branch operations only; it never implies platform ownership.
+  if (path === "/admin/facilities" || path === "/users" || path === "/service-catalog") return roles.includes("superadmin");
+  if (roles.includes("superadmin")) return true;
   if (roles.includes("admin")) return true;
   const allowed = ROUTE_ROLES[path];
   if (allowed) {
@@ -220,6 +224,8 @@ export function canAccess(path: string, roles: AppRole[], modules?: Partial<Reco
 
 // Where each role should land after sign-in.
 export const ROLE_HOME: Partial<Record<AppRole, string>> = {
+  superadmin: "/admin/facilities",
+  facility_admin: "/facility/staff",
   admissions_officer: "/admissions",
   hr_officer: "/hr/admin",
   hr_manager: "/hr/admin",

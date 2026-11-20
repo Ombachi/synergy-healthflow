@@ -1,4 +1,5 @@
 import process from "node:process";
+import type { Icd11Result } from "./icd11-fallback";
 
 // WHO ICD-11 API access (server-only).
 // Tokens are cached in-memory for the lifetime of the worker instance.
@@ -8,7 +9,7 @@ const LINEARIZATION = "https://id.who.int/icd/release/11/2025-01/mms";
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
-async function getToken(): Promise<string> {
+async function getToken(signal: AbortSignal): Promise<string> {
   const now = Date.now();
   if (cachedToken && cachedToken.expiresAt > now + 30_000) return cachedToken.value;
 
@@ -27,6 +28,7 @@ async function getToken(): Promise<string> {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
+    signal,
   });
   if (!res.ok) throw new Error(`ICD-11 authentication failed (${res.status})`);
   const json = (await res.json()) as { access_token: string; expires_in?: number };
@@ -37,9 +39,10 @@ async function getToken(): Promise<string> {
   return cachedToken.value;
 }
 
-async function icdFetch(url: string) {
-  const token = await getToken();
+async function icdFetch(url: string, signal: AbortSignal) {
+  const token = await getToken(signal);
   const res = await fetch(url, {
+    signal,
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
@@ -53,18 +56,11 @@ async function icdFetch(url: string) {
 
 const stripTags = (s: string) => s.replace(/<[^>]*>/g, "").trim();
 
-export interface Icd11Result {
-  code: string;
-  title: string;
-  chapter: string | null;
-  uri: string | null;
-}
-
 export async function searchIcd11(query: string, limit = 15): Promise<Icd11Result[]> {
   const url =
     `${LINEARIZATION}/search?q=${encodeURIComponent(query)}` +
     `&useFlexisearch=true&flatResults=true&highlightingEnabled=false`;
-  const json = await icdFetch(url);
+  const json = await icdFetch(url, AbortSignal.timeout(4500));
   const entities = (json["destinationEntities"] as Array<Record<string, unknown>> | undefined) ?? [];
 
   return entities
@@ -74,17 +70,18 @@ export async function searchIcd11(query: string, limit = 15): Promise<Icd11Resul
       chapter: e["chapter"] ? stripTags(String(e["chapter"])) : null,
       uri: e["id"] ? String(e["id"]) : null,
     }))
-    .filter((r) => r.title.length > 0)
+    .filter((r) => r.title.length > 0 && r.code.length > 0)
     .slice(0, limit);
 }
 
 export async function lookupIcd11Code(code: string): Promise<Icd11Result | null> {
   const url = `${LINEARIZATION}/codeinfo/${encodeURIComponent(code)}`;
+  const signal = AbortSignal.timeout(4500);
   try {
-    const info = await icdFetch(url);
+    const info = await icdFetch(url, signal);
     const stemId = info["stemId"] ? String(info["stemId"]) : null;
     if (!stemId) return null;
-    const entity = await icdFetch(stemId);
+    const entity = await icdFetch(stemId.replace(/^http:/, "https:"), signal);
     const title = entity["title"] as { "@value"?: string } | undefined;
     return {
       code,

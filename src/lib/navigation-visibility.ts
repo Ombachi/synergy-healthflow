@@ -10,7 +10,7 @@ import { STAFF_ROLES, HR_MANAGEMENT_ROLES } from "./role-permissions";
 
 // Whole groups hidden for a role.
 const HIDE_GROUPS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  lab_tech:          ["inpatient", "emergency", "store"],
+  lab_tech:          ["inpatient", "emergency"],
   billing_officer:   ["outpatient", "inpatient", "emergency", "finance"],
   doctor:            ["emergency"],
   nurse:             ["emergency"],
@@ -146,6 +146,7 @@ function urlMatches(url: string, pattern: string): boolean {
 }
 
 export function isItemVisibleForRoles(url: string, groupKey: string | null, roles: AppRole[]): boolean {
+  if (url === "/orders/stock-requests" && roles.some((r) => ["nurse", "lab_tech", "pharmacist"].includes(r))) return true;
   if (groupKey === "staff-self-service") return roles.some(role => STAFF_ROLES.includes(role));
   if (groupKey === "hr-management") return roles.some(role => HR_MANAGEMENT_ROLES.includes(role));
   if (roles.length === 0) return true; // let canAccess handle it

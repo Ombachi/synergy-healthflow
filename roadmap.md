@@ -1,3 +1,9 @@
+# Requested document, diagnosis and access updates
+- [ ] Align document metadata and persist facility-scoped read tracking.
+- [ ] Add bounded WHO lookup with local ICD-11 fallback and tests.
+- [ ] Separate global superadmin from facility-scoped facility_admin with database authorization and tests.
+- [ ] Enable facility-scoped ward/lab stock requests and verify access.
+
 # Billing extension and facility integration
 - [ ] Finish and test branch-scoped payslips, attendance and roster reads/writes; clear branch-switch state and show unavailable data explicitly.
 - [ ] Apply reviewed HR facility isolation SQL and verify two-branch HR access with real accounts; blocked until database connectivity is restored.

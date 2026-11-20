@@ -7,6 +7,7 @@ export interface AuthState {
   session: Session | null;
   user: User | null;
   roles: AppRole[];
+  isPlatformAdmin: boolean;
   profile: Profile | null;
   loading: boolean;
   hasRole: (r: AppRole) => boolean;
@@ -81,6 +82,7 @@ export function useAuthState(): AuthState {
     session,
     user,
     roles,
+    isPlatformAdmin: roles.includes("superadmin"),
     profile,
     loading,
     hasRole: (r: AppRole) => roles.includes(r),

@@ -9,6 +9,7 @@ import type { AppRole } from "@/hooks/use-auth";
 import { ALL_ROLES } from "@/hooks/use-auth";
 import { setPdfFacility } from "@/lib/pdf-brand";
 import { useAuthContext } from "@/components/auth-provider";
+import { resolveWorkspaceRoles } from "@/lib/administrator-access";
 
 interface FacilityState {
   loading: boolean;
@@ -28,7 +29,7 @@ const Ctx = createContext<FacilityState | null>(null);
 export function FacilityProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const auth = useAuthContext();
-  const isAdmin = !!auth?.roles.includes("admin");
+  const isAdmin = auth?.isPlatformAdmin ?? false;
   const [all, setAll] = useState<Facility[]>(FALLBACK_FACILITIES);
   const [activeId, setActiveId] = useState<string>(FALLBACK_FACILITIES[0]?.id ?? "");
 
@@ -116,7 +117,7 @@ export function FacilityProvider({ children }: { children: ReactNode }) {
 
   const value: FacilityState = {
     loading, error, refresh,
-    roles: isAdmin ? (auth?.roles ?? []) : memberships.find((m) => m.facility_id === activeFacility.id)?.role ? memberships.filter((m) => m.facility_id === activeFacility.id).flatMap((m) => m.role ? [m.role] : []) : (auth?.roles ?? []),
+    roles: resolveWorkspaceRoles(auth?.roles ?? [], memberships, activeFacility.id),
     activeFacility,
     availableFacilities: available,
     allFacilities: all,

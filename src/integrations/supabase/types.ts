@@ -2812,16 +2812,57 @@ export type Database = {
           },
         ]
       }
+      hr_document_views: {
+        Row: {
+          document_id: string
+          employee_id: string
+          id: string
+          viewed_at: string
+        }
+        Insert: {
+          document_id: string
+          employee_id: string
+          id?: string
+          viewed_at?: string
+        }
+        Update: {
+          document_id?: string
+          employee_id?: string
+          id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_document_views_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "hr_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_document_views_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hr_documents: {
         Row: {
           category: string
           created_at: string
           description: string | null
+          effective_date: string | null
           expires_at: string | null
+          facility_id: string | null
+          file_name: string | null
           file_path: string | null
           id: string
+          mime_type: string | null
           published: boolean
           requires_ack: boolean
+          storage_path: string | null
           title: string
           updated_at: string
           uploaded_by: string | null
@@ -2831,11 +2872,16 @@ export type Database = {
           category: string
           created_at?: string
           description?: string | null
+          effective_date?: string | null
           expires_at?: string | null
+          facility_id?: string | null
+          file_name?: string | null
           file_path?: string | null
           id?: string
+          mime_type?: string | null
           published?: boolean
           requires_ack?: boolean
+          storage_path?: string | null
           title: string
           updated_at?: string
           uploaded_by?: string | null
@@ -2845,17 +2891,30 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          effective_date?: string | null
           expires_at?: string | null
+          facility_id?: string | null
+          file_name?: string | null
           file_path?: string | null
           id?: string
+          mime_type?: string | null
           published?: boolean
           requires_ack?: boolean
+          storage_path?: string | null
           title?: string
           updated_at?: string
           uploaded_by?: string | null
           version?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "hr_documents_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       icd11_codes: {
         Row: {
@@ -3970,6 +4029,7 @@ export type Database = {
           category: string | null
           created_at: string
           created_by: string | null
+          facility_id: string | null
           id: string
           name: string
           quantity: number
@@ -3983,6 +4043,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           created_by?: string | null
+          facility_id?: string | null
           id?: string
           name: string
           quantity?: number
@@ -3996,6 +4057,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           created_by?: string | null
+          facility_id?: string | null
           id?: string
           name?: string
           quantity?: number
@@ -4005,7 +4067,15 @@ export type Database = {
           unit_price_cents?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inventory_movements: {
         Row: {
@@ -8092,6 +8162,7 @@ export type Database = {
         Row: {
           created_at: string
           department: string | null
+          facility_id: string | null
           id: string
           location_id: string | null
           notes: string | null
@@ -8102,6 +8173,7 @@ export type Database = {
         Insert: {
           created_at?: string
           department?: string | null
+          facility_id?: string | null
           id?: string
           location_id?: string | null
           notes?: string | null
@@ -8112,6 +8184,7 @@ export type Database = {
         Update: {
           created_at?: string
           department?: string | null
+          facility_id?: string | null
           id?: string
           location_id?: string | null
           notes?: string | null
@@ -8120,6 +8193,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "stock_requests_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "stock_requests_location_id_fkey"
             columns: ["location_id"]
@@ -9462,6 +9542,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      assign_facility_staff: {
+        Args: {
+          _facility: string
+          _remove?: boolean
+          _role: string
+          _user: string
+        }
+        Returns: undefined
+      }
       calc_leave_days: {
         Args: { _end: string; _start: string }
         Returns: number
@@ -9517,6 +9606,19 @@ export type Database = {
         Returns: undefined
       }
       ensure_open_invoice: { Args: { _visit: string }; Returns: string }
+      facility_has_role: {
+        Args: { _facility: string; _roles: string[] }
+        Returns: boolean
+      }
+      facility_staff_options: {
+        Args: { _facility: string }
+        Returns: {
+          available_roles: string[]
+          full_name: string
+          role: string
+          user_id: string
+        }[]
+      }
       find_duplicate_patients: {
         Args: { _dob: string; _name: string; _phone: string }
         Returns: {
@@ -9576,8 +9678,10 @@ export type Database = {
         }[]
       }
       is_clinical_requester: { Args: never; Returns: boolean }
+      is_facility_admin: { Args: { _facility: string }; Returns: boolean }
       is_fleet_staff: { Args: never; Returns: boolean }
       is_hr_staff: { Args: never; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
       is_staff_member: { Args: never; Returns: boolean }
       is_supervisor_of: { Args: { _emp: string }; Returns: boolean }
       is_thread_participant: {
@@ -9798,6 +9902,15 @@ export type Database = {
         Returns: undefined
       }
       staff_patient_ids: { Args: never; Returns: string[] }
+      submit_department_stock_request: {
+        Args: {
+          _department: string
+          _facility: string
+          _lines: Json
+          _notes: string
+        }
+        Returns: string
+      }
       verify_prescription: {
         Args: { rx_id: string }
         Returns: {
@@ -9836,6 +9949,8 @@ export type Database = {
         | "admissions_officer"
         | "fleet_manager"
         | "driver"
+        | "superadmin"
+        | "facility_admin"
       bid_status:
         | "submitted"
         | "shortlisted"
@@ -10009,6 +10124,8 @@ export const Constants = {
         "admissions_officer",
         "fleet_manager",
         "driver",
+        "superadmin",
+        "facility_admin",
       ],
       bid_status: [
         "submitted",

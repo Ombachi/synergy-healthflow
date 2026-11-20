@@ -5,7 +5,7 @@ export type { AuthState };
 
 
 export type AppRole =
-  | "admin" | "doctor" | "nurse" | "patient" | "athlete"
+  | "superadmin" | "facility_admin" | "admin" | "doctor" | "nurse" | "patient" | "athlete"
   | "lab_tech" | "pharmacist" | "radiologist"
   | "receptionist" | "cashier" | "insurance_officer"
   | "physio" | "nutritionist"
@@ -15,7 +15,7 @@ export type AppRole =
   | "fleet_manager" | "driver";
 
 export const ALL_ROLES: AppRole[] = [
-  "admin", "doctor", "nurse",
+  "superadmin", "facility_admin", "admin", "doctor", "nurse",
   "lab_tech", "pharmacist", "radiologist",
   "receptionist", "cashier", "billing_officer", "insurance_officer",
   "physio", "nutritionist",
