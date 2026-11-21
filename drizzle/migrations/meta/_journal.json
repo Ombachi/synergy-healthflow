@@ -57,6 +57,13 @@
       "when": 1795194685986,
       "tag": "0007_documents_administrator_and_stock_access",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795264222331,
+      "tag": "0008_rxnorm_concepts_cache",
+      "breakpoints": true
     }
   ]
 }

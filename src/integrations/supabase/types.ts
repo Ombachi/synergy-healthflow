@@ -7633,6 +7633,42 @@ export type Database = {
           },
         ]
       }
+      rxnorm_concepts: {
+        Row: {
+          created_at: string | null
+          dose_form: string | null
+          name: string
+          prescribable: boolean | null
+          rxcui: string
+          strength: string | null
+          synonym: string | null
+          tty: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dose_form?: string | null
+          name: string
+          prescribable?: boolean | null
+          rxcui: string
+          strength?: string | null
+          synonym?: string | null
+          tty?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dose_form?: string | null
+          name?: string
+          prescribable?: boolean | null
+          rxcui?: string
+          strength?: string | null
+          synonym?: string | null
+          tty?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       service_catalog: {
         Row: {
           active: boolean

@@ -9,11 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useOfflineMutation } from "@/lib/offline/use-offline";
+import { RxNormAutocomplete } from "@/components/rxnorm-autocomplete";
 import { CatalogSearch, type CatalogItem } from "@/components/catalog-search";
 import { runMedicationPrescribe, ageFromDob, type CdsCard } from "@/lib/cds/cds-hooks-runner";
 import { CdsCards, CdsHardStopDialog, type OverrideResult } from "@/components/cds/cds-cards";
 
-interface Drug { id: string; drug_name: string; medication_class: string | null; default_dose: string | null; default_frequency: string | null; default_duration: string | null; instructions: string | null }
+interface Drug { rxcui?: string; id: string; drug_name: string; medication_class: string | null; default_dose: string | null; default_frequency: string | null; default_duration: string | null; instructions: string | null }
 interface Visit { id: string; patient_id: string; reason: string | null; created_at: string; status: string }
 interface Patient { id: string; full_name: string; medical_record_number: string | null; allergies: string | null; date_of_birth: string | null }
 
@@ -40,6 +41,7 @@ export function PrescribePanel({ compact = false }: { compact?: boolean }) {
   const [selected, setSelected] = useState<Drug | null>(null);
   const [form, setForm] = useState({ dose: "", frequency: "", duration: "", instructions: "" });
   const [formFilter, setFormFilter] = useState<string>("all");
+  const [source, setSource] = useState<"rxnorm" | "local">("rxnorm");
 
   const visits = useQuery({
     queryKey: ["prescribe-visits"],
@@ -149,7 +151,7 @@ export function PrescribePanel({ compact = false }: { compact?: boolean }) {
       dose: form.dose || selected.default_dose,
       frequency: form.frequency || selected.default_frequency,
       duration: form.duration || selected.default_duration,
-      instructions: (form.instructions || selected.instructions || "") + safetyNote,
+      instructions: (form.instructions || selected.instructions || "") + (selected.rxcui ? `\n[RxCUI ${selected.rxcui}]` : "") + safetyNote,
       created_by: user?.id ?? null,
     } }];
   }, {
@@ -232,6 +234,7 @@ export function PrescribePanel({ compact = false }: { compact?: boolean }) {
           {selected && (
             <div className="space-y-2 rounded-md border bg-background p-3">
               <div className="text-sm font-semibold">{selected.drug_name}</div>
+              {selected.rxcui && <div className="text-[11px] text-muted-foreground">RxCUI {selected.rxcui} · {selected.medication_class}</div>}
 
               <CdsCards cards={cards} onSuggest={(m) => {
                 const alt = (drugs.data ?? []).find((d) => d.drug_name.toLowerCase().includes(m.toLowerCase()));
@@ -257,6 +260,20 @@ export function PrescribePanel({ compact = false }: { compact?: boolean }) {
         </div>
 
         <div className="rounded-lg border bg-card p-4">
+          <div className="mb-3 flex gap-1">
+            {(["rxnorm", "local"] as const).map((k) => (
+              <button key={k} onClick={() => setSource(k)} className={`rounded-full px-3 py-1 text-xs ${source === k ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                {k === "rxnorm" ? "RxNorm (standard)" : "Facility list"}
+              </button>
+            ))}
+          </div>
+          {source === "rxnorm" ? (
+            <RxNormAutocomplete onPick={(c) => {
+              setSelected({ id: `rxcui:${c.rxcui}`, rxcui: c.rxcui, drug_name: c.name, medication_class: [c.strength, c.dose_form].filter(Boolean).join(" · ") || null,
+                default_dose: c.strength, default_frequency: null, default_duration: null, instructions: null });
+              setForm((f) => ({ ...f, dose: c.strength ?? "" }));
+            }} />
+          ) : (
           <CatalogSearch
             items={items}
             loading={drugs.isLoading}
@@ -270,6 +287,7 @@ export function PrescribePanel({ compact = false }: { compact?: boolean }) {
               </Button>
             )}
           />
+          )}
         </div>
       </div>
     </div>

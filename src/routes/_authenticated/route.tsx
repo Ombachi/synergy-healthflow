@@ -7,6 +7,7 @@ import {
   Heart, HeartPulse, Inbox as InboxIcon, LayoutDashboard, ListOrdered, LogOut, MessageSquare, Microscope,
   MapPin, Package, Pill, Receipt, ScanLine, Shield, ShieldAlert, ShieldCheck, ShoppingCart, Siren, Stethoscope,
   Navigation, Syringe, Ticket, Truck, User, Warehouse, Wallet,
+  Users,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
