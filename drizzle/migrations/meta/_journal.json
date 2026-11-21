@@ -64,6 +64,13 @@
       "when": 1795264222331,
       "tag": "0008_rxnorm_concepts_cache",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795267229691,
+      "tag": "0009_harden_definer_functions_rxnorm",
+      "breakpoints": true
     }
   ]
 }
