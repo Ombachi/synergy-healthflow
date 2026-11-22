@@ -253,7 +253,7 @@ function LabPortal() {
         if (doctorId) {
           const list = criticalRows.map((r) => `${r.parameter_name} ${r.value_text}${r.units ? " " + r.units : ""}`).join(", ");
           await supabase.from("notifications" as never).insert({
-            user_id: doctorId, title: "🚨 Critical lab result",
+            recipient_id: doctorId, type: "critical_result", entity_type: "lab_order", entity_id: selected.id, title: "🚨 Critical lab result",
             body: `${patientName(selected.patient_id)}: ${list}. Review immediately.`,
             link: "/critical-results",
           } as never);
