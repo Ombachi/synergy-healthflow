@@ -18,6 +18,11 @@ import { WorkflowChip } from "@/components/workflow-chip";
 import { useEncounterMap, encounterCounts, type EncounterFilter } from "@/hooks/use-encounter";
 import { EncounterTabs } from "@/components/encounter-tabs";
 import { isSearching, startOfTodayISO } from "@/lib/today-scope";
+import { DEFAULT_PANIC_RANGES, panicFlag, type PanicRange } from "@/lib/lab-panic";
+
+function PanicBadge() {
+  return <span className="ml-1 inline-flex animate-pulse items-center rounded bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">🚨 CRITICAL PANIC</span>;
+}
 
 export const Route = createFileRoute("/_authenticated/lab")({ head: () => ({ meta: [{ title: "Lab | Litu Vault" }, { name: "description", content: "Lab workspace for the selected healthcare facility." }, { property: "og:title", content: "Lab | Litu Vault" }, { property: "og:description", content: "Lab workspace for the selected healthcare facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <RoleGate path="/lab"><LabPortal /></RoleGate> });
 
@@ -177,6 +182,24 @@ function LabPortal() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // Shared danger limits (database list when available, built-in defaults otherwise)
+  const panicRanges = useQuery({
+    queryKey: ["lab-critical-ranges"],
+    staleTime: 10 * 60 * 1000,
+    queryFn: async (): Promise<PanicRange[]> => {
+      const { data, error } = await supabase.from("lab_critical_ranges" as never).select("*");
+      if (error || !data) return DEFAULT_PANIC_RANGES;
+      const rows = (data as unknown as Array<Record<string, unknown>>).map((r) => ({
+        parameter: String(r["parameter_name"] ?? r["test_name"] ?? r["parameter"] ?? "").toLowerCase(),
+        units: String(r["units"] ?? ""),
+        critical_low: r["critical_low"] == null ? null : Number(r["critical_low"]),
+        critical_high: r["critical_high"] == null ? null : Number(r["critical_high"]),
+      })).filter((r) => r.parameter);
+      return [...rows, ...DEFAULT_PANIC_RANGES];
+    },
+  });
+  const ranges = panicRanges.data ?? DEFAULT_PANIC_RANGES;
+
   // Template-driven result entry
   const [entryOpen, setEntryOpen] = useState(false);
   const [entryValues, setEntryValues] = useState<Record<string, string>>({});
@@ -211,18 +234,38 @@ function LabPortal() {
           };
         });
       if (rows.length === 0) throw new Error("Enter at least one parameter value");
-      const { error: e1 } = await supabase.from("lab_result_values" as never).insert(rows as never);
+      const flagged = rows.map((r) => {
+        const f = panicFlag(r.parameter_name, r.value_numeric, ranges);
+        return f ? { ...r, abnormal_flag: f } : r;
+      });
+      const criticalRows = flagged.filter((r) => "abnormal_flag" in r);
+      const { error: e1 } = await supabase.from("lab_result_values" as never).insert(flagged as never);
       if (e1) throw e1;
       // also keep a one-line summary in lab_results for compatibility
       const summary = rows.map((r) => `${r.parameter_name}: ${r.value_text}${r.units ? " "+r.units : ""}`).join("; ");
       await supabase.from("lab_results" as never).insert({
         order_id: selected.id, result_value: summary, comments: entryComments || null, performed_by: user!.id,
+        ...(criticalRows.length > 0 ? { abnormal_flag: "CRITICAL" } : {}),
       } as never);
+      if (criticalRows.length > 0) {
+        const { data: ord } = await supabase.from("lab_orders" as never).select("ordered_by").eq("id", selected.id).maybeSingle();
+        const doctorId = (ord as unknown as { ordered_by?: string | null } | null)?.ordered_by;
+        if (doctorId) {
+          const list = criticalRows.map((r) => `${r.parameter_name} ${r.value_text}${r.units ? " " + r.units : ""}`).join(", ");
+          await supabase.from("notifications" as never).insert({
+            user_id: doctorId, title: "🚨 Critical lab result",
+            body: `${patientName(selected.patient_id)}: ${list}. Review immediately.`,
+            link: "/critical-results",
+          } as never);
+        }
+      }
+      return criticalRows.length;
       const { error: e3 } = await supabase.from("lab_orders" as never).update({ status: "resulted" } as never).eq("id", selected.id);
       if (e3) throw e3;
     },
-    onSuccess: () => {
+    onSuccess: (critical) => {
       setEntryOpen(false);
+      if (critical) toast.error(`${critical} critical panic value(s) — ordering doctor alerted`);
       qc.invalidateQueries({ queryKey: ["lab-orders"] });
       qc.invalidateQueries({ queryKey: ["lab-values-all"] });
       toast.success("Results saved");
@@ -324,7 +367,7 @@ function LabPortal() {
                         return (
                           <tr key={t.id} className="border-t">
                             <td className="p-2 font-medium">{t.parameter_name}</td>
-                            <td className="p-2">{v?.value_text ?? "—"}</td>
+                            <td className="p-2">{v?.value_text ?? "—"}{(v?.abnormal_flag?.startsWith("critical") || panicFlag(t.parameter_name, v?.value_numeric ?? null, ranges)) && <PanicBadge />}</td>
                             <td className="p-2">{t.units ?? "—"}</td>
                             <td className="p-2 text-muted-foreground">{t.reference_range ?? (t.reference_low != null || t.reference_high != null ? `${t.reference_low ?? ""}–${t.reference_high ?? ""}` : "—")}</td>
                             <td className="p-2">{v?.abnormal_flag && <span className={v.abnormal_flag === "normal" ? "text-emerald-600" : "text-destructive"}>{v.abnormal_flag}</span>}</td>
@@ -372,8 +415,10 @@ function LabPortal() {
                 }
                 setEntryValues(next);
               }
+              const rawEntry = (entryValues[t.id] ?? "").trim();
+              const live = t.input_type === "numeric" && rawEntry !== "" ? panicFlag(t.parameter_name, Number(rawEntry), ranges) : null;
               return (
-                <div key={t.id} className="grid grid-cols-12 items-center gap-2">
+                <div key={t.id} className={`grid grid-cols-12 items-center gap-2 rounded ${live ? "bg-destructive/10 ring-1 ring-destructive" : ""}`}>
                   <Label className="col-span-4 text-xs">
                     {t.parameter_name}{t.units ? ` (${t.units})` : ""}
                     {isAuto && <span className="ml-1 rounded bg-primary/10 px-1 text-[9px] text-primary">auto</span>}
@@ -394,6 +439,7 @@ function LabPortal() {
                   )}
                   <span className="col-span-3 text-[10px] text-muted-foreground">
                     Ref {t.reference_range ?? `${t.reference_low ?? ""}–${t.reference_high ?? ""}`}
+                    {live && <PanicBadge />}
                   </span>
                 </div>
               );
