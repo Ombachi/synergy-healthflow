@@ -71,6 +71,13 @@
       "when": 1795267229691,
       "tag": "0009_harden_definer_functions_rxnorm",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795450538199,
+      "tag": "0010_restrict_rxnorm_read_to_staff",
+      "breakpoints": true
     }
   ]
 }
