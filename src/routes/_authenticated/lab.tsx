@@ -259,9 +259,9 @@ function LabPortal() {
           } as never);
         }
       }
-      return criticalRows.length;
       const { error: e3 } = await supabase.from("lab_orders" as never).update({ status: "resulted" } as never).eq("id", selected.id);
       if (e3) throw e3;
+      return criticalRows.length;
     },
     onSuccess: (critical) => {
       setEntryOpen(false);

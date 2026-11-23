@@ -155,7 +155,8 @@ function VisitDetail() {
     mutationFn: async () => {
       if (!diagForm.diagnosis.trim()) throw new Error("Diagnosis required");
       const { error } = await supabase.from("visit_diagnoses" as never).insert({
-        visit_id: visitId, diagnosis: diagForm.diagnosis.trim(), icd_code: diagForm.icd_code || null,
+        visit_id: visitId, patient_id: visit.data?.patient_id ?? null,
+        diagnosis: diagForm.diagnosis.trim(), diagnosis_name: diagForm.diagnosis.trim(), icd_code: diagForm.icd_code || null,
         is_primary: diagForm.is_primary, created_by: user!.id,
       } as never);
       if (error) throw error;

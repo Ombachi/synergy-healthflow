@@ -261,7 +261,6 @@ export function SystemsExamination({
     const fields: Record<string, string> = {};
     sys.fields.forEach((f) => { if (f.normal && !f.revealsWhen) fields[f.key] = f.normal; });
     setState((s) => ({ ...s, [sys.key]: { normal: true, comment: sys.normalComment, fields } }));
-    setOpen((o) => ({ ...o, [sys.key]: true }));
   }
   function markAllNormal() {
     const next: ExamState = {};
@@ -293,39 +292,44 @@ export function SystemsExamination({
         </div>
       </div>
 
-      <div className="divide-y rounded-md border">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {visibleSystems.map((sys) => {
           const s = state[sys.key] ?? {};
           const isOpen = !!open[sys.key];
           const documented = s.normal || s.comment || Object.keys(s.fields ?? {}).length > 0;
+          const abnormal = !s.normal && !!documented;
           return (
-            <div key={sys.key}>
-              <button
-                type="button"
-                onClick={() => toggle(sys.key)}
-                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-accent/40"
-              >
-                <span className="flex items-center gap-2">
-                  {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  <span className="font-medium">{sys.label}</span>
-                  {s.normal && <Badge className="bg-emerald-500/15 text-emerald-700"><CheckCircle2 className="mr-1 h-3 w-3" />Normal</Badge>}
-                  {!s.normal && documented && <Badge variant="secondary">Findings</Badge>}
-                </span>
-              </button>
+            <div
+              key={sys.key}
+              className={`flex flex-col rounded-lg border bg-card transition-colors ${isOpen ? "col-span-full" : ""} ${s.normal ? "border-primary/40" : abnormal ? "border-destructive/50" : ""}`}
+            >
+              <div className="flex items-center justify-between gap-2 px-3 py-2">
+                <button type="button" onClick={() => toggle(sys.key)} className="flex min-w-0 items-center gap-1.5 text-left text-sm font-medium">
+                  {isOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+                  <span className="truncate">{sys.label}</span>
+                </button>
+                <div className="flex shrink-0 gap-1" role="group" aria-label={`${sys.label} status`}>
+                  <button
+                    type="button" disabled={disabled} aria-pressed={!!s.normal}
+                    onClick={() => (s.normal ? update(sys.key, { normal: false }) : markNormal(sys))}
+                    className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-50 ${s.normal ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+                  >
+                    <CheckCircle2 className="mr-1 inline h-3 w-3" />Normal
+                  </button>
+                  <button
+                    type="button" disabled={disabled} aria-pressed={abnormal}
+                    onClick={() => { update(sys.key, { normal: false, comment: s.normal ? "" : s.comment }); setOpen((o) => ({ ...o, [sys.key]: true })); }}
+                    className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-50 ${abnormal ? "border-destructive bg-destructive text-destructive-foreground" : "hover:bg-accent"}`}
+                  >
+                    Abnormal
+                  </button>
+                </div>
+              </div>
+              {!isOpen && s.comment && <p className="line-clamp-2 px-3 pb-2 text-xs text-muted-foreground">{s.comment}</p>}
 
               {isOpen && (
                 <div className="space-y-3 border-t bg-muted/20 px-3 py-3 text-sm">
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" onClick={() => markNormal(sys)} disabled={disabled}>
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Mark entire system as normal
-                    </Button>
-                    {s.normal && (
-                      <Button size="sm" variant="ghost" onClick={() => update(sys.key, { normal: false })} disabled={disabled}>
-                        Undo normal
-                      </Button>
-                    )}
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {sys.fields.map((f) => {
                       if (f.revealsWhen) {
                         const trigger = s.fields?.[f.revealsWhen.field];
