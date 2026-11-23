@@ -1,3 +1,9 @@
+# Lab viewer and stock search fixes
+- [x] Show panic badges for critical parameter and summary flags in the lab results viewer.
+- [x] Update platform administrator permission tests to match the role separation.
+- [x] Match both pharmacy and pharmaceutical stock categories and test the shared filter (31 targeted tests pass; build OK).
+- [ ] Verify lab badges and pharmacy stock search with an authorized staff account; available requester session is a patient and cannot open staff screens.
+
 # Requested document, diagnosis and access updates
 - [ ] Align document metadata and persist facility-scoped read tracking.
 - [ ] Add bounded WHO lookup with local ICD-11 fallback and tests.

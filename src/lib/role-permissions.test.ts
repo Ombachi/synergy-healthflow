@@ -64,12 +64,17 @@ describe("role and module access", () => {
     assert.equal(canAccess("/messages", ["driver"]), true);
   });
 
-  it("gives admins access to admin-only routes and denies everyone else", () => {
-    assert.equal(canAccess("/users", ["admin"]), true);
+  it("gives only platform admins access to control-plane routes", () => {
+    assert.equal(canAccess("/users", ["superadmin"]), true);
     assert.equal(canAccess("/users", ["doctor"]), false);
-    assert.equal(canAccess("/admin/facilities", ["admin"]), true);
+    assert.equal(canAccess("/admin/facilities", ["superadmin"]), true);
     assert.equal(canAccess("/admin/facilities", ["billing_officer"]), false);
     assert.equal(canAccess("/service-catalog", ["pharmacist"]), false);
+    for (const role of ["admin", "facility_admin"] as const) {
+      for (const path of ["/users", "/admin/facilities", "/service-catalog"]) {
+        assert.equal(canAccess(path, [role]), false, `${role}: ${path}`);
+      }
+    }
   });
 
   it("denies a route when the role is not in its allow-list", () => {

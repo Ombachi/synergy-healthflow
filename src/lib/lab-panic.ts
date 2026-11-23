@@ -16,6 +16,12 @@ export const DEFAULT_PANIC_RANGES: PanicRange[] = [
 
 export type PanicFlag = "critical low" | "critical high" | null;
 
+/** Recognize both overall CRITICAL flags and legacy parameter-level flags. */
+export function isCriticalLabFlag(flag: string | null | undefined): boolean {
+  const normalized = flag?.trim().toLowerCase();
+  return normalized === "critical" || normalized === "critical low" || normalized === "critical high";
+}
+
 export function findPanicRange(parameter: string, ranges: PanicRange[] = DEFAULT_PANIC_RANGES): PanicRange | undefined {
   const p = parameter.trim().toLowerCase();
   return ranges.find((r) => p === r.parameter || p.startsWith(r.parameter + " ") || p.includes(r.parameter));

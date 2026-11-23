@@ -17,8 +17,10 @@ describe("facility access", () => {
   test("enabled theatre does not grant a receptionist clinical permission", () => {
     assert.equal(canAccess("/surgery", ["receptionist"], { theatre: true }), false);
   });
-  test("branch administration remains administrator-only", () => {
+  test("facility control plane remains platform-administrator-only", () => {
     assert.equal(canAccess("/admin/facilities", ["doctor"]), false);
-    assert.equal(canAccess("/admin/facilities", ["admin"]), true);
+    assert.equal(canAccess("/admin/facilities", ["superadmin"]), true);
+    assert.equal(canAccess("/admin/facilities", ["admin"]), false);
+    assert.equal(canAccess("/admin/facilities", ["facility_admin"]), false);
   });
 });

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WorkflowChip } from "@/components/workflow-chip";
+import { stockCategoryFilter } from "@/lib/stock-category";
 
 interface InvItem { id: string; name: string; quantity: number; category: string | null }
 interface Req { id: string; department: string | null; status: string; notes: string | null; created_at: string; requester_id: string }
@@ -32,7 +33,7 @@ export function StockRequestForm({ department, categoryHint }: { department: "la
     queryKey: ["sr-items", showAll ? "all" : (categoryHint ?? "all")],
     queryFn: async () => {
       let q = supabase.from("inventory_items" as never).select("id, name, quantity, category").order("name").limit(2000);
-      if (!showAll && categoryHint) q = q.ilike("category", `%${categoryHint}%`);
+      if (!showAll && categoryHint) q = q.or(stockCategoryFilter(categoryHint));
       const { data, error } = await q;
       if (error) throw error;
       return (data as unknown as InvItem[]) ?? [];

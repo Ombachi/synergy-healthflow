@@ -5,6 +5,15 @@ import { AlertTriangle, Download, FlaskConical, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { exportLabReportPDF } from "@/lib/lab-report-pdf";
+import { isCriticalLabFlag } from "@/lib/lab-panic";
+
+function PanicBadge() {
+  return (
+    <span className="inline-flex max-w-full items-center gap-1 rounded border border-destructive/50 bg-destructive/10 px-1.5 py-0.5 text-xs font-bold text-destructive motion-safe:animate-pulse">
+      <span aria-hidden="true">🚨</span> CRITICAL PANIC
+    </span>
+  );
+}
 
 interface LabOrder {
   id: string; test_id: string; created_at: string; status: string; patient_id: string; visit_id: string | null;
@@ -89,8 +98,8 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
     [results.data, selected?.id],
   );
   const isCritical = useMemo(
-    () => selValues.some((v) => v.abnormal_flag === "critical low" || v.abnormal_flag === "critical high"),
-    [selValues],
+    () => isCriticalLabFlag(selSummary?.abnormal_flag) || selValues.some((v) => isCriticalLabFlag(v.abnormal_flag)),
+    [selValues, selSummary],
   );
 
   // Trend: same test historical numeric values grouped by parameter
@@ -153,23 +162,25 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
           {orders.data?.map((o) => {
             const active = o.id === selected?.id;
             const hasResults = (values.data ?? []).some((v) => v.order_id === o.id) || (results.data ?? []).some((r) => r.order_id === o.id);
-            const crit = (values.data ?? []).some((v) => v.order_id === o.id && (v.abnormal_flag === "critical low" || v.abnormal_flag === "critical high"));
+            const crit = (values.data ?? []).some((v) => v.order_id === o.id && isCriticalLabFlag(v.abnormal_flag))
+              || (results.data ?? []).some((r) => r.order_id === o.id && isCriticalLabFlag(r.abnormal_flag));
             return (
-              <button
+              <Button
+                variant="ghost"
                 key={o.id}
                 onClick={() => setSelectedId(o.id)}
-                className={`flex w-full flex-col gap-0.5 border-l-4 border-b px-3 py-2 text-left text-xs transition ${
+                className={`flex h-auto w-full items-stretch whitespace-normal rounded-none flex-col gap-0.5 border-l-4 border-b px-3 py-2 text-left text-xs transition ${
                   active ? "border-l-primary bg-accent" : "border-l-transparent hover:bg-accent/40"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{testName(o.test_id)}</span>
-                  {crit && <AlertTriangle className="h-3 w-3 text-destructive" />}
                 </div>
+                {crit && <PanicBadge />}
                 <span className="text-muted-foreground">
                   {new Date(o.created_at).toLocaleDateString("en-GB")} · {hasResults ? "resulted" : o.status}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -186,6 +197,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="text-base font-semibold">{testName(selected.test_id)}</div>
+                {isCritical && <PanicBadge />}
                 <div className="text-xs text-muted-foreground">
                   Ordered {new Date(selected.created_at).toLocaleString("en-GB")}
                   {selSummary?.performed_at && ` · Reported ${new Date(selSummary.performed_at).toLocaleString("en-GB")}`}
@@ -206,7 +218,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
             )}
 
             {selValues.length > 0 ? (
-              <div className="overflow-hidden rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/40 text-xs">
                     <tr>
@@ -219,7 +231,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
                   </thead>
                   <tbody>
                     {selValues.map((v) => {
-                      const crit = v.abnormal_flag === "critical low" || v.abnormal_flag === "critical high";
+                      const crit = isCriticalLabFlag(v.abnormal_flag);
                       const abn = crit || v.abnormal_flag === "low" || v.abnormal_flag === "high";
                       return (
                         <tr key={v.id} className={`border-t ${crit ? "bg-destructive/5" : ""}`}>
@@ -228,7 +240,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
                           <td className="p-2 text-muted-foreground">{v.units ?? "—"}</td>
                           <td className="p-2 text-muted-foreground">{v.reference_range ?? "—"}</td>
                           <td className="p-2">
-                            {v.abnormal_flag && (
+                            {crit ? <PanicBadge /> : v.abnormal_flag && (
                               <span className={crit ? "font-bold text-destructive" : abn ? "text-amber-600" : "text-emerald-600"}>
                                 {v.abnormal_flag}
                               </span>
@@ -244,7 +256,7 @@ export function LabResultsViewer({ patientId, patientName, mrn, age, gender }: L
               <div className="rounded-md border bg-muted/30 p-3 text-sm">
                 <div className="font-mono">{selSummary.result_value ?? "—"} {selSummary.units ?? ""}</div>
                 {selSummary.reference_range && <div className="text-xs text-muted-foreground">Reference: {selSummary.reference_range}</div>}
-                {selSummary.abnormal_flag && <div className="mt-1 text-xs text-destructive">{selSummary.abnormal_flag}</div>}
+                {isCriticalLabFlag(selSummary.abnormal_flag) ? <PanicBadge /> : selSummary.abnormal_flag && <div className="mt-1 text-xs text-destructive">{selSummary.abnormal_flag}</div>}
               </div>
             ) : (
               <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">

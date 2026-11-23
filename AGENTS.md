@@ -7,3 +7,5 @@
 - Unapplied HR SQL lives under docs/staged-migrations, outside the managed migration journal, until the migration tool can apply it; unavailable database writes must fail visibly rather than simulate success.
 - HR workspace reads and writes use direct facility ownership; roster assignments inherit the shift's scope, and roster leave actions use the canonical HR leave page to avoid parallel approval accounting.
 - Sidebar visibility rules live in a browser-safe helper and use active-facility roles; personal HR pages default to self-service so management privileges do not expose team payroll by default.
+- Lab viewer panic detection recognizes persisted summary and parameter flags through the browser-safe lab panic helper; this keeps legacy and current result formats consistent.
+- Departmental stock pickers use a shared category filter with pharmacy/pharmaceutical aliases so inventory naming differences do not hide medication stock.
