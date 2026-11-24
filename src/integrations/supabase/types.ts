@@ -2358,9 +2358,11 @@ export type Database = {
       employees: {
         Row: {
           address: string | null
+          allowances_cents: number
           bank_account: string | null
           bank_branch: string | null
           bank_name: string | null
+          basic_salary_cents: number
           contract_type: string | null
           created_at: string
           date_hired: string | null
@@ -2377,6 +2379,7 @@ export type Database = {
           hr_onboarded_at: string | null
           id: string
           job_grade: string | null
+          kra_pin: string | null
           licenses: string | null
           national_id: string | null
           payment_method: string | null
@@ -2386,13 +2389,16 @@ export type Database = {
           professional_memberships: string | null
           qualifications: string | null
           supervisor_id: string | null
+          tax_resident: boolean
           updated_at: string
         }
         Insert: {
           address?: string | null
+          allowances_cents?: number
           bank_account?: string | null
           bank_branch?: string | null
           bank_name?: string | null
+          basic_salary_cents?: number
           contract_type?: string | null
           created_at?: string
           date_hired?: string | null
@@ -2409,6 +2415,7 @@ export type Database = {
           hr_onboarded_at?: string | null
           id: string
           job_grade?: string | null
+          kra_pin?: string | null
           licenses?: string | null
           national_id?: string | null
           payment_method?: string | null
@@ -2418,13 +2425,16 @@ export type Database = {
           professional_memberships?: string | null
           qualifications?: string | null
           supervisor_id?: string | null
+          tax_resident?: boolean
           updated_at?: string
         }
         Update: {
           address?: string | null
+          allowances_cents?: number
           bank_account?: string | null
           bank_branch?: string | null
           bank_name?: string | null
+          basic_salary_cents?: number
           contract_type?: string | null
           created_at?: string
           date_hired?: string | null
@@ -2441,6 +2451,7 @@ export type Database = {
           hr_onboarded_at?: string | null
           id?: string
           job_grade?: string | null
+          kra_pin?: string | null
           licenses?: string | null
           national_id?: string | null
           payment_method?: string | null
@@ -2450,6 +2461,7 @@ export type Database = {
           professional_memberships?: string | null
           qualifications?: string | null
           supervisor_id?: string | null
+          tax_resident?: boolean
           updated_at?: string
         }
         Relationships: [

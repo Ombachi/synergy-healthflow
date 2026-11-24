@@ -85,6 +85,13 @@
       "when": 1795548352038,
       "tag": "0011_harden_cash_payments_leave_kpis",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795548514588,
+      "tag": "0012_payroll_batch_salary_fields",
+      "breakpoints": true
     }
   ]
 }

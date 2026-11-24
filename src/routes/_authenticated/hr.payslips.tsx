@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { exportPayslipPDF } from "@/lib/payslip-pdf";
 import { calculateMonthlyPayroll, healthContributionLabel } from "@/lib/payroll";
+import { PayrollRunPanel } from "@/components/payroll-run-panel";
 
 export const Route = createFileRoute("/_authenticated/hr/payslips")({
   head: () => ({ meta: [{ title: "Hr Payslips — Litu Vault" }, { name: "description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Hr Payslips — Litu Vault" }, { property: "og:description", content: "Hr Payslips workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -130,6 +131,8 @@ function PayslipsPage() {
         </div>
         {managing && !records.isPending && !records.isError && <HrPayrollActions key={activeFacility.id} facilityId={activeFacility.id} periods={periods} onChange={() => setRefresh((x) => x + 1)} />}
       </div>
+
+      {managing && !records.isPending && !records.isError && <PayrollRunPanel key={`run-${activeFacility.id}`} facilityId={activeFacility.id} periods={periods} onDone={() => setRefresh((x) => x + 1)} />}
 
       {isHR && <Tabs value={view} onValueChange={setView}>
         <TabsList className="h-auto flex-wrap"><TabsTrigger value="mine">My payslips</TabsTrigger><TabsTrigger value="manage">Payroll management</TabsTrigger></TabsList>
