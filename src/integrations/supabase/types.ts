@@ -9785,6 +9785,7 @@ export type Database = {
           walk_in: number
         }[]
       }
+      link_my_patient_record: { Args: never; Returns: string }
       list_messageable_users: {
         Args: never
         Returns: {
