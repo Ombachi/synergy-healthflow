@@ -78,6 +78,13 @@
       "when": 1795450538199,
       "tag": "0010_restrict_rxnorm_read_to_staff",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795548352038,
+      "tag": "0011_harden_cash_payments_leave_kpis",
+      "breakpoints": true
     }
   ]
 }

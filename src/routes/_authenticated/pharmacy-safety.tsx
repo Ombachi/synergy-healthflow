@@ -345,8 +345,13 @@ function CDReconciliation() {
   function exportCsv() {
     const rows = recon.data ?? [];
     const head = ["Drug", "Schedule", "Opening", "Received", "Dispensed", "Expected closing", "Register balance", "Variance"];
+    const cell = (v: unknown) => {
+      let t = String(v ?? "");
+      if (/^[=+\-@\t\r]/.test(t)) t = `'${t}`;
+      return `"${t.replace(/"/g, '""')}"`;
+    };
     const csv = [head.join(","), ...rows.map((r) => [
-      `"${r.drug_name}"`, r.schedule ?? "", r.opening, r.received, r.dispensed, r.closing, r.register_balance, r.variance,
+      cell(r.drug_name), cell(r.schedule), r.opening, r.received, r.dispensed, r.closing, r.register_balance, r.variance,
     ].join(","))].join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
