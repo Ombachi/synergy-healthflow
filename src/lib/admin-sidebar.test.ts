@@ -4,14 +4,14 @@ import { isItemVisibleForRoles } from "./navigation-visibility";
 
 describe("admin sidebar boundaries", () => {
   it("keeps platform admin focused on administration", () => {
-    expect(isItemVisibleForRoles("/admin/facilities", "admin", ["superadmin"])).toBe(true);
-    expect(isItemVisibleForRoles("/sla", "admin", ["superadmin"])).toBe(true);
-    expect(isItemVisibleForRoles("/coming-soon/nursing-triage", "outpatient", ["superadmin"])).toBe(false);
+    assert.equal(isItemVisibleForRoles("/admin/facilities", "admin", ["superadmin"]), true);
+    assert.equal(isItemVisibleForRoles("/sla", "admin", ["superadmin"]), true);
+    assert.equal(isItemVisibleForRoles("/coming-soon/nursing-triage", "outpatient", ["superadmin"]), false);
   });
   it("gives facility admin branch operations but no platform provisioning", () => {
-    expect(isItemVisibleForRoles("/roster", "hr-management", ["facility_admin"])).toBe(true);
-    expect(isItemVisibleForRoles("/inventory", "store", ["facility_admin"])).toBe(true);
-    expect(isItemVisibleForRoles("/admin/facilities", "admin", ["facility_admin"])).toBe(false);
-    expect(isItemVisibleForRoles("/coming-soon/resuscitation", "emergency", ["facility_admin"])).toBe(false);
+    assert.equal(isItemVisibleForRoles("/roster", "hr-management", ["facility_admin"]), true);
+    assert.equal(isItemVisibleForRoles("/inventory", "store", ["facility_admin"]), true);
+    assert.equal(isItemVisibleForRoles("/admin/facilities", "admin", ["facility_admin"]), false);
+    assert.equal(isItemVisibleForRoles("/coming-soon/resuscitation", "emergency", ["facility_admin"]), false);
   });
 });
