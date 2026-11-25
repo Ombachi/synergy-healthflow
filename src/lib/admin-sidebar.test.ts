@@ -1,4 +1,5 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { isItemVisibleForRoles } from "./navigation-visibility";
 
 describe("admin sidebar boundaries", () => {
