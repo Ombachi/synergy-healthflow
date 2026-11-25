@@ -11,12 +11,21 @@ const branchSchema = z.object({
   is_active: z.boolean(), settings: z.record(z.union([z.string(), z.number(), z.boolean(), z.record(z.boolean())])),
 });
 
+async function assertPlatformAdmin(context: { supabase: any; userId: string }) {
+  const platform = await context.supabase.rpc("is_platform_admin" as never);
+  if (!platform.error && platform.data) return;
+  for (const role of ["superadmin", "admin"]) {
+    const r = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: role });
+    if (!r.error && r.data) return;
+  }
+  throw new Error("Administrator access required.");
+}
+
 export const saveFacility = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => branchSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const check = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (check.error || !check.data) throw new Error("Administrator access required.");
+    await assertPlatformAdmin(context);
     const { id, ...values } = data;
     const query = id ? context.supabase.from("facilities").update(values).eq("id", id) : context.supabase.from("facilities").insert(values);
     const result = await query.select("id").single();
@@ -36,8 +45,7 @@ export const assignFacilityStaff = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ facilityId: z.string().uuid(), userId: z.string().uuid(), role: z.string().min(1), remove: z.boolean().default(false) }).parse(input))
   .handler(async ({ data, context }) => {
-    const check = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (check.error || !check.data) throw new Error("Administrator access required.");
+    await assertPlatformAdmin(context);
     if (data.remove) {
       const result = await context.supabase.from("user_facilities").delete().eq("facility_id", data.facilityId).eq("user_id", data.userId);
       if (result.error) throw new Error("Unable to remove staff assignment.");

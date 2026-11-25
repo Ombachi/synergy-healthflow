@@ -87,7 +87,7 @@ function LabTemplatesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["labtpl", selectedTest] }),
   });
 
-  if (!hasRole("admin")) return <p className="text-sm text-muted-foreground">Admin access only.</p>;
+  if (!(["admin", "superadmin", "facility_admin", "lab_tech"] as const).some((r) => hasRole(r))) return <p className="text-sm text-muted-foreground">Lab template access is limited to administrators and lab technicians.</p>;
 
   const numOrNull = (s: string) => s.trim() === "" ? null : Number(s);
 

@@ -77,7 +77,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/nutrition": ["nutritionist"],
 
   // Inventory / store
-  "/inventory": ["store_keeper"],
+  "/inventory": ["store_keeper", "facility_admin"],
   "/store": ["store_keeper"],
   "/audit-inventory": ["store_keeper"],
 
@@ -88,7 +88,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/audit": [],
   "/users": [],
   "/department": ["facility_admin"],
-  "/lab-templates": [],
+  "/lab-templates": ["superadmin", "facility_admin", "lab_tech"],
   "/admin-kpi": [],
   "/roster": ["facility_admin", "hr_officer", "hr_manager"],
 
@@ -117,7 +117,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/anti-doping": ["physio"],
 
   // Orders (stock requests live globally for lab/pharmacy/ward/store)
-  "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper", "nurse"],
+  "/orders/stock-requests": ["lab_tech", "pharmacist", "store_keeper", "nurse", "facility_admin"],
 
   // Personal staff pages never grant HR administration privileges.
   "/hr/me": STAFF_ROLES,

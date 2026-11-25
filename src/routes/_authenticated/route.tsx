@@ -152,6 +152,7 @@ const GROUPS: Group[] = [
     items: [
       { title: "Critical results", url: "/critical-results", icon: ShieldAlert },
       { title: "Instrument QC", url: "/instruments", icon: Gauge },
+      { title: "Lab templates", url: "/lab-templates", icon: Microscope },
       { title: "Referrals & consults", url: "/referrals", icon: FileText },
       { title: "Pharmacy safety", url: "/pharmacy-safety", icon: Pill },
       { title: "Chronic care & refills", url: "/chronic-care", icon: HeartPulse },

@@ -57,8 +57,16 @@ function PatientTimeline() {
   const patient = useQuery({
     queryKey: ["my-patient", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("patients" as never).select("id, full_name, medical_record_number, date_of_birth, gender").eq("user_id", user!.id).maybeSingle();
-      if (error) throw error; return data as unknown as Patient | null;
+      const load = () => supabase.from("patients" as never).select("id, full_name, medical_record_number, date_of_birth, gender").eq("user_id", user!.id).maybeSingle();
+      const first = await load();
+      if (first.error) throw first.error;
+      if (first.data) return first.data as unknown as Patient;
+      // No linked record yet: try to match this account to a reception-registered patient, then reload.
+      const link = await supabase.rpc("link_my_patient_record" as never);
+      if (link.error || !link.data) return null;
+      const again = await load();
+      if (again.error) throw again.error;
+      return (again.data as unknown as Patient | null) ?? null;
     },
   });
   const pid = patient.data?.id;
@@ -242,7 +250,7 @@ function PatientTimeline() {
     return (
       <div className="rounded-lg border bg-card p-6">
         <h1 className="text-xl font-semibold">No patient profile found</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Ask reception to register you as a patient.</p>
+        <p className="mt-2 text-sm text-muted-foreground">We couldn’t match your account to a patient record. Please ask reception to link your account to your patient file.</p>
       </div>
     );
   }

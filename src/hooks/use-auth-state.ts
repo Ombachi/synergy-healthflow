@@ -85,7 +85,7 @@ export function useAuthState(): AuthState {
     isPlatformAdmin: roles.includes("superadmin"),
     profile,
     loading,
-    hasRole: (r: AppRole) => roles.includes(r),
+    hasRole: (r: AppRole) => roles.includes(r) || (r === "admin" && (roles.includes("superadmin") || roles.includes("facility_admin"))),
     hasAnyRole: (rs: AppRole[]) => rs.some((r) => roles.includes(r)),
   };
 }

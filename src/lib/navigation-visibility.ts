@@ -21,6 +21,8 @@ const HIDE_GROUPS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   procurement:       ["outpatient", "inpatient", "emergency"],
   store_keeper:      ["outpatient", "inpatient", "emergency"],
   admin:             ["emergency"],
+  superadmin:        ["outpatient", "inpatient", "emergency", "quality", "dept-mgmt", "sports", "store", "staff-self-service", "hr-management"],
+  facility_admin:    ["outpatient", "inpatient", "emergency", "sports"],
 };
 
 // Theatre / ICU / Maternity stub prefixes (nested under Inpatient).
@@ -127,8 +129,14 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 };
 
+// Platform admin sees only platform administration; facility admin sees branch operations.
+const PLATFORM_ADMIN_URLS = ["/dashboard", "/messages", "/admin/facilities", "/users", "/service-catalog", "/audit", "/sla", "/admin/errors", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations", "/lab-templates"];
+const PLATFORM_PROVISIONING_URLS = ["/admin/facilities", "/users", "/service-catalog"];
+const FACILITY_ADMIN_HIDE = [...PLATFORM_PROVISIONING_URLS, "/coming-soon/", ...SUBDOMAIN_PREFIXES];
+
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
+  superadmin: PLATFORM_ADMIN_URLS,
   patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
   athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/patients"],
@@ -150,6 +158,10 @@ export function isItemVisibleForRoles(url: string, groupKey: string | null, role
   if (groupKey === "staff-self-service") return roles.some(role => STAFF_ROLES.includes(role));
   if (groupKey === "hr-management") return roles.some(role => HR_MANAGEMENT_ROLES.includes(role));
   if (roles.length === 0) return true; // let canAccess handle it
+  if (roles.includes("facility_admin") && !roles.includes("superadmin")) {
+    if (FACILITY_ADMIN_HIDE.some((p) => urlMatches(url, p))) return false;
+    if (["/facility/staff", "/orders/stock-requests", "/leave-inbox", "/roster", "/inventory", "/lab-templates"].includes(url)) return true;
+  }
   // Item is visible if ANY of the user's roles would show it.
   return roles.some((role) => {
     const only = ONLY_URLS_BY_ROLE[role];

@@ -22,12 +22,16 @@ async function assertStaff(context: { supabase: any; userId: string }) {
     _user_id: context.userId,
     _role: "admin",
   });
+  const { data: isSuper } = await context.supabase.rpc("has_role", {
+    _user_id: context.userId,
+    _role: "superadmin",
+  });
   const { data: isRecep } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "receptionist",
   });
-  if (!isAdmin && !isRecep) throw new Error("Forbidden");
-  return { isAdmin: !!isAdmin };
+  if (!isAdmin && !isSuper && !isRecep) throw new Error("Forbidden");
+  return { isAdmin: !!isAdmin || !!isSuper };
 }
 
 /** Admin/reception list of patients with their latest invitation state. */

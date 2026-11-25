@@ -38,7 +38,8 @@ export const seedDemoUsers = createServerFn({ method: "POST" })
       _role: "admin",
     });
     if (roleErr) throw new Error(roleErr.message);
-    if (!isAdmin) throw new Error("Forbidden: admin only");
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "superadmin" });
+    if (!isAdmin && !isSuper) throw new Error("Forbidden: admin only");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const results: { email: string; status: string; role: string }[] = [];
