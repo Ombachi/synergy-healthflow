@@ -94,8 +94,6 @@ function HrMePage() {
       full_name: emp.full_name, national_id: emp.national_id, date_of_birth: emp.date_of_birth,
       gender: emp.gender, phone: emp.phone, email: emp.email, address: emp.address,
       emergency_contact_name: emp.emergency_contact_name, emergency_contact_phone: emp.emergency_contact_phone,
-      bank_name: emp.bank_name, bank_branch: emp.bank_branch, bank_account: emp.bank_account,
-      qualifications: emp.qualifications, licenses: emp.licenses, professional_memberships: emp.professional_memberships,
     } as never).eq("id", user.id);
 
     setSaving(false);
@@ -153,20 +151,20 @@ function HrMePage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Banking</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Banking</CardTitle><p className="text-xs text-muted-foreground">Managed by HR. Contact HR to request a change.</p></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <F label="Bank" v={emp.bank_name ?? ""} on={(v) => setEmp({ ...emp, bank_name: v })} />
-          <F label="Branch" v={emp.bank_branch ?? ""} on={(v) => setEmp({ ...emp, bank_branch: v })} />
-          <F label="Account number" v={emp.bank_account ?? ""} on={(v) => setEmp({ ...emp, bank_account: v })} />
+          <F label="Bank" v={emp.bank_name ?? ""} readOnly />
+          <F label="Branch" v={emp.bank_branch ?? ""} readOnly />
+          <F label="Account number" v={emp.bank_account ?? ""} readOnly />
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Professional</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Professional</CardTitle><p className="text-xs text-muted-foreground">Managed by HR. Contact HR to request a change.</p></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <F label="Qualifications" v={emp.qualifications ?? ""} on={(v) => setEmp({ ...emp, qualifications: v })} />
-          <F label="Licenses" v={emp.licenses ?? ""} on={(v) => setEmp({ ...emp, licenses: v })} />
-          <F label="Memberships" v={emp.professional_memberships ?? ""} on={(v) => setEmp({ ...emp, professional_memberships: v })} />
+          <F label="Qualifications" v={emp.qualifications ?? ""} readOnly />
+          <F label="Licenses" v={emp.licenses ?? ""} readOnly />
+          <F label="Memberships" v={emp.professional_memberships ?? ""} readOnly />
         </CardContent>
       </Card>
 

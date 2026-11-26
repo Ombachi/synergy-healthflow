@@ -1,6 +1,6 @@
 import { useFacility } from "@/components/facility-context";
 import { operationalScope } from "@/lib/facility-scope";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -187,6 +187,7 @@ function RadPortal() {
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-semibold"><ScanLine className="h-6 w-6 text-primary" /> Radiology portal</h1>
+        <Link to="/instruments" className="text-sm text-primary underline-offset-4 hover:underline">Equipment downtime & calibration records →</Link>
         <p className="text-sm text-muted-foreground">Schedule imaging and publish reports.</p>
       </div>
 

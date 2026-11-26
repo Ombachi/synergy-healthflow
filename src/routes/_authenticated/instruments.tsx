@@ -57,7 +57,7 @@ const STATUSES = ["active", "maintenance", "down", "retired"];
 function InstrumentsPage() {
   const qc = useQueryClient();
   const { hasAnyRole, hasRole } = useAuth();
-  const canWrite = hasAnyRole(["lab_tech", "radiologist", "admin"]);
+  const canWrite = hasAnyRole(["lab_tech", "radiologist", "facility_admin", "admin"]);
   // Modality scoping: lab staff only see laboratory analyzers, radiology staff
   // only see imaging modalities. Admins (and any cross-trained user holding both
   // roles) keep the full fleet with the modality filter.

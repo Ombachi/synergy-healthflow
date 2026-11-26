@@ -17,6 +17,10 @@ export const Route = createFileRoute("/_authenticated/completed")({
       { name: "description", content: "Fulfilled lab, pharmacy, radiology, nursing and billing records with search." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    tab: typeof s["tab"] === "string" ? (s["tab"] as string) : undefined,
+    q: typeof s["q"] === "string" ? (s["q"] as string) : undefined,
+  }),
   component: CompletedReports,
 });
 
@@ -30,6 +34,15 @@ interface Row {
   primary: string;
   secondary: string | null;
   details: { label: string; value: string | null }[];
+}
+
+async function fetchStaffNames(ids: (string | null)[]) {
+  const uniq = Array.from(new Set(ids.filter(Boolean))) as string[];
+  if (!uniq.length) return {} as Record<string, string>;
+  const { data } = await supabase.from("profiles" as never).select("id, full_name").in("id", uniq as never);
+  const map: Record<string, string> = {};
+  (data as unknown as { id: string; full_name: string | null }[] | null)?.forEach((p) => { if (p.full_name) map[p.id] = p.full_name.replace(/^Dr\.?\s+/i, ""); });
+  return map;
 }
 
 async function fetchPatientMap(ids: string[]) {
@@ -76,8 +89,12 @@ function CompletedReports() {
     return (["lab", "pharmacy", "radiology", "nursing", "billing"] as TabKey[]).filter((t) => set.has(t));
   }, [roles]);
 
-  const [tab, setTab] = useState<TabKey>(visibleTabs[0] ?? "lab");
-  const [q, setQ] = useState("");
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const tab: TabKey = (visibleTabs as string[]).includes(search.tab ?? "") ? (search.tab as TabKey) : (visibleTabs[0] ?? "lab");
+  const q = search.q ?? "";
+  const setTab = (t: TabKey) => navigate({ search: (p) => ({ ...p, tab: t }), replace: true });
+  const setQ = (v: string) => navigate({ search: (p) => ({ ...p, q: v || undefined }), replace: true });
   // Default: today only. A 2+ char search widens the window to history.
   const scope = isSearching(q) ? "history" : "today";
   const since = scope === "history" ? "1970-01-01T00:00:00Z" : startOfTodayISO();
@@ -96,15 +113,15 @@ function CompletedReports() {
     enabled: visibleTabs.includes("lab"),
     queryFn: async (): Promise<Row[]> => {
       const { data } = await supabase.from("lab_results" as never)
-        .select("id, order_id, result_value, units, abnormal_flag, performed_at, comments, reference_range")
+        .select("id, order_id, result_value, units, abnormal_flag, performed_at, performed_by, comments, reference_range")
         .not("performed_at", "is", null)
         .gte("performed_at", since).order("performed_at", { ascending: false }).limit(500);
-      const arr = (data as unknown as Array<{ id: string; order_id: string | null; result_value: string | null; units: string | null; abnormal_flag: string | null; performed_at: string; comments: string | null; reference_range: string | null }>) ?? [];
+      const arr = (data as unknown as Array<{ id: string; order_id: string | null; result_value: string | null; units: string | null; abnormal_flag: string | null; performed_at: string; performed_by: string | null; comments: string | null; reference_range: string | null }>) ?? [];
       const orderIds = arr.map((r) => r.order_id).filter(Boolean) as string[];
       const { data: orders } = orderIds.length
-        ? await supabase.from("lab_orders" as never).select("id, patient_id, test_id, priority, clinical_notes").in("id", orderIds as never)
+        ? await supabase.from("lab_orders" as never).select("id, patient_id, test_id, priority, clinical_notes, ordered_by").in("id", orderIds as never)
         : { data: [] as unknown };
-      const orderList = (orders as unknown as { id: string; patient_id: string; test_id: string | null; priority: string | null; clinical_notes: string | null }[] | null) ?? [];
+      const orderList = (orders as unknown as { id: string; patient_id: string; test_id: string | null; priority: string | null; clinical_notes: string | null; ordered_by: string | null }[] | null) ?? [];
       const om = new Map(orderList.map((o) => [o.id, o]));
       const testIds = orderList.map((o) => o.test_id).filter(Boolean) as string[];
       const { data: tests } = testIds.length
@@ -112,6 +129,7 @@ function CompletedReports() {
         : { data: [] as unknown };
       const tm = new Map(((tests as unknown as { id: string; name: string }[] | null) ?? []).map((t) => [t.id, t.name]));
       const pm = await fetchPatientMap(orderList.map((o) => o.patient_id));
+      const staffMap = await fetchStaffNames([...orderList.map((o) => o.ordered_by), ...arr.map((r) => r.performed_by)]);
       return arr.map((r) => {
         const o = r.order_id ? om.get(r.order_id) : undefined;
         const p = o ? pm[o.patient_id] : undefined;
@@ -128,6 +146,8 @@ function CompletedReports() {
             { label: "Units", value: r.units },
             { label: "Reference range", value: r.reference_range },
             { label: "Flag", value: r.abnormal_flag },
+            { label: "Requesting Doctor", value: o?.ordered_by && staffMap[o.ordered_by] ? `Dr. ${staffMap[o.ordered_by]}` : null },
+            { label: "Lab Scientist", value: r.performed_by && staffMap[r.performed_by] ? `${staffMap[r.performed_by]} · ${new Date(r.performed_at).toLocaleString()}` : null },
             { label: "Priority", value: o?.priority ?? null },
             { label: "Clinical notes", value: o?.clinical_notes ?? null },
             { label: "Comments", value: r.comments },

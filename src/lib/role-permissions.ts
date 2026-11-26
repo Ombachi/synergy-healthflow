@@ -64,7 +64,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/radiology": ["radiologist"],
   // Laboratory quality & safety
   "/critical-results": ["lab_tech", "doctor", "nurse"],
-  "/instruments": ["lab_tech", "radiologist"],
+  "/instruments": ["lab_tech", "radiologist", "facility_admin"],
 
   // Billing & insurance
   "/billing": ["cashier", "billing_officer"],
@@ -88,7 +88,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/audit": [],
   "/users": [],
   "/department": ["facility_admin"],
-  "/lab-templates": ["superadmin", "facility_admin", "lab_tech"],
+  "/lab-templates": ["facility_admin"],
   "/admin-kpi": [],
   "/roster": ["facility_admin", "hr_officer", "hr_manager"],
 

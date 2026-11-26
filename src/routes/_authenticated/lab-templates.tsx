@@ -30,7 +30,7 @@ const EMPTY: Omit<Tmpl, "id" | "test_id"> = {
 };
 
 function LabTemplatesPage() {
-  const { hasRole } = useAuth();
+  const { roles } = useAuth();
   const qc = useQueryClient();
   const [selectedTest, setSelectedTest] = useState<string | null>(null);
   const [form, setForm] = useState({ ...EMPTY });
@@ -87,7 +87,16 @@ function LabTemplatesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["labtpl", selectedTest] }),
   });
 
-  if (!(["admin", "superadmin", "facility_admin", "lab_tech"] as const).some((r) => hasRole(r))) return <p className="text-sm text-muted-foreground">Lab template access is limited to administrators and lab technicians.</p>;
+  const removeAll = useMutation({
+    mutationFn: async (testId: string) => {
+      const { error } = await supabase.from("lab_result_templates" as never).delete().eq("test_id", testId);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["labtpl", selectedTest] }); toast.success("Template deleted"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  if (!roles.includes("facility_admin")) return <p className="text-sm text-muted-foreground">Lab templates are managed by the facility administrator (lab director).</p>;
 
   const numOrNull = (s: string) => s.trim() === "" ? null : Number(s);
 
@@ -117,6 +126,12 @@ function LabTemplatesPage() {
             <div className="p-6 text-sm text-muted-foreground">Select a test to manage its template.</div>
           ) : (
             <div className="p-4 space-y-4">
+              <div className="flex justify-end">
+                <Button variant="destructive" size="sm" disabled={removeAll.isPending || !tmpl.data?.length}
+                  onClick={() => { if (window.confirm("Delete every parameter row in this test template? This cannot be undone.")) removeAll.mutate(selectedTest); }}>
+                  Delete template
+                </Button>
+              </div>
               <div className="rounded-md border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/30 text-xs">

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useSessionDraft } from "@/hooks/use-session-draft";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { exportVisitPDF } from "@/lib/visit-pdf";
@@ -257,11 +258,11 @@ function VisitDetail() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const [ds, setDs] = useState({ summary: "", treatment_plan: "", follow_up: "" });
+  const [ds, setDs, dsDraft] = useSessionDraft(`draft:visit:${visitId}:discharge`, { summary: "", treatment_plan: "", follow_up: "" });
   const dischargeLoaded = discharge.data;
   useEffect(() => {
-    if (dischargeLoaded) setDs({ summary: dischargeLoaded.summary ?? "", treatment_plan: dischargeLoaded.treatment_plan ?? "", follow_up: dischargeLoaded.follow_up ?? "" });
-  }, [dischargeLoaded]);
+    if (dischargeLoaded && !dsDraft.restored) setDs({ summary: dischargeLoaded.summary ?? "", treatment_plan: dischargeLoaded.treatment_plan ?? "", follow_up: dischargeLoaded.follow_up ?? "" });
+  }, [dischargeLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const saveDischarge = useMutation({
     mutationFn: async (finalize: boolean) => {
@@ -301,9 +302,14 @@ function VisitDetail() {
       if (error) throw error;
       if (finalize) {
         await supabase.from("visits" as never).update({ status: "completed", closed_at: new Date().toISOString() } as never).eq("id", visitId);
+        // Aggregate unbilled services into an issued invoice (also enforced by a database trigger).
+        const { error: billErr } = await supabase.rpc("checkout_visit" as never, { _visit_id: visitId } as never);
+        if (billErr) toast.warning("Visit closed, but the invoice could not be generated automatically. Ask billing to raise it.");
       }
     },
     onSuccess: (_d, finalize) => {
+      dsDraft.clear();
+      qc.invalidateQueries({ queryKey: ["invoices"] });
       qc.invalidateQueries({ queryKey: ["discharge", visitId] }); qc.invalidateQueries({ queryKey: ["visit", visitId] }); qc.invalidateQueries({ queryKey: ["visits"] });
       toast.success(finalize ? "Visit completed" : "Report saved");
     },

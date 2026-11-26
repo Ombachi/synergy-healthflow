@@ -56,9 +56,13 @@ function DocsPage() {
   }, [user, isHR, refresh]);
 
   async function download(d: Doc) {
-    const { data, error } = await supabase.storage.from("hr-documents").createSignedUrl(d.storage_path, 60);
-    if (error || !data) { toast.error(error?.message ?? "Download failed"); return; }
-    window.open(data.signedUrl, "_blank");
+    const path = d.storage_path ?? (d as { file_path?: string | null }).file_path ?? null;
+    if (!path) { toast.error("This document has no file attached. Ask HR to re-upload it."); return; }
+    // Open the tab synchronously so the browser does not block it as a pop-up.
+    const win = window.open("about:blank", "_blank");
+    const { data, error } = await supabase.storage.from("hr-documents").createSignedUrl(path, 300);
+    if (error || !data) { win?.close(); toast.error(error?.message ?? "Download failed"); return; }
+    if (win) win.location.href = data.signedUrl; else window.location.assign(data.signedUrl);
     if (user) {
       await supabase.from("hr_document_views" as never).insert({ document_id: d.id, employee_id: user.id } as never);
     }

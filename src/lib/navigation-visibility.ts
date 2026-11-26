@@ -120,7 +120,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
     // Mobility trims
     "/mobility/request", "/mobility/trips", "/mobility/driver",
     // Clinical/ops screens owned by their specialist roles
-    "/immunization", "/my-vaccines", "/instruments", "/critical-results",
+    "/immunization", "/my-vaccines", "/critical-results",
     "/referrals", "/pharmacy-safety", "/controlled-drugs", "/chronic-care",
     "/mobility/dispatch", "/mobility/fleet",
     // Admin group trims
@@ -130,7 +130,7 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 };
 
 // Platform admin sees only platform administration; facility admin sees branch operations.
-const PLATFORM_ADMIN_URLS = ["/dashboard", "/messages", "/admin/facilities", "/users", "/service-catalog", "/audit", "/sla", "/admin/errors", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations", "/lab-templates"];
+const PLATFORM_ADMIN_URLS = ["/dashboard", "/messages", "/admin/facilities", "/users", "/service-catalog", "/audit", "/sla", "/admin/errors", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations"];
 const PLATFORM_PROVISIONING_URLS = ["/admin/facilities", "/users", "/service-catalog"];
 const FACILITY_ADMIN_HIDE = [...PLATFORM_PROVISIONING_URLS, "/coming-soon/", ...SUBDOMAIN_PREFIXES];
 
