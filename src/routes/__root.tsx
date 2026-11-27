@@ -8,15 +8,37 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/auth-provider";
 import { FacilityProvider } from "@/components/facility-context";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { LogOut } from "lucide-react";
 
 function NotFoundComponent() {
+  const router = useRouter();
+  const { queryClient } = router.options.context;
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+  async function signOut() {
+    setSigningOut(true);
+    setSignOutError(null);
+    try {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      // Local sign-out works even if the database is unavailable.
+      const { error } = await supabase.auth.signOut({ scope: "local" });
+      if (error) throw error;
+      await router.navigate({ to: "/auth", replace: true });
+    } catch {
+      setSignOutError("Unable to sign out. Please try again.");
+      setSigningOut(false);
+    }
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -25,14 +47,11 @@ function NotFoundComponent() {
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Button asChild><Link to="/">Go home</Link></Button>
+          <Button variant="outline" disabled={signingOut} onClick={signOut}><LogOut />{signingOut ? "Signing out…" : "Sign Out"}</Button>
         </div>
+        {signOutError && <p role="alert" className="mt-3 text-sm text-destructive">{signOutError}</p>}
       </div>
     </div>
   );

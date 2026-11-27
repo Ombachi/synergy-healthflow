@@ -5,6 +5,12 @@ import { canAccess, ROLE_HOME } from "./role-permissions";
 import { isItemVisibleForRoles } from "./navigation-visibility";
 
 describe("role and module access", () => {
+  it("lands facility administrators on the dedicated branch staff page", () => {
+    assert.equal(ROLE_HOME["facility_admin"], "/facility/staff");
+    assert.equal(canAccess("/facility/staff", ["facility_admin"]), true);
+    assert.equal(canAccess("/facility/staff", ["doctor"]), false);
+    assert.equal(canAccess("/facility/staff", ["patient"]), false);
+  });
   it("limits Admissions navigation to admissions operations and personal staff services", () => {
     for (const path of ["/admissions", "/beds", "/nursing-station", "/patients", "/mobility/request"]) {
       assert.equal(isItemVisibleForRoles(path, "inpatient", ["admissions_officer"]), true, path);

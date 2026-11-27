@@ -1,3 +1,9 @@
+# Facility administrator login recovery
+- [x] Create the protected /facility/staff landing page with branch-scoped staff listing and departmental role assignment controls.
+- [x] Add missing-page sign-out with protected-cache cleanup and local session removal.
+- [ ] Test landing-page rules, branch isolation, and missing-page sign-out; verify live facility staff access where authorized.
+- [ ] Apply facility-staff-role-assignment.sql in the user's external database before departmental changes can be saved; external database access is unavailable.
+
 # Lab viewer and stock search fixes
 - [x] Show panic badges for critical parameter and summary flags in the lab results viewer.
 - [x] Update platform administrator permission tests to match the role separation.

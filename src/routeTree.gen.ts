@@ -89,6 +89,7 @@ import { Route as AuthenticatedAdminPortalInvitationsRouteImport } from './route
 import { Route as AuthenticatedAdminSoftDeletedRouteImport } from './routes/_authenticated/admin.soft-deleted'
 import { Route as AuthenticatedComingSoonNameRouteImport } from './routes/_authenticated/coming-soon.$name'
 import { Route as AuthenticatedDepartmentDeptRouteImport } from './routes/_authenticated/department.$dept'
+import { Route as AuthenticatedFacilityStaffRouteImport } from './routes/_authenticated/facility.staff'
 import { Route as AuthenticatedHrAdminRouteImport } from './routes/_authenticated/hr.admin'
 import { Route as AuthenticatedHrDocumentsRouteImport } from './routes/_authenticated/hr.documents'
 import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticated/hr.leave'
@@ -541,6 +542,12 @@ const AuthenticatedDepartmentDeptRoute =
     path: '/department/$dept',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFacilityStaffRoute =
+  AuthenticatedFacilityStaffRouteImport.update({
+    id: '/facility/staff',
+    path: '/facility/staff',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHrAdminRoute = AuthenticatedHrAdminRouteImport.update({
   id: '/hr/admin',
   path: '/hr/admin',
@@ -735,6 +742,7 @@ export interface FileRoutesByFullPath {
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/facility/staff': typeof AuthenticatedFacilityStaffRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
   '/hr/documents': typeof AuthenticatedHrDocumentsRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
@@ -836,6 +844,7 @@ export interface FileRoutesByTo {
   '/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/facility/staff': typeof AuthenticatedFacilityStaffRoute
   '/hr/admin': typeof AuthenticatedHrAdminRoute
   '/hr/documents': typeof AuthenticatedHrDocumentsRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
@@ -939,6 +948,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/soft-deleted': typeof AuthenticatedAdminSoftDeletedRoute
   '/_authenticated/coming-soon/$name': typeof AuthenticatedComingSoonNameRoute
   '/_authenticated/department/$dept': typeof AuthenticatedDepartmentDeptRoute
+  '/_authenticated/facility/staff': typeof AuthenticatedFacilityStaffRoute
   '/_authenticated/hr/admin': typeof AuthenticatedHrAdminRoute
   '/_authenticated/hr/documents': typeof AuthenticatedHrDocumentsRoute
   '/_authenticated/hr/leave': typeof AuthenticatedHrLeaveRoute
@@ -1042,6 +1052,7 @@ export interface FileRouteTypes {
     | '/admin/soft-deleted'
     | '/coming-soon/$name'
     | '/department/$dept'
+    | '/facility/staff'
     | '/hr/admin'
     | '/hr/documents'
     | '/hr/leave'
@@ -1143,6 +1154,7 @@ export interface FileRouteTypes {
     | '/admin/soft-deleted'
     | '/coming-soon/$name'
     | '/department/$dept'
+    | '/facility/staff'
     | '/hr/admin'
     | '/hr/documents'
     | '/hr/leave'
@@ -1245,6 +1257,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/soft-deleted'
     | '/_authenticated/coming-soon/$name'
     | '/_authenticated/department/$dept'
+    | '/_authenticated/facility/staff'
     | '/_authenticated/hr/admin'
     | '/_authenticated/hr/documents'
     | '/_authenticated/hr/leave'
@@ -1842,6 +1855,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDepartmentDeptRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/facility/staff': {
+      id: '/_authenticated/facility/staff'
+      path: '/facility/staff'
+      fullPath: '/facility/staff'
+      preLoaderRoute: typeof AuthenticatedFacilityStaffRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/admin': {
       id: '/_authenticated/hr/admin'
       path: '/hr/admin'
@@ -2071,6 +2091,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminSoftDeletedRoute: typeof AuthenticatedAdminSoftDeletedRoute
   AuthenticatedComingSoonNameRoute: typeof AuthenticatedComingSoonNameRoute
   AuthenticatedDepartmentDeptRoute: typeof AuthenticatedDepartmentDeptRoute
+  AuthenticatedFacilityStaffRoute: typeof AuthenticatedFacilityStaffRoute
   AuthenticatedHrAdminRoute: typeof AuthenticatedHrAdminRoute
   AuthenticatedHrDocumentsRoute: typeof AuthenticatedHrDocumentsRoute
   AuthenticatedHrLeaveRoute: typeof AuthenticatedHrLeaveRoute
@@ -2164,6 +2185,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminSoftDeletedRoute: AuthenticatedAdminSoftDeletedRoute,
   AuthenticatedComingSoonNameRoute: AuthenticatedComingSoonNameRoute,
   AuthenticatedDepartmentDeptRoute: AuthenticatedDepartmentDeptRoute,
+  AuthenticatedFacilityStaffRoute: AuthenticatedFacilityStaffRoute,
   AuthenticatedHrAdminRoute: AuthenticatedHrAdminRoute,
   AuthenticatedHrDocumentsRoute: AuthenticatedHrDocumentsRoute,
   AuthenticatedHrLeaveRoute: AuthenticatedHrLeaveRoute,

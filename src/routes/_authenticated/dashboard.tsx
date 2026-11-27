@@ -6,6 +6,7 @@ import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { ROLE_HOME } from "@/lib/role-permissions";
 import { QueueRouter } from "./queue";
 import { DepartmentMetrics } from "@/components/department-metrics";
+import { useFacility } from "@/components/facility-context";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [
@@ -21,14 +22,20 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { roles, profile, loading } = useAuth();
+  const { roles: workspaceRoles, loading: facilityLoading } = useFacility();
 
-  if (loading) {
+  if (loading || facilityLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
+
+  // Administrator landings must not depend on stale onboarding metadata or
+  // the order of global roles (including a retained legacy admin role).
+  if (workspaceRoles.includes("superadmin")) return <Navigate to="/admin/facilities" replace />;
+  if (workspaceRoles.includes("facility_admin")) return <Navigate to="/facility/staff" replace />;
 
   // Clinical front line → unified workstation (metrics on top, live queue below)
   if (!roles.includes("admin") && roles.some((r) => r === "doctor" || r === "nurse" || r === "receptionist")) {
