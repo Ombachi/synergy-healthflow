@@ -69,7 +69,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Billing & insurance
   "/billing": ["cashier", "billing_officer"],
   "/insurance": ["insurance_officer", "billing_officer", "cashier"],
-  "/service-catalog": [], // admin only
+  "/service-catalog": ["facility_admin"],
 
   // Sports & Athletes
   "/sports": ["physio", "nutritionist"],
@@ -79,7 +79,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Inventory / store
   "/inventory": ["store_keeper", "facility_admin"],
   "/store": ["store_keeper"],
-  "/audit-inventory": ["store_keeper"],
+  "/audit-inventory": ["store_keeper", "facility_admin"],
 
   // Procurement
   "/procurement": ["procurement"],
@@ -205,7 +205,9 @@ export function canAccess(path: string, roles: AppRole[], modules?: Partial<Reco
   if (!isModuleEnabled(path, modules)) return false;
   if (ALWAYS_VISIBLE.has(path)) return true;
   // Legacy admin is branch operations only; it never implies platform ownership.
-  if (path === "/admin/facilities" || path === "/users" || path === "/service-catalog") return roles.includes("superadmin");
+  if (path === "/admin/facilities" || path === "/users") return roles.includes("superadmin");
+  // Service catalog and inventory audit are branch operations owned by the facility admin.
+  if (path === "/service-catalog" || path === "/audit-inventory") return roles.includes("facility_admin") || (path === "/audit-inventory" && roles.includes("store_keeper"));
   if (roles.includes("superadmin")) return true;
   if (roles.includes("admin")) return true;
   const allowed = ROUTE_ROLES[path];

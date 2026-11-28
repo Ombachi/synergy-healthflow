@@ -11,3 +11,5 @@
 - Departmental stock pickers use a shared category filter with pharmacy/pharmaceutical aliases so inventory naming differences do not hide medication stock.
 - Branch staff administration has a concrete protected landing route; departmental changes use a database-authorized RPC that updates only existing facility memberships, never global roles, to prevent cross-branch escalation.
 - Missing-page sign-out cancels queries and clears cached data before local session removal and replace-navigation to auth, so an unavailable landing page cannot trap a session.
+
+- Service catalog and inventory audit are facility-admin branch operations, not platform-admin pages; superadmin governs facilities and users only.

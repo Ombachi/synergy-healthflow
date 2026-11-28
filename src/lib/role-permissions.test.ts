@@ -76,8 +76,12 @@ describe("role and module access", () => {
     assert.equal(canAccess("/admin/facilities", ["superadmin"]), true);
     assert.equal(canAccess("/admin/facilities", ["billing_officer"]), false);
     assert.equal(canAccess("/service-catalog", ["pharmacist"]), false);
+    assert.equal(canAccess("/service-catalog", ["facility_admin"]), true);
+    assert.equal(canAccess("/audit-inventory", ["facility_admin"]), true);
+    assert.equal(canAccess("/service-catalog", ["superadmin"]), false);
+    assert.equal(canAccess("/audit-inventory", ["superadmin"]), false);
     for (const role of ["admin", "facility_admin"] as const) {
-      for (const path of ["/users", "/admin/facilities", "/service-catalog"]) {
+      for (const path of ["/users", "/admin/facilities"]) {
         assert.equal(canAccess(path, [role]), false, `${role}: ${path}`);
       }
     }

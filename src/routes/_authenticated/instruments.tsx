@@ -111,7 +111,7 @@ function InstrumentsPage() {
       if (!scope && modality !== "all" && i.modality !== modality) return false;
       if (!q) return true;
       return [i.name, i.manufacturer, i.model, i.serial_number, i.lab_section, i.location]
-        .some((v) => (v ?? "").toLowerCase().includes(q));
+        .some((v) => String(v ?? "").toLowerCase().includes(q));
     });
   }, [instruments.data, search, modality, scope]);
   const pager = usePager(list, 20);

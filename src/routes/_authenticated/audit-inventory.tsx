@@ -22,7 +22,7 @@ interface Writeoff { id: string; batch_id: string; qty: number; reason: string; 
 
 function AuditInventory() {
   const { hasRole, user } = useAuth();
-  const allowed = hasRole("admin");
+  const allowed = hasRole("facility_admin") || hasRole("store_keeper") || hasRole("admin");
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ batch_id: "", qty: 0, reason: "expired" });

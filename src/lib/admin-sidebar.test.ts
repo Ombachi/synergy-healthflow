@@ -11,6 +11,9 @@ describe("admin sidebar boundaries", () => {
   it("gives facility admin branch operations but no platform provisioning", () => {
     assert.equal(isItemVisibleForRoles("/roster", "hr-management", ["facility_admin"]), true);
     assert.equal(isItemVisibleForRoles("/inventory", "store", ["facility_admin"]), true);
+    assert.equal(isItemVisibleForRoles("/audit-inventory", "store", ["facility_admin"]), true);
+    assert.equal(isItemVisibleForRoles("/service-catalog", "admin", ["facility_admin"]), true);
+    assert.equal(isItemVisibleForRoles("/service-catalog", "admin", ["superadmin"]), false);
     assert.equal(isItemVisibleForRoles("/admin/facilities", "admin", ["facility_admin"]), false);
     assert.equal(isItemVisibleForRoles("/coming-soon/resuscitation", "emergency", ["facility_admin"]), false);
   });

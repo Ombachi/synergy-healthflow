@@ -130,8 +130,8 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 };
 
 // Platform admin sees only platform administration; facility admin sees branch operations.
-const PLATFORM_ADMIN_URLS = ["/dashboard", "/messages", "/admin/facilities", "/users", "/service-catalog", "/audit", "/sla", "/admin/errors", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations"];
-const PLATFORM_PROVISIONING_URLS = ["/admin/facilities", "/users", "/service-catalog"];
+const PLATFORM_ADMIN_URLS = ["/dashboard", "/messages", "/admin/facilities", "/users", "/audit", "/sla", "/admin/errors", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations"];
+const PLATFORM_PROVISIONING_URLS = ["/admin/facilities", "/users"];
 const FACILITY_ADMIN_HIDE = [...PLATFORM_PROVISIONING_URLS, "/coming-soon/", ...SUBDOMAIN_PREFIXES];
 
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
@@ -160,7 +160,7 @@ export function isItemVisibleForRoles(url: string, groupKey: string | null, role
   if (roles.length === 0) return true; // let canAccess handle it
   if (roles.includes("facility_admin") && !roles.includes("superadmin")) {
     if (FACILITY_ADMIN_HIDE.some((p) => urlMatches(url, p))) return false;
-    if (["/facility/staff", "/orders/stock-requests", "/leave-inbox", "/roster", "/inventory", "/lab-templates"].includes(url)) return true;
+    if (["/facility/staff", "/orders/stock-requests", "/leave-inbox", "/roster", "/inventory", "/lab-templates", "/audit-inventory", "/service-catalog"].includes(url)) return true;
   }
   // Item is visible if ANY of the user's roles would show it.
   return roles.some((role) => {

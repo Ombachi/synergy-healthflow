@@ -35,7 +35,8 @@ function Dashboard() {
   // Administrator landings must not depend on stale onboarding metadata or
   // the order of global roles (including a retained legacy admin role).
   if (workspaceRoles.includes("superadmin")) return <Navigate to="/admin/facilities" replace />;
-  if (workspaceRoles.includes("facility_admin")) return <Navigate to="/facility/staff" replace />;
+  // Facility admins land on the branch departmental breakdown.
+  if (workspaceRoles.includes("facility_admin")) return <AdminAnalytics name={profile?.full_name ?? null} />;
 
   // Clinical front line → unified workstation (metrics on top, live queue below)
   if (!roles.includes("admin") && roles.some((r) => r === "doctor" || r === "nurse" || r === "receptionist")) {

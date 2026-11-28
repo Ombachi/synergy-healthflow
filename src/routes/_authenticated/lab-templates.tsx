@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/lab-templates")({
   head: () => ({ meta: [{ title: "Lab Templates — Litu Vault" }, { name: "description", content: "Lab Templates workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Lab Templates — Litu Vault" }, { property: "og:description", content: "Lab Templates workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -34,6 +35,8 @@ function LabTemplatesPage() {
   const qc = useQueryClient();
   const [selectedTest, setSelectedTest] = useState<string | null>(null);
   const [form, setForm] = useState({ ...EMPTY });
+  const [newOpen, setNewOpen] = useState(false);
+  const [newTest, setNewTest] = useState({ name: "", code: "", category: "", specimen: "", price: "" });
 
   const tests = useQuery({
     queryKey: ["labtpl-tests"],
@@ -96,15 +99,61 @@ function LabTemplatesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const createTest = useMutation({
+    mutationFn: async () => {
+      const name = newTest.name.trim(); const code = newTest.code.trim().toUpperCase();
+      if (!name || !code) throw new Error("Test name and code are required");
+      const { data, error } = await supabase.from("lab_tests_catalog" as never).insert({
+        name, code, category: newTest.category.trim() || null, specimen: newTest.specimen.trim() || null,
+        price: newTest.price.trim() === "" ? null : Number(newTest.price),
+      } as never).select("id").single();
+      if (error) throw error; return (data as unknown as { id: string }).id;
+    },
+    onSuccess: (id) => {
+      qc.invalidateQueries({ queryKey: ["labtpl-tests"] });
+      setSelectedTest(id); setNewOpen(false);
+      setNewTest({ name: "", code: "", category: "", specimen: "", price: "" });
+      toast.success("Lab template created — add its parameters");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteTest = useMutation({
+    mutationFn: async (testId: string) => {
+      const { error } = await supabase.from("lab_tests_catalog" as never).delete().eq("id", testId);
+      if (error) throw new Error(error.code === "23503" ? "This test is used by existing lab orders and cannot be deleted." : error.message);
+    },
+    onSuccess: () => { setSelectedTest(null); qc.invalidateQueries({ queryKey: ["labtpl-tests"] }); toast.success("Template deleted"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (!roles.includes("facility_admin")) return <p className="text-sm text-muted-foreground">Lab templates are managed by the facility administrator (lab director).</p>;
 
   const numOrNull = (s: string) => s.trim() === "" ? null : Number(s);
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-semibold"><FlaskConical className="h-6 w-6 text-primary" /> Lab result templates</h1>
         <p className="text-sm text-muted-foreground">Define the parameter rows that lab scientists fill in for each test. Reference ranges drive automatic abnormal flagging.</p>
+      </div>
+        <Dialog open={newOpen} onOpenChange={setNewOpen}>
+          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> New lab template</Button></DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>New lab template</DialogTitle></DialogHeader>
+            <div className="grid gap-3">
+              <div><Label htmlFor="nt-name">Test name</Label><Input id="nt-name" value={newTest.name} onChange={(e) => setNewTest({ ...newTest, name: e.target.value })} /></div>
+              <div><Label htmlFor="nt-code">Code</Label><Input id="nt-code" value={newTest.code} onChange={(e) => setNewTest({ ...newTest, code: e.target.value })} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label htmlFor="nt-cat">Category</Label><Input id="nt-cat" value={newTest.category} onChange={(e) => setNewTest({ ...newTest, category: e.target.value })} /></div>
+                <div><Label htmlFor="nt-spec">Specimen</Label><Input id="nt-spec" value={newTest.specimen} onChange={(e) => setNewTest({ ...newTest, specimen: e.target.value })} /></div>
+              </div>
+              <div><Label htmlFor="nt-price">Price</Label><Input id="nt-price" type="number" min="0" value={newTest.price} onChange={(e) => setNewTest({ ...newTest, price: e.target.value })} /></div>
+            </div>
+            <DialogFooter><Button onClick={() => createTest.mutate()} disabled={createTest.isPending}>Create template</Button></DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
@@ -127,8 +176,11 @@ function LabTemplatesPage() {
           ) : (
             <div className="p-4 space-y-4">
               <div className="flex justify-end">
-                <Button variant="destructive" size="sm" disabled={removeAll.isPending || !tmpl.data?.length}
-                  onClick={() => { if (window.confirm("Delete every parameter row in this test template? This cannot be undone.")) removeAll.mutate(selectedTest); }}>
+                <Button variant="destructive" size="sm" disabled={removeAll.isPending || deleteTest.isPending || tmpl.isLoading}
+                  onClick={() => {
+                    if (tmpl.data?.length) { if (window.confirm("Delete every parameter row in this test template? This cannot be undone.")) removeAll.mutate(selectedTest); }
+                    else if (window.confirm("This template has no parameters. Delete the test from the catalog? This cannot be undone.")) deleteTest.mutate(selectedTest);
+                  }}>
                   Delete template
                 </Button>
               </div>
