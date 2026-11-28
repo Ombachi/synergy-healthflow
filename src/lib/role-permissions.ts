@@ -19,8 +19,8 @@ export const CLINICAL_ROLES: AppRole[] = [
   "admissions_officer",
 ];
 
-export const STAFF_ROLES: AppRole[] = ALL_ROLES.filter(role => role !== "patient" && role !== "athlete");
-export const HR_MANAGEMENT_ROLES: AppRole[] = ["superadmin", "facility_admin", "admin", "hr_officer", "hr_manager", "dept_manager"];
+export const STAFF_ROLES: AppRole[] = ALL_ROLES.filter(role => role !== "patient" && role !== "athlete" && role !== "superadmin");
+export const HR_MANAGEMENT_ROLES: AppRole[] = ["hr_officer", "hr_manager", "dept_manager"];
 
 // Sub-domain role sets for gated inpatient areas.
 const THEATRE_ROLES: AppRole[] = ["doctor", "nurse"];
@@ -28,8 +28,23 @@ const ICU_ROLES: AppRole[] = ["doctor", "nurse", "physio"];
 const MATERNITY_ROLES: AppRole[] = ["doctor", "nurse"];
 const EMERGENCY_ROLES: AppRole[] = ["doctor", "nurse", "receptionist"];
 
-// Roles allowed for each module route. Admin always has access.
-// Empty array = admin only.
+// Shared administration boundaries for route access, sidebar and user management.
+export const PLATFORM_ADMIN_PATHS = ["/dashboard", "/messages", "/admin/facilities", "/users", "/audit", "/sla", "/admin/errors", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations"];
+export const FACILITY_OPERATION_PATHS = ["/dashboard", "/messages", "/facility/staff", "/department", "/inventory", "/store", "/procurement", "/tenders", "/orders/stock-requests", "/audit-inventory", "/service-catalog", "/lab-templates", "/instruments", "/completed", "/audit", "/sla", "/admin-kpi", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations"];
+export const ADMIN_ACCOUNT_ROLES: AppRole[] = ["superadmin", "admin", "facility_admin"];
+const HR_MANAGEMENT_PATHS = new Set(["/hr/admin", "/leave-inbox", "/roster"]);
+const PERSONAL_STAFF_PATHS = new Set(["/hr/me", "/hr/leave", "/hr/payslips", "/hr/documents", "/requests", "/attendance", "/announcements"]);
+
+export function isAdministratorAccount(roles: readonly string[]): boolean {
+  return roles.some(role => ADMIN_ACCOUNT_ROLES.some(adminRole => adminRole === role));
+}
+
+// Global role replacement must preserve departmental roles not edited here.
+export function mergeAdministratorRoles(existing: readonly string[], selected: readonly AppRole[]): string[] {
+  return [...new Set([...existing.filter(role => !ADMIN_ACCOUNT_ROLES.some(adminRole => adminRole === role)), ...selected.filter(role => ADMIN_ACCOUNT_ROLES.includes(role))])];
+}
+
+// Empty arrays remain legacy-admin-only, except for explicit boundaries below.
 
 export const ROUTE_ROLES: Record<string, AppRole[]> = {
   // Front desk / patient flow
@@ -90,7 +105,7 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/department": ["facility_admin"],
   "/lab-templates": ["facility_admin"],
   "/admin-kpi": [],
-  "/roster": ["facility_admin", "hr_officer", "hr_manager"],
+  "/roster": ["hr_officer", "hr_manager"],
 
   // Removed from clinical-staff nav — kept for admins only.
   "/beds": ["nurse", "doctor", "receptionist", "admissions_officer"],
@@ -124,10 +139,10 @@ export const ROUTE_ROLES: Record<string, AppRole[]> = {
   "/hr/leave": STAFF_ROLES,
   "/hr/payslips": STAFF_ROLES,
   "/hr/documents": STAFF_ROLES,
-  "/hr/admin": ["facility_admin", "hr_officer", "hr_manager"],
+  "/hr/admin": ["hr_officer", "hr_manager"],
   "/requests": STAFF_ROLES,
   "/attendance": STAFF_ROLES,
-  "/leave-inbox": ["facility_admin", "hr_officer", "hr_manager", "dept_manager"],
+  "/leave-inbox": ["hr_officer", "hr_manager", "dept_manager"],
   "/announcements": STAFF_ROLES,
   // Tenders & bids remain in the procurement dashboard.
   "/tenders": ["procurement"],
@@ -202,13 +217,25 @@ export const ALWAYS_VISIBLE = new Set<string>([
 
 
 export function canAccess(path: string, roles: AppRole[], modules?: Partial<Record<ModuleKey, boolean>>): boolean {
+  const [pathname = "", query = ""] = path.split("?");
+  path = pathname;
+  // Platform ownership never inherits branch access from stale extra roles.
+  if (roles.includes("superadmin")) return PLATFORM_ADMIN_PATHS.includes(path);
   if (!isModuleEnabled(path, modules)) return false;
   if (ALWAYS_VISIBLE.has(path)) return true;
-  // Legacy admin is branch operations only; it never implies platform ownership.
-  if (path === "/admin/facilities" || path === "/users") return roles.includes("superadmin");
-  // Service catalog and inventory audit are branch operations owned by the facility admin.
-  if (path === "/service-catalog" || path === "/audit-inventory") return roles.includes("facility_admin") || (path === "/audit-inventory" && roles.includes("store_keeper"));
-  if (roles.includes("superadmin")) return true;
+  if (path === "/admin/facilities" || path === "/users" || path === "/admin/errors") return false;
+  const view = new URLSearchParams(query).get("view");
+  const managementView = PERSONAL_STAFF_PATHS.has(path) && (view === "manage" || view === "team");
+  if (HR_MANAGEMENT_PATHS.has(path) || managementView) {
+    if (roles.includes("facility_admin")) return false;
+    return (ROUTE_ROLES[path] ?? HR_MANAGEMENT_ROLES).some(role => HR_MANAGEMENT_ROLES.includes(role) && roles.includes(role));
+  }
+  if (roles.includes("facility_admin")) {
+    return FACILITY_OPERATION_PATHS.includes(path) || path.startsWith("/department/") || PERSONAL_STAFF_PATHS.has(path);
+  }
+  if (path === "/service-catalog" || path === "/lab-templates") return false;
+  if (path === "/audit-inventory") return roles.includes("store_keeper");
+  // Preserve legacy branch workflows outside the explicit administrative boundaries.
   if (roles.includes("admin")) return true;
   const allowed = ROUTE_ROLES[path];
   if (allowed) {
@@ -227,7 +254,7 @@ export function canAccess(path: string, roles: AppRole[], modules?: Partial<Reco
 // Where each role should land after sign-in.
 export const ROLE_HOME: Partial<Record<AppRole, string>> = {
   superadmin: "/admin/facilities",
-  facility_admin: "/facility/staff",
+  facility_admin: "/dashboard",
   admissions_officer: "/admissions",
   hr_officer: "/hr/admin",
   hr_manager: "/hr/admin",

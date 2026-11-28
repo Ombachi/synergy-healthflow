@@ -1,5 +1,5 @@
 import type { AppRole } from "@/hooks/use-auth";
-import { STAFF_ROLES, HR_MANAGEMENT_ROLES } from "./role-permissions";
+import { STAFF_ROLES, HR_MANAGEMENT_ROLES, PLATFORM_ADMIN_PATHS, FACILITY_OPERATION_PATHS } from "./role-permissions";
 
 // ============================================================================
 // Per-role sidebar visibility rules.
@@ -22,7 +22,7 @@ const HIDE_GROUPS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
   store_keeper:      ["outpatient", "inpatient", "emergency"],
   admin:             ["emergency"],
   superadmin:        ["outpatient", "inpatient", "emergency", "quality", "dept-mgmt", "sports", "store", "staff-self-service", "hr-management"],
-  facility_admin:    ["outpatient", "inpatient", "emergency", "sports"],
+  facility_admin:    ["outpatient", "inpatient", "emergency", "sports", "hr-management"],
 };
 
 // Theatre / ICU / Maternity stub prefixes (nested under Inpatient).
@@ -129,14 +129,9 @@ const HIDE_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 
 };
 
-// Platform admin sees only platform administration; facility admin sees branch operations.
-const PLATFORM_ADMIN_URLS = ["/dashboard", "/messages", "/admin/facilities", "/users", "/audit", "/sla", "/admin/errors", "/admin/access-reviews", "/admin/breaches", "/admin/consent", "/admin/soft-deleted", "/admin/portal-invitations"];
-const PLATFORM_PROVISIONING_URLS = ["/admin/facilities", "/users"];
-const FACILITY_ADMIN_HIDE = [...PLATFORM_PROVISIONING_URLS, "/coming-soon/", ...SUBDOMAIN_PREFIXES];
-
 // Strict whitelist: role sees ONLY these URLs (both groups and standalone).
 const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
-  superadmin: PLATFORM_ADMIN_URLS,
+  superadmin: PLATFORM_ADMIN_PATHS,
   patient:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
   athlete:           ["/me", "/my-vaccines", "/assessments", "/messages", "/chronic-care", "/mobility/request", "/mobility/trips"],
   receptionist:      ["/appointments", "/dashboard", "/messages", "/reception", "/patients"],
@@ -150,18 +145,21 @@ const ONLY_URLS_BY_ROLE: Partial<Record<AppRole, string[]>> = {
 };
 
 function urlMatches(url: string, pattern: string): boolean {
-  return url === pattern || url.startsWith(pattern);
+  return url === pattern || url.startsWith(`${pattern}/`) || url.startsWith(`${pattern}?`) || (pattern.endsWith("-") || pattern.endsWith("/")) && url.startsWith(pattern);
 }
 
 export function isItemVisibleForRoles(url: string, groupKey: string | null, roles: AppRole[]): boolean {
+  // Apply administrator boundaries before permissive staff-group shortcuts.
+  if (roles.includes("superadmin")) return PLATFORM_ADMIN_PATHS.includes(url.split("?")[0] ?? "");
+  if (roles.includes("facility_admin")) {
+    if (groupKey === "hr-management") return false;
+    if (groupKey === "staff-self-service") return !url.includes("?");
+    return FACILITY_OPERATION_PATHS.some(path => urlMatches(url, path));
+  }
   if (url === "/orders/stock-requests" && roles.some((r) => ["nurse", "lab_tech", "pharmacist"].includes(r))) return true;
   if (groupKey === "staff-self-service") return roles.some(role => STAFF_ROLES.includes(role));
   if (groupKey === "hr-management") return roles.some(role => HR_MANAGEMENT_ROLES.includes(role));
   if (roles.length === 0) return true; // let canAccess handle it
-  if (roles.includes("facility_admin") && !roles.includes("superadmin")) {
-    if (FACILITY_ADMIN_HIDE.some((p) => urlMatches(url, p))) return false;
-    if (["/facility/staff", "/orders/stock-requests", "/leave-inbox", "/roster", "/inventory", "/lab-templates", "/audit-inventory", "/service-catalog"].includes(url)) return true;
-  }
   // Item is visible if ANY of the user's roles would show it.
   return roles.some((role) => {
     const only = ONLY_URLS_BY_ROLE[role];

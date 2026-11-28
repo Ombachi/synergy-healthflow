@@ -9,16 +9,16 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useAuth, ALL_ROLES, type AppRole } from "@/hooks/use-auth";
+import { useAuth, type AppRole } from "@/hooks/use-auth";
 import {
   listAllUsers, setUserBanned, deleteUserAccount, adminSetRoles,
 } from "@/lib/admin-users.functions";
-import { seedDemoUsers } from "@/lib/seed-demo.functions";
-import { Ban, CheckCircle2, ShieldCheck, Sparkles, Trash2, UserCog } from "lucide-react";
+import { ADMIN_ACCOUNT_ROLES, isAdministratorAccount, mergeAdministratorRoles } from "@/lib/role-permissions";
+import { Ban, CheckCircle2, ShieldCheck, Trash2, UserCog } from "lucide-react";
 import { Pager, usePager } from "@/components/pager";
 
 export const Route = createFileRoute("/_authenticated/users")({
-  head: () => ({ meta: [{ title: "Users — Litu Vault" }, { name: "description", content: "Users workspace in Litu Vault, scoped to your active facility." }, { property: "og:title", content: "Users — Litu Vault" }, { property: "og:description", content: "Users workspace in Litu Vault, scoped to your active facility." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Users — Litu Vault" }, { name: "description", content: "Platform and facility administrator accounts in Litu Vault." }, { property: "og:title", content: "Users — Litu Vault" }, { property: "og:description", content: "Platform and facility administrator accounts in Litu Vault." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: UsersPage,
 });
 
@@ -35,14 +35,13 @@ type AdminUser = {
 
 function UsersPage() {
   const { roles, user } = useAuth();
-  const isAdmin = roles.includes("admin");
+  const isAdmin = roles.includes("superadmin");
   const qc = useQueryClient();
 
   const fetchUsers = useServerFn(listAllUsers);
   const banFn = useServerFn(setUserBanned);
   const delFn = useServerFn(deleteUserAccount);
   const rolesFn = useServerFn(adminSetRoles);
-  const seedFn = useServerFn(seedDemoUsers);
 
   const usersQ = useQuery({
     queryKey: ["admin-users"],
@@ -52,7 +51,7 @@ function UsersPage() {
 
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [draftRoles, setDraftRoles] = useState<AppRole[]>([]);
-  const pager = usePager(usersQ.data ?? [], 20);
+  const pager = usePager((usersQ.data ?? []).filter(u => isAdministratorAccount(u.roles)), 20);
 
   const banM = useMutation({
     mutationFn: (v: { userId: string; banned: boolean }) => banFn({ data: v }),
@@ -73,29 +72,19 @@ function UsersPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-  const seedM = useMutation({
-    mutationFn: () => seedFn() as Promise<{ password: string; results: { email: string; status: string; role: string }[] }>,
-    onSuccess: (res) => {
-      const created = res.results.filter((r) => r.status === "created").length;
-      const existed = res.results.filter((r) => r.status === "exists").length;
-      toast.success(`Demo users ready: ${created} created, ${existed} already existed. Password: ${res.password}`, { duration: 10000 });
-      qc.invalidateQueries({ queryKey: ["admin-users"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
 
   if (!isAdmin) {
     return (
       <div className="rounded-lg border bg-card p-6">
         <h1 className="text-xl font-semibold">User management</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Admins only.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Platform administrators only.</p>
       </div>
     );
   }
 
   function openEdit(u: AdminUser) {
     setEditing(u);
-    setDraftRoles(u.roles as AppRole[]);
+    setDraftRoles(ADMIN_ACCOUNT_ROLES.filter(role => u.roles.includes(role)));
   }
 
   function toggleRole(r: AppRole) {
@@ -108,15 +97,13 @@ function UsersPage() {
         <div>
           <h1 className="text-2xl font-semibold">User management</h1>
           <p className="text-sm text-muted-foreground">
-            Assign roles, deactivate, or delete user accounts. Changes take effect immediately.
+            Platform & facility administrators
           </p>
         </div>
-        <Button onClick={() => seedM.mutate()} disabled={seedM.isPending}>
-          <Sparkles className="h-4 w-4" /> {seedM.isPending ? "Seeding…" : "Seed demo users"}
-        </Button>
+
       </div>
 
-      <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="overflow-x-auto rounded-lg border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
             <tr>
@@ -131,6 +118,8 @@ function UsersPage() {
             {usersQ.isLoading && (
               <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">Loading…</td></tr>
             )}
+            {usersQ.isError && <tr><td colSpan={5} className="px-4 py-6 text-center text-destructive" role="alert">{usersQ.error.message}</td></tr>}
+            {usersQ.isSuccess && pager.slice.length === 0 && <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">No administrator accounts found.</td></tr>}
             {pager.slice.map((u) => {
               const isSelf = u.id === user?.id;
               const banned = !!u.banned_until && new Date(u.banned_until) > new Date();
@@ -150,9 +139,9 @@ function UsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     {banned ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-amber-600"><Ban className="h-3 w-3" /> Deactivated</span>
+                      <span className="inline-flex items-center gap-1 text-xs text-destructive"><Ban className="h-3 w-3" /> Deactivated</span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="h-3 w-3" /> Active</span>
+                      <span className="inline-flex items-center gap-1 text-xs text-primary"><CheckCircle2 className="h-3 w-3" /> Active</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
@@ -201,7 +190,7 @@ function UsersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
-            {ALL_ROLES.map((r) => (
+            {ADMIN_ACCOUNT_ROLES.map((r) => (
               <label key={r} className="flex cursor-pointer items-center gap-2 rounded-md border p-2 text-sm hover:bg-accent">
                 <Checkbox checked={draftRoles.includes(r)} onCheckedChange={() => toggleRole(r)} />
                 <span className="capitalize">{r.replace("_", " ")}</span>
@@ -211,8 +200,8 @@ function UsersPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
             <Button
-              disabled={rolesM.isPending}
-              onClick={() => editing && rolesM.mutate({ userId: editing.id, roles: draftRoles })}
+              disabled={rolesM.isPending || draftRoles.length === 0 || (editing?.id === user?.id && !draftRoles.includes("superadmin"))}
+              onClick={() => editing && rolesM.mutate({ userId: editing.id, roles: mergeAdministratorRoles(editing.roles, draftRoles) })}
             >
               Save roles
             </Button>

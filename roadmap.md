@@ -1,3 +1,9 @@
+# Administrator role streamlining
+- [ ] Restrict Superadmin menus and page access to platform controls, including mixed-role accounts.
+- [ ] Remove Facility Admin HR management and retain branch operations and personal self-service.
+- [ ] Show administrators only in platform user management and restrict role choices without removing unrelated existing roles.
+- [ ] Run permission regressions and verify the available signed-in administrator flow.
+
 # Facility administrator login recovery
 - [x] Create the protected /facility/staff landing page with branch-scoped staff listing and departmental role assignment controls.
 - [x] Add missing-page sign-out with protected-cache cleanup and local session removal.
